@@ -11,9 +11,9 @@
         </div>
       </div>
       <div class="aside-bottom">
-        <el-menu class="navigation-menu-bar" @open="handleOpen" @close="handleClose" :collapse="isCollapse">
-          <el-menu-item v-for="(item, index) in navBarData" :index="index" :key="item.icon">
-            <div class="nav-menu-item" style="padding:0">
+        <el-menu class="navigation-menu-bar" default-active="0">
+          <el-menu-item v-for="(item, index) in navBarData" :index="index.toString()" :key="item.icon">
+            <div class="nav-menu-item" style="padding:0" @click="$router.push({path:item.to})">
               <i :class="item.icon"></i>
               <span slot="title">{{ item.label }}</span>
             </div>
@@ -24,7 +24,7 @@
     <el-container class="home-content">
       <el-header class="home-header">
         <div class="user-box">
-          <el-avatar class="user-avatar" :size="medium" :src="circleUrl" v-popover:user-avatar-popover></el-avatar>
+          <el-avatar class="user-avatar" size="medium" :src="circleUrl" v-popover:user-avatar-popover></el-avatar>
           <el-popover
             ref="user-avatar-popover"
             placement="bottom"
@@ -35,7 +35,20 @@
           </el-popover>
         </div>
       </el-header>
-      <el-main class="home-main">Main</el-main>
+      <el-main class="home-main">
+        <el-row class="bread-crumb-box">
+          <el-breadcrumb separator="/">
+            <el-breadcrumb-item class="bread-item" v-for="item in breadcrumbInformation" :key="item.value" :to="{path: item.to}">{{ item.label }}</el-breadcrumb-item>
+          </el-breadcrumb>
+        </el-row>
+        <el-row class="main-content main-row">
+          <el-col class="main-col" :span="24">
+            <el-card class="main-container" shadow="never">
+              <router-view></router-view>
+            </el-card>
+          </el-col>
+        </el-row>
+      </el-main>
     </el-container>
   </el-container>
 </template>
@@ -50,15 +63,21 @@ export default {
   data () {
     return {
       navBarData: [
-        { icon: 'el-icon-s-home', label: '首页' },
-        { icon: 'el-icon-s-order', label: '订单管理' },
-        { icon: 'el-icon-s-management', label: '用户管理' },
-        { icon: 'el-icon-s-shop', label: '商家管理' },
-        { icon: 'el-icon-s-comment', label: '用户反馈' },
-        { icon: 'el-icon-setting', label: '系统设置' }
+        { icon: 'el-icon-s-home', label: '首页', to: '/dashboard' },
+        { icon: 'el-icon-s-order', label: '订单管理', to: '/order' },
+        { icon: 'el-icon-s-management', label: '用户管理', to: '/user' },
+        { icon: 'el-icon-s-shop', label: '商家管理', to: '/merchant' },
+        { icon: 'el-icon-s-comment', label: '用户反馈', to: '/free-back' },
+        { icon: 'el-icon-setting', label: '系统设置', to: '/system' }
       ],
-      circleUrl: require('@/assets/imgs/user/user-avatar-2.png')
+      circleUrl: require('@/assets/imgs/user/user-avatar-2.png'),
+      breadcrumbInformation: [
+        { label: '首页', value: 'home', to: '/' }
+      ]
     }
+  },
+  created () {
+    document.title = '管理系统'
   }
 }
 </script>
@@ -72,10 +91,9 @@ export default {
     border-right: 1px solid $border-color;
 
     .aside-top {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 5px 15px 15px;
+      @include flex-cc;
+      //margin: 5px 15px 15px;
+      height: 60px;
       column-gap: 10px;
 
       .logo-box {
@@ -91,9 +109,9 @@ export default {
 
       .logo-text {
         display: flex;
-        flex-direction: column;
         justify-content: start;
         text-align: left;
+        flex-direction: column;
 
         .logo-text-ch {
           font-size: 20px;
@@ -106,12 +124,9 @@ export default {
       }
     }
     .aside-bottom {
-      display: flex;
-      justify-content: center;
       overflow: hidden;
 
       .navigation-menu-bar {
-        text-align: left;
       }
     }
   }
@@ -121,9 +136,7 @@ export default {
 
     .user-box {
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: end;
+      @include flex-ec;
 
       .user-avatar {
         cursor: pointer;
@@ -133,6 +146,24 @@ export default {
 
   .home-main {
     background-color: $secondary-color;
+    display: flex;
+    flex-direction: column;
+
+    .bread-crumb-box {
+      display: none;
+      margin-bottom: 5px;
+
+      .bread-item {
+      }
+    }
+    .main-row,
+    .main-col,
+    .main-container {
+      height: 100%;
+    }
+    .main-container {
+      @include flex-cc;
+    }
   }
 }
 </style>
