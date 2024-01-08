@@ -24,7 +24,15 @@
     <el-container class="home-content">
       <el-header class="home-header">
         <div class="user-box">
-          <el-avatar :size="medium" :src="circleUrl"></el-avatar>
+          <el-avatar class="user-avatar" :size="medium" :src="circleUrl" v-popover:user-avatar-popover></el-avatar>
+          <el-popover
+            ref="user-avatar-popover"
+            placement="bottom"
+            title="管理员"
+            width="200"
+            trigger="click"
+            content="Null">
+          </el-popover>
         </div>
       </el-header>
       <el-main class="home-main">Main</el-main>
@@ -49,14 +57,14 @@ export default {
         { icon: 'el-icon-s-comment', label: '用户反馈' },
         { icon: 'el-icon-setting', label: '系统设置' }
       ],
-      circleUrl: ''
+      circleUrl: require('@/assets/imgs/user/user-avatar-2.png')
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.home-container{
+.home-container {
   height: 100%;
 
   .home-aside {
@@ -70,9 +78,9 @@ export default {
       margin: 5px 15px 15px;
       column-gap: 10px;
 
-      .logo-box{
-        .logo{
-          border-radius:20%;
+      .logo-box {
+        .logo {
+          border-radius: 20%;
           height: 40px;
           width: 40px;
           background-image: url("../assets/imgs/logo/logo-bg-thum.png");
@@ -92,28 +100,39 @@ export default {
           font-weight: 800;
         }
         .logo-text-en {
-          font-size:12px;
-          color:#666;
+          font-size: 12px;
+          color: #666;
         }
       }
     }
-    .aside-bottom{
+    .aside-bottom {
       display: flex;
       justify-content: center;
       overflow: hidden;
-      .navigation-menu-bar{
+
+      .navigation-menu-bar {
         text-align: left;
       }
     }
   }
 
   .home-header {
-    background-color: $primary-color
+    background-color: $primary-color;
+
+    .user-box {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: end;
+
+      .user-avatar {
+        cursor: pointer;
+      }
+    }
   }
 
   .home-main {
-    background-color: $secondary-color
+    background-color: $secondary-color;
   }
 }
-
 </style>
