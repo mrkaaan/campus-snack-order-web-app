@@ -1,4 +1,4 @@
-# campus-snack-order-web-app
+# admin-frontend
 
 ## Project setup
 ```
