@@ -1,0 +1,22 @@
+// 定义颜色变量
+$primary-color: #fff; // 主要颜色
+$secondary-color: #ecf0f1; // 次要颜色
+$border-color: #efefef; // 边框颜色
+
+@mixin flex-cc {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-sc {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
+@mixin flex-ec {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
