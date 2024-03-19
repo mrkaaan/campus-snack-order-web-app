@@ -5,7 +5,7 @@
         <el-col class="header-menu" :span="4">
           <i class="el-icon-menu icon-button-1 big-icon-size"></i>
         </el-col>
-        <el-col :span="16" class="header-title">点餐</el-col>
+        <el-col :span="16" class="header-title normal-title">Delicious.</el-col>
         <el-col :span="4" class="header-chat">
           <i class="el-icon-chat-line-round icon-button-1 big-icon-size"></i>
         </el-col>
