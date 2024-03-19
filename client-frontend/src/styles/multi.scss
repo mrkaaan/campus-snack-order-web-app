@@ -1,0 +1,30 @@
+@import './variables';
+
+.bg-or {
+  background-color: $orange-light;
+  border-radius: 15px;
+}
+
+.big-icon-size {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.icon-button-1 {
+  transition: color 0.3s ease, box-shadow 0.3s ease; /* 平滑过渡效果 */
+  /* 默认状态下的阴影，可根据需要调整 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0); /* 初始状态不显示阴影 */
+
+  &:hover {
+    color: $green; /* 鼠标悬停时的图标颜色 */
+    @extend .text-shadow;
+  }
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.box-shadow {
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1);
+}

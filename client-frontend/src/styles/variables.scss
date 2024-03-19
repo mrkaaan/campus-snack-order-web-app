@@ -3,6 +3,15 @@ $primary-color: #fff; // 主要颜色
 $secondary-color: #ecf0f1; // 次要颜色
 $border-color: #efefef; // 边框颜色
 
+$grey: grey;
+
+$green: #21B05D;
+
+$orange: #DA6317;
+$orange-light: rgba(249, 168, 77, 0.1);
+$orange-light2: rgba(249, 168, 77, 0.4);
+
+
 @mixin flex-cc {
   display: flex;
   justify-content: center;
