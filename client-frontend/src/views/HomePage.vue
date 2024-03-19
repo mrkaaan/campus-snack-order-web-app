@@ -22,7 +22,10 @@
             <i class="el-icon-s-operation big-icon-size"></i>
           </div>
         </div>
-        <div class="content-categories">
+        <div class="content-categories flex items-center">
+          <div class="category-item" v-for="category in categories" :key="category.value">
+            {{ category.name }}
+          </div>
         </div>
         <div class="content-dishes-list">
         </div>
@@ -35,7 +38,22 @@
 
 <script>
 export default {
-  name: 'HomePage'
+  name: 'HomePage',
+  data () {
+    return {
+      categories: [
+        { name: 'category', value: 1 },
+        { name: 'category', value: 2 },
+        { name: 'category', value: 3 },
+        { name: 'category', value: 3 },
+        { name: 'category', value: 3 },
+        { name: 'category', value: 3 },
+        { name: 'category', value: 3 },
+        { name: 'category', value: 3 }
+        // 更多分类...
+      ]
+    }
+  }
 }
 </script>
 
@@ -70,6 +88,7 @@ export default {
     .container-content {
       height: 100%;
       display: flex;
+      row-gap: 1rem;
       flex-direction: column;
 
       .content-search-bar {
@@ -104,7 +123,29 @@ export default {
       }
 
       .content-categories {
+        height: 2.5rem;
+        column-gap: 0.8rem;
+        overflow-x: auto;
+        //overflow: visible;
+        white-space: nowrap;
 
+        .category-item {
+          height: 80%;
+          color: $primary-color;
+          font-family: 'Nunito-ExtraBold', 'Nunito', sans-serif;
+          flex: none;
+          display: inline-block;
+          padding: 0.3rem 1.2rem;
+          background-color: $green;
+          //border: 1px solid #ccc;
+          border-radius: 1rem;
+          box-shadow: 0 1px 5px $green;
+        }
+      }
+
+      /* 定制滚动条的轨道 */
+      .content-categories::-webkit-scrollbar {
+        height: 0; /* 控制滚动条高度 */
       }
 
       .content-dishes-list {
