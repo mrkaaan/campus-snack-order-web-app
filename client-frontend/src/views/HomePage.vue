@@ -1,7 +1,7 @@
 <template>
   <el-container class="home-page">
     <el-header class="page-header">
-      <el-row class="header-wrapper" type="flex" justify="space-between" align="middle">
+      <el-row class="header-wrapper" type="flex" justify="center" align="middle">
         <el-col class="header-menu" :span="4">
           <i class="el-icon-menu icon-button-1 big-icon-size"></i>
         </el-col>
@@ -12,27 +12,36 @@
       </el-row>
     </el-header>
     <el-main class="page-container">
-      <div class="container-content">
-        <div class="content-search-bar flex justify-center items-center">
-          <div class="search-wrapper flex justify-center bg-or" style="align-items: center">
-            <i class="el-icon-search icon-search big-icon-size"></i>
+      <div class="page-content">
+        <div class="content-search-bar">
+          <div class="search-wrapper">
+            <i class="el-icon-search icon-search"></i>
             <el-input class="custom-input" placeholder="搜索食物"></el-input>
           </div>
-          <div class="search-filter flex justify-center items-center bg-or">
+          <div class="search-filter">
             <i class="el-icon-s-operation big-icon-size"></i>
           </div>
         </div>
-        <div class="content-categories flex items-center">
-          <div class="category-item" v-for="category in categories" :key="category.value">
-            {{ category.name }}
+        <div class="content-categories">
+          <div class="category-wrapper">
+            <div class="category-item" v-for="category in categories" :key="category.value">
+              {{ category.name }}
+            </div>
           </div>
         </div>
         <div class="content-dishes-list">
+          <ul class="product-list">
+            <li v-for="item in products" :key="item">
+              <div class="product-item">
+                {{ item }}
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
-      <div class="container-floating-cart">
-      </div>
     </el-main>
+    <div class="container-floating-cart">
+    </div>
   </el-container>
 </template>
 
@@ -51,7 +60,8 @@ export default {
         { name: 'category', value: 3 },
         { name: 'category', value: 3 }
         // 更多分类...
-      ]
+      ],
+      products: 10
     }
   }
 }
@@ -67,8 +77,7 @@ export default {
   .page-header {
     .header-wrapper {
       height: 100%;
-
-      .header-menu, .header-menu, .header-chat {
+      .header-menu, .header-chat {
         height: 100%;
         display: flex;
         align-items: center;
@@ -84,38 +93,41 @@ export default {
 
   .page-container {
     height: 100%;
+    padding-top: 0;
 
-    .container-content {
+    .page-content{
       height: 100%;
       display: flex;
-      row-gap: 1rem;
+      row-gap: 0.5rem;
       flex-direction: column;
 
       .content-search-bar {
         color: $orange;
-
-        column-gap: 0.8rem;
-        height: 4rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        column-gap: 0.4rem;
+        min-height: 3.5rem;
 
         .search-wrapper, .search-filter {
           display: flex;
           justify-content: center;
           align-items: center;
           height: 100%;
+          @extend .bg-or;
         }
-
         .search-wrapper {
           flex: 1;
-          padding: 0.5rem 1rem; /* 内边距调整 */
+          padding: 0 1rem;
 
           .icon-search {
             color: $orange;
+            @extend .big-icon-size;
           }
         }
-
         .search-filter {
-          width: 4rem; // 根据父容器的宽度设置宽度，这里的百分比可以根据需要调整
-
+          align-items: center;
+          width: 3.5rem;
           &:hover {
             @extend .box-shadow;
           }
@@ -123,11 +135,19 @@ export default {
       }
 
       .content-categories {
-        height: 2.5rem;
-        column-gap: 0.8rem;
+        display: flex;
+        align-items: center;
+        min-height: 3.5rem;
         overflow-x: auto;
-        //overflow: visible;
         white-space: nowrap;
+
+        .category-wrapper {
+          padding: 0 0.5rem;
+          display: flex;
+          column-gap: 0.8rem;
+          align-items: center;
+          height: 80%;
+        }
 
         .category-item {
           height: 80%;
@@ -137,19 +157,33 @@ export default {
           display: inline-block;
           padding: 0.3rem 1.2rem;
           background-color: $green;
-          //border: 1px solid #ccc;
           border-radius: 1rem;
-          box-shadow: 0 1px 5px $green;
+          @extend .box-shadow-green;
         }
       }
 
-      /* 定制滚动条的轨道 */
+      /* 控制滚动条高度 */
       .content-categories::-webkit-scrollbar {
-        height: 0; /* 控制滚动条高度 */
+        height: 0;
       }
 
       .content-dishes-list {
 
+        .product-list {
+          display: flex;
+          flex-direction: column;
+          row-gap: 1.5rem;
+
+          .product-item{
+            width: 100%;
+            height: 10rem;
+            border-radius: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            @extend .box-shadow-2;
+          }
+        }
       }
     }
   }
