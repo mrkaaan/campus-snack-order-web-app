@@ -40,12 +40,14 @@
         </div>
       </div>
     </el-main>
-    <div class="container-floating-cart">
-    </div>
+    <CartFloating class="container-cart">
+      <i class="el-icon-shopping-cart-2 cart-icon"></i>
+    </CartFloating>
   </el-container>
 </template>
 
 <script>
+import CartFloating from '@/components/CartFloating.vue'
 export default {
   name: 'HomePage',
   data () {
@@ -63,6 +65,9 @@ export default {
       ],
       products: 10
     }
+  },
+  components: {
+    CartFloating
   }
 }
 </script>
@@ -185,6 +190,14 @@ export default {
           }
         }
       }
+    }
+  }
+
+  .container-cart {
+    transition: transform 0.5s ease;
+
+    .cart-icon{
+      @extend .big-icon-size;
     }
   }
 }
