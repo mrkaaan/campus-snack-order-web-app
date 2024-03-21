@@ -32,9 +32,12 @@
         <div class="content-dishes-list">
           <ul class="product-list">
             <li v-for="item in products" :key="item">
-              <div class="product-item">
-                {{ item }}
-              </div>
+              <a class="product-item-link">
+                <div class="product-item">
+                  <div class="item-img">img</div>
+                  <div class="item-detail">detail</div>
+                </div>
+              </a>
             </li>
           </ul>
         </div>
@@ -184,9 +187,17 @@ export default {
             height: 10rem;
             border-radius: 1rem;
             display: flex;
+            flex-direction: row;
             justify-content: center;
             align-items: center;
             @extend .box-shadow-2;
+
+            .item-img {
+              width: 10rem;
+            }
+            .item-detail {
+              flex: 1
+            }
           }
         }
       }
