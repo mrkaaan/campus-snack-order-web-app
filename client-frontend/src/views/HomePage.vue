@@ -1,77 +1,98 @@
 <template>
-  <el-container class="home-page">
-    <el-header class="page-header">
-      <el-row class="header-wrapper" type="flex" justify="center" align="middle">
-        <el-col class="header-menu" :span="4">
-          <i class="el-icon-menu icon-button-1 big-icon-size"></i>
-        </el-col>
-        <el-col :span="16" class="header-title normal-title">Delicious.</el-col>
-        <el-col :span="4" class="header-chat">
-          <i class="el-icon-chat-line-round icon-button-1 big-icon-size"></i>
-        </el-col>
-      </el-row>
-    </el-header>
-    <el-main class="page-container">
-      <div class="page-content">
-        <div class="content-search-bar">
-          <div class="search-wrapper">
-            <i class="el-icon-search icon-search"></i>
-            <el-input class="custom-input" placeholder="搜索食物"></el-input>
-          </div>
-          <div class="search-filter">
-            <i class="el-icon-s-operation big-icon-size"></i>
-          </div>
-        </div>
-        <div class="content-categories">
-          <div class="category-wrapper">
-            <div class="category-item" v-for="category in categories" :key="category.value">
-              {{ category.name }}
+  <div :class="{'sidebar-active': isSidebarOpen}">
+    <nav class="sidebar" :class="{'sidebar-open': isSidebarOpen}">
+    </nav>
+    <main class="home-page content-shift">
+      <div class="page-header">
+        <el-row class="header-wrapper" type="flex" justify="center" align="middle">
+          <el-col class="header-menu" :span="4">
+            <i class="el-icon-menu icon-button-1 big-icon-size" @click="toggleSidebar"></i>
+          </el-col>
+          <el-col :span="16" class="header-title normal-title">Delicious.</el-col>
+          <el-col :span="4" class="header-chat">
+            <i class="el-icon-chat-line-round icon-button-1 big-icon-size"></i>
+          </el-col>
+        </el-row>
+      </div>
+      <div class="page-container">
+        <div class="page-content">
+          <div class="content-search-bar">
+            <div class="search-wrapper">
+              <i class="el-icon-search icon-search"></i>
+              <el-input class="custom-input" placeholder="搜索食物"></el-input>
+            </div>
+            <div class="search-filter">
+              <i class="el-icon-s-operation big-icon-size"></i>
             </div>
           </div>
-        </div>
-        <div class="content-dishes-list" v-if="isLoading">
-          <ul class="product-list">
-            <li class="skeleton-item" v-for="n in skeletonCount" :key="`skeleton-${n}`">
-              <el-skeleton animated :throttle="500">
-                <template slot="template">
-                  <div class="skeleton-template">
-                    <div class="skeleton-image">
-                      <el-skeleton-item class="skeleton-img" variant="image"></el-skeleton-item>
+          <div class="content-categories">
+            <div class="category-wrapper">
+              <div class="category-item" v-for="category in categories" :key="category.value">
+                {{ category.name }}
+              </div>
+            </div>
+          </div>
+          <div class="content-dishes-list" v-if="isLoading">
+            <ul class="product-list">
+              <li class="skeleton-item" v-for="n in skeletonCount" :key="`skeleton-${n}`">
+                <el-skeleton animated :throttle="500">
+                  <template slot="template">
+                    <div class="skeleton-template">
+                      <div class="skeleton-image">
+                        <el-skeleton-item class="skeleton-img" variant="image"></el-skeleton-item>
+                      </div>
+                      <div class="item-detail">
+                        <el-skeleton-item variant="text" ></el-skeleton-item>
+                        <el-skeleton-item variant="text" ></el-skeleton-item>
+                        <el-skeleton-item variant="text"></el-skeleton-item>
+                      </div>
+                    </div>
+                  </template>
+                </el-skeleton>
+              </li>
+            </ul>
+          </div>
+          <div class="content-dishes-list" v-else>
+            <ul class="product-list">
+              <li  v-for="item in products" :key="item.id">
+                <a class="product-item-link">
+                  <div class="product-item">
+                    <div class="item-img">
+                      <el-image class="image" :src="item.image" fit="cover" @load="() => item.imageLoaded = true"></el-image>
                     </div>
                     <div class="item-detail">
-                      <el-skeleton-item variant="text" ></el-skeleton-item>
-                      <el-skeleton-item variant="text" ></el-skeleton-item>
-                      <el-skeleton-item variant="text"></el-skeleton-item>
+                      <p><strong>{{ item.storeName }}</strong></p>
+                      <p><strong>{{ item.price }}</strong></p>
                     </div>
                   </div>
-                </template>
-              </el-skeleton>
-            </li>
-          </ul>
-        </div>
-        <div class="content-dishes-list" v-else>
-          <ul class="product-list">
-            <li  v-for="item in products" :key="item.id">
-              <a class="product-item-link">
-                <div class="product-item">
-                  <div class="item-img">
-                    <el-image class="image" :src="item.image" fit="cover" @load="() => item.imageLoaded = true"></el-image>
+                </a>
+              </li>
+            </ul>
+            <ul class="product-list">
+              <li  v-for="item in products" :key="item.id">
+                <a class="product-item-link">
+                  <div class="product-item">
+                    <div class="item-img">
+                      <el-image class="image" :src="item.image" fit="cover" @load="() => item.imageLoaded = true"></el-image>
+                    </div>
+                    <div class="item-detail">
+                      <p><strong>{{ item.storeName }}</strong></p>
+                      <p><strong>{{ item.price }}</strong></p>
+                    </div>
                   </div>
-                  <div class="item-detail">
-                    <p><strong>{{ item.storeName }}</strong></p>
-                    <p><strong>{{ item.price }}</strong></p>
-                  </div>
-                </div>
-              </a>
-            </li>
-          </ul>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-    </el-main>
+    </main>
+    <footer class="bottom-nav">
+    </footer>
     <CartFloating class="container-cart">
       <i class="el-icon-shopping-cart-2 cart-icon"></i>
     </CartFloating>
-  </el-container>
+  </div>
 </template>
 
 <script>
@@ -130,7 +151,9 @@ export default {
         }
       ],
       isLoading: true, // 初始时数据正在加载
-      skeletonCount: 5 // 假设初始加载显示5个骨架屏
+      skeletonCount: 5, // 假设初始加载显示5个骨架屏
+      isSidebarOpen: true, // 初始状态，侧边栏默认打开
+      isSidebarCollapsed: false // 控制侧边栏是否为缩小模式
     }
   },
   components: {
@@ -160,6 +183,9 @@ export default {
         this.products = this.MockProducts // 更新products数据
         this.isLoading = false // 数据加载完成，更新加载状态
       }, 2000) // 延迟2秒来模拟网络请求延迟
+    },
+    toggleSidebar () {
+      this.isSidebarOpen = !this.isSidebarOpen
     }
   }
 }
@@ -173,7 +199,10 @@ export default {
   height: 100%;
 
   .page-header {
+    background-color: $primary-color;
     .header-wrapper {
+      padding: 1rem;
+
       height: 100%;
       .header-menu, .header-chat {
         height: 100%;
@@ -198,6 +227,7 @@ export default {
       display: flex;
       row-gap: 0.5rem;
       flex-direction: column;
+      padding:1rem;
 
       .content-search-bar {
         color: $orange;
@@ -248,6 +278,7 @@ export default {
         }
 
         .category-item {
+          cursor: pointer;
           height: 80%;
           color: $primary-color;
           font-family: 'Nunito-ExtraBold', 'Nunito', sans-serif;
@@ -350,6 +381,99 @@ export default {
     .cart-icon{
       @extend .big-icon-size;
     }
+  }
+
+  /* 电脑端屏幕样式 */
+  //@media (min-width: 992px) { /* 这个宽度可以根据实际需要调整 */
+  //  .page-header{
+  //    position: sticky;
+  //    top: 0; /* 吸顶效果 */
+  //    z-index: 1000; /* 确保它们在页面的最顶部 */
+  //  }
+  //}
+
+}
+.sidebar {
+  width: 250px; /* 侧边栏宽度 */
+  position: fixed;
+  top: 0;
+  left: -250px; /* 初始时隐藏侧边栏 */
+  height: 100%;
+  background-color: #f0f0f0;
+  transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+
+.sidebar-open {
+  left: 0; /* 当侧边栏打开时，移动到显示位置 */
+}
+
+.content-shift {
+  transition: all 0.3s ease; /* 主体内容移动的平滑过渡效果 */
+}
+
+.sidebar-active .home-page {
+  margin-left: 250px; /* 侧边栏打开时，主体内容向右移动 */
+}
+
+/* 屏幕中等，缩小侧边栏 */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 80px; /* 缩小宽度 */
+    /* 调整内部样式，可能需要隐藏文字等 */
+  }
+  .sidebar .text {
+    display: none; /* 假设侧边栏里有文字需要在这个断点隐藏 */
+  }
+  .sidebar-active .home-page {
+    margin-left: 80px; /* 侧边栏打开时，主体内容向右移动 */
+  }
+}
+
+/* 屏幕最小，切换到底部导航栏 */
+@media (max-width: 576px) {
+  .sidebar {
+    display: none; /* 隐藏侧边栏 */
+  }
+  .sidebar-active .home-page {
+    margin-left: 0; /* 侧边栏打开时，主体内容向右移动 */
+  }
+  .bottom-nav {
+    display: flex; /* 显示底部导航栏 */
+    /* 底部导航栏的样式 */
+  }
+}
+
+/* 底部导航栏的样式 */
+.bottom-nav {
+  display: none; /* 默认不显示 */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  /* 其他样式 */
+}
+
+/* 屏幕中等尺寸时的样式 */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 80px; /* 缩小侧边栏宽度 */
+  }
+  .content {
+    margin-left: 80px; /* 调整主内容区域的边距 */
+  }
+}
+
+/* 屏幕小尺寸时的样式 */
+@media (max-width: 576px) {
+  .sidebar {
+    display: none; /* 隐藏侧边栏 */
+  }
+  .content {
+    margin-left: 0; /* 移除边距 */
+  }
+  .bottom-nav {
+    display: flex; /* 显示底部导航栏 */
+    /* 根据需要调整布局和样式 */
   }
 }
 </style>

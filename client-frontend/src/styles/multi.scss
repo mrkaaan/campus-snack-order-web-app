@@ -6,11 +6,13 @@
 }
 
 .big-icon-size {
+  cursor: pointer;
   font-weight: bold;
   font-size: 1.5rem;
 }
 
 .icon-button-1 {
+  cursor: pointer;
   transition: box-shadow 0.3s ease; /* 平滑过渡效果 */
 
   &:hover {
