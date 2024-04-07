@@ -1,7 +1,12 @@
 <template>
-  <div :class="{'sidebar-active': isSidebarOpen}">
-    <nav class="sidebar" :class="{'sidebar-open': isSidebarOpen}">
-    </nav>
+  <div :class="{ 'sidebar-active': isSidebarOpen, 'sidebar-active-collapsed': isSidebarCollapsed, 'sidebar-active-drawer': isSidebarDrawer, 'sidebar-leaving-drawer': isLeaving}">
+    <div class="wrapper-sidebar">
+      <div class="masking-sidebar" @click="handleCloseDrawer">
+        <nav class="sidebar">
+        <!-- 侧边栏内容 -->
+        </nav>
+      </div>
+    </div>
     <main class="home-page content-shift">
       <div class="page-header">
         <el-row class="header-wrapper" type="flex" justify="center" align="middle">
@@ -92,6 +97,7 @@
     <CartFloating class="container-cart">
       <i class="el-icon-shopping-cart-2 cart-icon"></i>
     </CartFloating>
+    <div class="overlay" v-if="isSidebarDrawer"></div>
   </div>
 </template>
 
@@ -152,16 +158,46 @@ export default {
       ],
       isLoading: true, // 初始时数据正在加载
       skeletonCount: 5, // 假设初始加载显示5个骨架屏
+      windowWidth: window.innerWidth, // 手动创建响应式页面宽度
       isSidebarOpen: true, // 初始状态，侧边栏默认打开
+      isSidebarDrawer: false, // 抽屉模式
+      isLeaving: false, // 关闭抽屉的异步态
       isSidebarCollapsed: false // 控制侧边栏是否为缩小模式
     }
   },
   components: {
     CartFloating
   },
+  computed: {
+    isWideScreen () {
+      console.log('宽屏模式')
+      return this.windowWidth > 992
+    },
+    // 计算属性用于判断是否是中等屏幕尺寸
+    isMediumScreen () {
+      console.log('中屏模式')
+      return this.windowWidth <= 992 && this.windowWidth > 576
+    },
+    // 计算属性用于判断是否是小屏幕尺寸
+    isSmallScreen () {
+      console.log('小屏模式')
+      return this.windowWidth <= 576
+    }
+  },
   mounted () {
     // this.fetchProducts() // 组件挂载后加载数据
     this.MockFetchProducts()
+    this.checkSidebarStatus() // 组件挂载时设置初始侧边栏状态
+    // 添加窗口尺寸变化监听器以更新屏幕状态
+    window.addEventListener('resize', () => {
+      this.handleResize() // 强制Vue重新渲染以应用新的屏幕尺寸状态
+    })
+  },
+  watch: {
+    // 动态监听实现侧边栏默认状态
+    windowWidth () {
+      this.checkSidebarStatus()
+    }
   },
   methods: {
     async fetchProducts () {
@@ -184,9 +220,69 @@ export default {
         this.isLoading = false // 数据加载完成，更新加载状态
       }, 2000) // 延迟2秒来模拟网络请求延迟
     },
+    // 更新窗口宽度
+    handleResize () {
+      this.windowWidth = window.innerWidth
+    },
+    // 侧边栏按钮
     toggleSidebar () {
-      this.isSidebarOpen = !this.isSidebarOpen
+      if (this.isWideScreen) {
+        // 屏幕尺寸在宽屏时，切换侧边栏状态 展开 缩小
+        this.isSidebarOpen = !this.isSidebarOpen
+        this.isSidebarCollapsed = !this.isSidebarCollapsed
+        this.isSidebarDrawer = false // 确保侧边栏不在抽屉状态
+        console.log('宽屏模式 切换')
+      } else if (this.isMediumScreen) {
+        // 屏幕尺寸在中等时，切换侧边栏状态 隐藏 抽屉
+        this.isSidebarOpen = false // 确保侧边栏不在展开状态
+        this.isSidebarDrawer = !this.isSidebarDrawer
+        this.isSidebarCollapsed = false
+        console.log('中屏模式 切换')
+      } else if (this.isSmallScreen) {
+        // 屏幕尺寸更小时，切换侧边栏开闭状态 隐藏
+        this.isSidebarOpen = false
+        this.isSidebarDrawer = false
+        this.isSidebarCollapsed = false
+        console.log('小屏模式 切换')
+      }
+    },
+    // 根据当前windowWidth设置侧边栏状态
+    checkSidebarStatus () {
+      if (this.windowWidth >= 992) {
+        this.isSidebarOpen = true
+        this.isSidebarDrawer = false
+        this.isSidebarCollapsed = false
+      } else if (this.windowWidth <= 992 && this.windowWidth > 576) {
+        this.isSidebarOpen = false
+        this.isSidebarDrawer = false
+        this.isSidebarCollapsed = false
+      } else if (this.windowWidth <= 576) {
+        this.isSidebarOpen = false
+        this.isSidebarDrawer = false
+        this.isSidebarCollapsed = false
+      }
+    },
+    // 关闭抽屉
+    handleCloseDrawer (event) {
+      // 触发离开动画
+      this.isLeaving = true
+
+      // 延时关闭抽屉，延时时长应与离开动画时长一致
+      setTimeout(() => {
+      // if (event.target === event.currentTarget) {
+        this.isSidebarOpen = false
+        this.isSidebarCollapsed = false
+        this.isSidebarDrawer = false
+        this.isLeaving = false // 重置isLeaving状态
+      // }
+      }, 300) // 假设动画时长为300ms
     }
+  },
+  beforeDestroy () {
+    // 移除监听器以避免潜在的内存泄露
+    window.removeEventListener('resize', () => {
+      this.handleResize()
+    })
   }
 }
 </script>
@@ -382,100 +478,145 @@ export default {
       @extend .big-icon-size;
     }
   }
-
-  /* 电脑端屏幕样式 */
-  //@media (min-width: 992px) { /* 这个宽度可以根据实际需要调整 */
-  //  .page-header{
-  //    position: sticky;
-  //    top: 0; /* 吸顶效果 */
-  //    z-index: 1000; /* 确保它们在页面的最顶部 */
-  //  }
-  //}
-
 }
-.sidebar {
-  width: 250px; /* 侧边栏宽度 */
+
+/* 灰色遮罩样式 */
+.overlay {
+  display: none; /* 默认不显示 */
   position: fixed;
   top: 0;
-  left: -250px; /* 初始时隐藏侧边栏 */
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040; /* 确保在抽屉下方，但在内容上方 */
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
   height: 100%;
   background-color: #f0f0f0;
   transition: all 0.3s ease; /* 平滑过渡效果 */
-}
 
-.sidebar-open {
-  left: 0; /* 当侧边栏打开时，移动到显示位置 */
 }
 
 .content-shift {
-  transition: all 0.3s ease; /* 主体内容移动的平滑过渡效果 */
+  transition: all 0.3s ease; /* 平滑过渡效果 */
 }
 
-.sidebar-active .home-page {
-  margin-left: 250px; /* 侧边栏打开时，主体内容向右移动 */
+/* 宽屏模式 */
+.sidebar-active {
+  .sidebar {
+    width: 250px; /* 侧边栏宽度 */
+    //transition: all 0.3s ease; /* 平滑过渡效果 */
+  }
+  .content-shift {
+    margin-left: 250px; /* 侧边栏打开时，主体内容向右移动 */
+    //transition: all 0.3s ease; /* 平滑过渡效果 */
+  }
+}
+
+/* 抽屉模式 */
+.sidebar-active-drawer {
+  .overlay {
+    display: block;
+  }
+  .wrapper-sidebar{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    margin: 0;
+    z-index: 2035;
+  }
+  .masking-sidebar {
+    position: relative;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+  }
+  .sidebar{
+    animation: slideInFromLeft .3s 1ms forwards;
+    //animation: rtl-drawer-in .3s 1ms forwards;
+    left: 0;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    width: 250px;
+    position: absolute;
+    box-sizing: border-box;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 10px -5px rgba(0,0,0,.2), 0 16px 24px 2px rgba(0,0,0,.14), 0 6px 30px 5px rgba(0,0,0,.12);
+    overflow: hidden;
+    outline: 0;
+  }
+  .content-shift{
+    margin-left: 0;
+  }
+}
+.sidebar-leaving-drawer {
+  .sidebar {
+    animation: slideOutToLeft 0.5s forwards;
+  }
+}
+/* 缩小模式 */
+.sidebar-active-collapsed {
+  .sidebar{
+    width: 80px;
+  }
+  .content-shift{
+    margin-left: 80px;
+  }
+}
+
+/* 从左向右滑入 */
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* 从右向左滑出 */
+@keyframes slideOutToLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 /* 屏幕中等，缩小侧边栏 */
 @media (max-width: 992px) {
   .sidebar {
-    width: 80px; /* 缩小宽度 */
-    /* 调整内部样式，可能需要隐藏文字等 */
+    //width: 80px;
   }
-  .sidebar .text {
-    display: none; /* 假设侧边栏里有文字需要在这个断点隐藏 */
-  }
-  .sidebar-active .home-page {
-    margin-left: 80px; /* 侧边栏打开时，主体内容向右移动 */
+  .content-shift {
+    //margin-left: 80px;
   }
 }
 
 /* 屏幕最小，切换到底部导航栏 */
 @media (max-width: 576px) {
-  .sidebar {
-    display: none; /* 隐藏侧边栏 */
+  .sidebar{
+    //width: 0;
   }
-  .sidebar-active .home-page {
-    margin-left: 0; /* 侧边栏打开时，主体内容向右移动 */
-  }
-  .bottom-nav {
-    display: flex; /* 显示底部导航栏 */
-    /* 底部导航栏的样式 */
+  .sidebar-active .content-shift {
+    //margin-left: 0;
   }
 }
 
-/* 底部导航栏的样式 */
-.bottom-nav {
-  display: none; /* 默认不显示 */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  /* 其他样式 */
-}
-
-/* 屏幕中等尺寸时的样式 */
-@media (max-width: 992px) {
-  .sidebar {
-    width: 80px; /* 缩小侧边栏宽度 */
-  }
-  .content {
-    margin-left: 80px; /* 调整主内容区域的边距 */
-  }
-}
-
-/* 屏幕小尺寸时的样式 */
-@media (max-width: 576px) {
-  .sidebar {
-    display: none; /* 隐藏侧边栏 */
-  }
-  .content {
-    margin-left: 0; /* 移除边距 */
-  }
-  .bottom-nav {
-    display: flex; /* 显示底部导航栏 */
-    /* 根据需要调整布局和样式 */
-  }
-}
 </style>
 
 <style lang="scss">
