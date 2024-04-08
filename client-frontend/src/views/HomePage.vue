@@ -98,32 +98,32 @@
     <footer class="bottom-nav">
       <div class="bottom-content">
         <div class="nav-item" @click="selectBottomNvaTab('home')" :class="{active: currenBottomNavTag === 'home'}">
-          <i class="el-icon-house"></i>
-          <template v-if="currenBottomNavTag === 'home'">
+          <div class="nav-item-masking">
+            <i class="el-icon-house big-icon-size nav-icon"></i>
             <span>主页</span>
-          </template>
+          </div>
         </div>
         <div class="nav-item" @click="selectBottomNvaTab('cart')" :class="{active: currenBottomNavTag === 'cart'}">
-          <el-badge :value="cartCount">
-            <i class="el-icon-shopping-cart-full"></i>
-          </el-badge>
-          <template v-if="currenBottomNavTag === 'cart'">
+          <div class="nav-item-masking">
+            <el-badge :value="cartCount" class="nav-icon">
+              <i class="el-icon-shopping-cart-full big-icon-size"></i>
+            </el-badge>
             <span>购物车</span>
-          </template>
+          </div>
         </div>
         <div class="nav-item" @click="selectBottomNvaTab('message')" :class="{active: currenBottomNavTag === 'message'}">
-          <el-badge :value="messageCount">
-            <i class="el-icon-message-solid"></i>
-          </el-badge>
-          <template v-if="currenBottomNavTag === 'message'">
+          <div class="nav-item-masking">
+            <el-badge :value="messageCount" class="nav-icon">
+              <i class="el-icon-message-solid big-icon-size "></i>
+            </el-badge>
             <span>消息</span>
-          </template>
+          </div>
         </div>
         <div class="nav-item" @click="selectBottomNvaTab('profile')" :class="{active: currenBottomNavTag === 'profile'}">
-          <i class="el-icon-user-solid"></i>
-          <template v-if="currenBottomNavTag === 'profile'">
+          <div class="nav-item-masking">
+            <i class="el-icon-user-solid big-icon-size nav-icon"></i>
             <span>我的</span>
-          </template>
+          </div>
         </div>
       </div>
     </footer>
@@ -357,11 +357,12 @@ export default {
         column-gap: 0.4rem;
         min-height: 3.5rem;
 
-        .search-wrapper, .search-filter {
+        .search-wrapper,
+        .search-filter {
           display: flex;
           justify-content: center;
           align-items: center;
-          height: 100%;
+          height: 3.5rem;
           @extend .bg-or;
         }
         .search-wrapper {
@@ -375,7 +376,6 @@ export default {
         }
         .search-filter {
           align-items: center;
-          height: 100%;
           width: 3.5rem;
           &:hover {
             @extend .box-shadow;
@@ -576,7 +576,7 @@ export default {
     border-radius: 15px;
     @extend .box-shadow;
     height: 80%;
-    width: 95%;
+    width: 90%;
     display: flex;
   }
   .nav-item {
@@ -587,28 +587,41 @@ export default {
     text-align: center;
     cursor: pointer;
     padding: 10px 0;
-    gap: 5px;
-  }
+    transition: all 0.3s ease;
 
-  .nav-item.active {
-    font-weight: bold;
-    color: $green;
-
-    i,
+    .nav-icon {
+      transform: translateX(8px); /* 假设当span显示时，i标签向右移动20px */
+      transition: transform 0.3s ease;
+    }
     span {
-      //color: #409EFF;
+      opacity: 0;
+      transition: opacity 0.3s;
     }
   }
 
-  //.nav-item i, .nav-item span {
-  //  display: block;
-  //}
+  .nav-item-masking {
+    padding: 15px 20px;
+    border-radius: 15px;
+    background: $primary-color;
+    transition: background-color 0.3s ease;
+  }
+  .nav-item.active {
+    font-weight: bold;
 
-  /* 调整badge的位置 */
-  //.el-badge .el-icon {
-  //  position: relative;
-  //  top: -2px;
-  //}
+    .nav-icon{
+      color: $green;
+      transform: translateX(-8px); /* 假设当span显示时，i标签向右移动20px */
+
+    }
+    span {
+      opacity: 1;
+      color: black;
+    }
+
+    .nav-item-masking {
+      background: aquamarine;
+    }
+  }
 }
 
 .home-page {
