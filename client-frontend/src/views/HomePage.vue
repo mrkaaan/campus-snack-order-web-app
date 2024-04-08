@@ -1,12 +1,15 @@
 <template>
-  <div :class="{ 'sidebar-active': isSidebarOpen, 'sidebar-active-collapsed': isSidebarCollapsed, 'sidebar-active-drawer': isSidebarDrawer, 'sidebar-leaving-drawer': isLeaving}">
-    <div class="wrapper-sidebar">
-      <div class="masking-sidebar" @click="handleCloseDrawer">
-        <nav class="sidebar">
-        <!-- 侧边栏内容 -->
-        </nav>
-      </div>
-    </div>
+  <div :class="{ 'sidebar-active': isSidebarOpen, 'sidebar-active-collapsed': isSidebarCollapsed, 'sidebar-active-drawer': isSidebarDrawer}">
+    <nav class="sidebar">
+      <!-- 侧边栏内容 -->
+    </nav>
+    <el-drawer
+      title="我是标题"
+      :visible.sync="isSidebarDrawer"
+      direction="ltr"
+      :with-header="false">
+      <span>我来啦!</span>
+    </el-drawer>
     <main class="home-page content-shift">
       <div class="page-header">
         <el-row class="header-wrapper" type="flex" justify="center" align="middle">
@@ -97,7 +100,6 @@
     <CartFloating class="container-cart">
       <i class="el-icon-shopping-cart-2 cart-icon"></i>
     </CartFloating>
-    <div class="overlay" v-if="isSidebarDrawer"></div>
   </div>
 </template>
 
@@ -161,7 +163,6 @@ export default {
       windowWidth: window.innerWidth, // 手动创建响应式页面宽度
       isSidebarOpen: true, // 初始状态，侧边栏默认打开
       isSidebarDrawer: false, // 抽屉模式
-      isLeaving: false, // 关闭抽屉的异步态
       isSidebarCollapsed: false // 控制侧边栏是否为缩小模式
     }
   },
@@ -261,21 +262,6 @@ export default {
         this.isSidebarDrawer = false
         this.isSidebarCollapsed = false
       }
-    },
-    // 关闭抽屉
-    handleCloseDrawer (event) {
-      // 触发离开动画
-      this.isLeaving = true
-
-      // 延时关闭抽屉，延时时长应与离开动画时长一致
-      setTimeout(() => {
-      // if (event.target === event.currentTarget) {
-        this.isSidebarOpen = false
-        this.isSidebarCollapsed = false
-        this.isSidebarDrawer = false
-        this.isLeaving = false // 重置isLeaving状态
-      // }
-      }, 300) // 假设动画时长为300ms
     }
   },
   beforeDestroy () {
@@ -480,25 +466,13 @@ export default {
   }
 }
 
-/* 灰色遮罩样式 */
-.overlay {
-  display: none; /* 默认不显示 */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1040; /* 确保在抽屉下方，但在内容上方 */
-}
-
 .sidebar {
   position: fixed;
   top: 0;
+  width: 0;
   height: 100%;
   background-color: #f0f0f0;
   transition: all 0.3s ease; /* 平滑过渡效果 */
-
 }
 
 .content-shift {
@@ -509,64 +483,12 @@ export default {
 .sidebar-active {
   .sidebar {
     width: 250px; /* 侧边栏宽度 */
-    //transition: all 0.3s ease; /* 平滑过渡效果 */
   }
   .content-shift {
     margin-left: 250px; /* 侧边栏打开时，主体内容向右移动 */
-    //transition: all 0.3s ease; /* 平滑过渡效果 */
   }
 }
 
-/* 抽屉模式 */
-.sidebar-active-drawer {
-  .overlay {
-    display: block;
-  }
-  .wrapper-sidebar{
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    overflow: hidden;
-    margin: 0;
-    z-index: 2035;
-  }
-  .masking-sidebar {
-    position: relative;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    height: 100%;
-    width: 100%;
-  }
-  .sidebar{
-    animation: slideInFromLeft .3s 1ms forwards;
-    //animation: rtl-drawer-in .3s 1ms forwards;
-    left: 0;
-    height: 100%;
-    top: 0;
-    bottom: 0;
-    width: 250px;
-    position: absolute;
-    box-sizing: border-box;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 8px 10px -5px rgba(0,0,0,.2), 0 16px 24px 2px rgba(0,0,0,.14), 0 6px 30px 5px rgba(0,0,0,.12);
-    overflow: hidden;
-    outline: 0;
-  }
-  .content-shift{
-    margin-left: 0;
-  }
-}
-.sidebar-leaving-drawer {
-  .sidebar {
-    animation: slideOutToLeft 0.5s forwards;
-  }
-}
 /* 缩小模式 */
 .sidebar-active-collapsed {
   .sidebar{
@@ -574,26 +496,6 @@ export default {
   }
   .content-shift{
     margin-left: 80px;
-  }
-}
-
-/* 从左向右滑入 */
-@keyframes slideInFromLeft {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-/* 从右向左滑出 */
-@keyframes slideOutToLeft {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-100%);
   }
 }
 
