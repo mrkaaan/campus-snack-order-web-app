@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ 'sidebar-active': isSidebarOpen, 'sidebar-active-collapsed': isSidebarCollapsed, 'sidebar-active-drawer': isSidebarDrawer}">
+  <div :class="{ 'sidebar-active': isSidebarOpen, 'sidebar-active-collapsed': isSidebarCollapsed, 'sidebar-active-drawer': isSidebarDrawer, 'sidebar-close': isSmallScreen}">
     <nav class="sidebar">
       <!-- 侧边栏内容 -->
     </nav>
@@ -96,7 +96,38 @@
       </div>
     </main>
     <footer class="bottom-nav">
+      <div class="bottom-content">
+        <div class="nav-item" @click="selectBottomNvaTab('home')" :class="{active: currenBottomNavTag === 'home'}">
+          <i class="el-icon-house"></i>
+          <template v-if="currenBottomNavTag === 'home'">
+            <span>主页</span>
+          </template>
+        </div>
+        <div class="nav-item" @click="selectBottomNvaTab('cart')" :class="{active: currenBottomNavTag === 'cart'}">
+          <el-badge :value="cartCount">
+            <i class="el-icon-shopping-cart-full"></i>
+          </el-badge>
+          <template v-if="currenBottomNavTag === 'cart'">
+            <span>购物车</span>
+          </template>
+        </div>
+        <div class="nav-item" @click="selectBottomNvaTab('message')" :class="{active: currenBottomNavTag === 'message'}">
+          <el-badge :value="messageCount">
+            <i class="el-icon-message-solid"></i>
+          </el-badge>
+          <template v-if="currenBottomNavTag === 'message'">
+            <span>消息</span>
+          </template>
+        </div>
+        <div class="nav-item" @click="selectBottomNvaTab('profile')" :class="{active: currenBottomNavTag === 'profile'}">
+          <i class="el-icon-user-solid"></i>
+          <template v-if="currenBottomNavTag === 'profile'">
+            <span>我的</span>
+          </template>
+        </div>
+      </div>
     </footer>
+
     <CartFloating class="container-cart">
       <i class="el-icon-shopping-cart-2 cart-icon"></i>
     </CartFloating>
@@ -163,7 +194,10 @@ export default {
       windowWidth: window.innerWidth, // 手动创建响应式页面宽度
       isSidebarOpen: true, // 初始状态，侧边栏默认打开
       isSidebarDrawer: false, // 抽屉模式
-      isSidebarCollapsed: false // 控制侧边栏是否为缩小模式
+      isSidebarCollapsed: false, // 控制侧边栏是否为缩小模式
+      currenBottomNavTag: 'home', // 当前选中的标签页
+      cartCount: 5, // 购物车商品数量
+      messageCount: 3 // 未读消息数量
     }
   },
   components: {
@@ -262,6 +296,10 @@ export default {
         this.isSidebarDrawer = false
         this.isSidebarCollapsed = false
       }
+    },
+    // 选中底部标签
+    selectBottomNvaTab (tab) {
+      this.currenBottomNavTag = tab // 切换选中的标签页
     }
   },
   beforeDestroy () {
@@ -337,6 +375,7 @@ export default {
         }
         .search-filter {
           align-items: center;
+          height: 100%;
           width: 3.5rem;
           &:hover {
             @extend .box-shadow;
@@ -478,7 +517,6 @@ export default {
 .content-shift {
   transition: all 0.3s ease; /* 平滑过渡效果 */
 }
-
 /* 宽屏模式 */
 .sidebar-active {
   .sidebar {
@@ -519,6 +557,73 @@ export default {
   }
 }
 
+.bottom-nav {
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 90px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease; /* 使用transform进行过渡 */
+  transform: translateY(100%); /* 初始状态，位于视口内 */
+
+  .bottom-content {
+    background-color: $primary-color;
+    border-radius: 15px;
+    @extend .box-shadow;
+    height: 80%;
+    width: 95%;
+    display: flex;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    padding: 10px 0;
+    gap: 5px;
+  }
+
+  .nav-item.active {
+    font-weight: bold;
+    color: $green;
+
+    i,
+    span {
+      //color: #409EFF;
+    }
+  }
+
+  //.nav-item i, .nav-item span {
+  //  display: block;
+  //}
+
+  /* 调整badge的位置 */
+  //.el-badge .el-icon {
+  //  position: relative;
+  //  top: -2px;
+  //}
+}
+
+.home-page {
+  padding-bottom: 0;
+  transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+
+.sidebar-close {
+  .bottom-nav {
+    transform: translateY(0); /* 导航栏关闭时，向下移动隐藏 */
+  }
+  .home-page {
+    padding-bottom: 90px;
+  }
+}
 </style>
 
 <style lang="scss">
