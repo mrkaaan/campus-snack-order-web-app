@@ -1,20 +1,9 @@
 
 <template>
   <div>
-    <div class="page-header">
-      <el-row class="header-wrapper" type="flex" justify="center" align="middle">
-        <el-col class="header-menu" :span="4">
-          <i class="el-icon-menu icon-button-1 big-icon-size icon-sidebar" @click="toggleSidebar" :style="sidebarIconStyle"></i>
-        </el-col>
-        <el-col :span="16" class="header-title normal-title"><h2>Delicious.</h2></el-col>
-        <el-col :span="4" class="header-chat">
-          <i class="el-icon-chat-line-round icon-button-1 big-icon-size"></i>
-        </el-col>
-      </el-row>
-    </div>
     <div class="page-container">
       <div class="page-content">
-        <div class="content-search-bar">
+        <div class="content-search-bar fixed-search" ref="search">
           <div class="search-wrapper">
             <i class="el-icon-search icon-search"></i>
             <el-input class="custom-input" placeholder="搜索食物"></el-input>
@@ -73,8 +62,6 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
-
 export default {
   name: 'HomePage',
   data () {
@@ -150,17 +137,6 @@ export default {
       skeletonCount: 5 // 假设初始加载显示5个骨架屏
     }
   },
-  computed: {
-    ...mapGetters('sidebar', [
-      'isSmallScreen'
-    ]),
-    sidebarIconStyle () {
-      // 根据 isSmallScreen 返回不同的样式对象
-      return {
-        opacity: this.isSmallScreen ? '0' : '1'
-      }
-    }
-  },
   methods: {
     async fetchProducts () {
       // 模拟数据加载
@@ -183,45 +159,40 @@ export default {
       }, 2000) // 延迟2秒来模拟网络请求延迟
     },
 
-    ...mapActions('sidebar', [
-      'toggleSidebar'
-    ])
+    handleScroll () {
+      window.requestAnimationFrame(() => {
+        const searchOffset = this.$refs.search.getBoundingClientRect().top
+        if (searchOffset <= 0 && !this.stickyActive) {
+          this.stickyActive = true
+          this.applyStickyStyles()
+        } else if (searchOffset > 0 && this.stickyActive) {
+          this.stickyActive = false
+          this.resetStickyStyles()
+        }
+      })
+    },
+    applyStickyStyles () {
+      this.$refs.search.style.backgroundColor = '#f8f9fa' // 更改背景色
+      this.$refs.search.style.width = '90%' // 改变宽度
+    },
+    resetStickyStyles () {
+      this.$refs.search.style.backgroundColor = 'white' // 重置背景色
+      this.$refs.search.style.width = '100%' // 重置宽度
+    }
   },
   mounted () {
     // this.fetchProducts() // 组件挂载后加载数据
     this.MockFetchProducts()
+    window.addEventListener('scroll', this.handleScroll)
   },
-  watch () {
-
+  beforeDestroy () {
+    window.removeEventListener('scroll', this.handleScroll)
   }
 }
 </script>
 
 <style scoped lang="scss">
 @import '../styles/multi';
-
-.page-header {
-  background-color: $primary-color;
-  .header-wrapper {
-    padding: 1rem;
-    height: 100%;
-    .header-menu, .header-chat {
-      height: 100%;
-      display: flex;
-      align-items: center;
-    }
-    .header-menu {
-      justify-content: left;
-      .icon-sidebar {
-        transition: opacity 0.2s ease;
-        opacity: 1;
-      }
-    }
-    .header-chat {
-      justify-content: right;
-    }
-  }
-}
 
 .page-container {
   height: 100%;
@@ -232,8 +203,14 @@ export default {
     display: flex;
     row-gap: 0.5rem;
     flex-direction: column;
-    padding:1rem;
-
+    padding:1rem 0;
+    .fixed-search {
+      position: sticky;
+      top: 0; /* 调整这个值以适应可能存在的页面顶部边距或其他元素 */
+      background-color: white; /* 确保搜索框背景不透明 */
+      z-index: 1000; /* 提高层级确保它在其他内容上方 */
+      transition: background-color 0.3s, width 0.3s; /* 平滑过渡效果 */
+    }
     .content-search-bar {
       color: $orange;
       display: flex;
@@ -241,6 +218,8 @@ export default {
       align-items: center;
       column-gap: 0.4rem;
       min-height: 3.5rem;
+      padding:1rem;
+      background-color: white;
 
       .search-wrapper,
       .search-filter {
@@ -274,6 +253,7 @@ export default {
       min-height: 3.5rem;
       overflow-x: auto;
       white-space: nowrap;
+      padding:0 1rem;
 
       .category-wrapper {
         padding: 0 0.5rem;
@@ -303,6 +283,7 @@ export default {
     }
 
     .content-dishes-list {
+      padding:0 1rem;
 
       .product-list {
         display: flex;
@@ -380,9 +361,5 @@ export default {
     }
   }
 }
-.sidebar-close {
-  .icon-sidebar {
-    opacity: 0;
-  }
-}
+
 </style>

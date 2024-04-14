@@ -24,6 +24,7 @@
       </nav>
     </el-drawer>
     <main class="home-page content-shift">
+      <page-header ref="header"></page-header>
       <router-view></router-view>
     </main>
     <CustomBottomNav></CustomBottomNav>
@@ -34,6 +35,7 @@
 import CustomBottomNav from '@/components/CustomBottomNav.vue' // 确保路径正确
 import Sidebar from '@/components/Sidebar.vue' // 确保路径正确
 import { mapState, mapActions, mapGetters } from 'vuex'
+import PageHeader from '@/components/PageHeader.vue'
 export default {
   name: 'MainLayout',
   data () {
@@ -41,7 +43,9 @@ export default {
     }
   },
   components: {
-    CustomBottomNav, Sidebar
+    PageHeader,
+    CustomBottomNav,
+    Sidebar
   },
   computed: {
     ...mapState('sidebar', [
@@ -61,6 +65,7 @@ export default {
     this.checkSidebarStatus()
     // 添加窗口尺寸变化监听器以更新屏幕状态
     window.addEventListener('resize', this.updateWindowSize)
+    window.addEventListener('scroll', this.onScroll)
   },
   watch: {
     // 动态监听实现侧边栏默认状态
@@ -75,6 +80,19 @@ export default {
       'checkSidebarStatus',
       'setSidebarDrawer'
     ]),
+    ...mapActions('header', ['handleScroll']),
+    onScroll () {
+      if (this.$refs.header) {
+        const currentScroll = window.pageYOffset
+        console.log(currentScroll)
+        const headerHeight = this.$refs.header.getHeaderHeight()
+        console.log(headerHeight)
+        this.handleScroll({
+          currentScroll,
+          headerHeight
+        })
+      }
+    },
     handleDrawerVisibilityChange (newVisibility) {
       this.setSidebarDrawer(newVisibility)
     },
@@ -86,6 +104,7 @@ export default {
   beforeDestroy () {
     // 移除监听器以避免潜在的内存泄露
     window.removeEventListener('resize', this.updateWindowSize)
+    window.addEventListener('scroll', this.onScroll)
   }
 }
 </script>
