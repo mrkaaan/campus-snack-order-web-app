@@ -3,13 +3,14 @@ const fs = require('fs')
 // 配置项
 const config = {
   // filePath: '../views/MainLayout.vue', // 指定需要转换的文件路径
-  filePath: '../components/BottomNav.vue', // 指定需要转换的文件路径
+  filePath: '../views/HomePage.vue', // 指定需要转换的文件路径
+  // filePath: '../components/BottomNav.vue', // 指定需要转换的文件路径
   baseFontSize: 16 // 基础字体大小，用于计算rem
 }
 
 // px到rem的转换函数
 function pxToRem (pxValue) {
-  return `${pxValue / config.baseFontSize}rem`
+  return `${(pxValue / config.baseFontSize).toFixed(2)}rem`
 }
 
 // 读取并转换文件内容
