@@ -1,10 +1,12 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex'
+import { EventBus } from '@/eventBus'
 
 export default {
   name: 'PageHeader',
   mounted () {
-    console.log(this.$refs.headerContent.clientHeight)
+    // console.log(this.$refs.headerContent.clientHeight)
+    this.broadcastHeight()
   },
   computed: {
     ...mapGetters('sidebar', [
@@ -15,20 +17,23 @@ export default {
       return {
         opacity: this.isSmallScreen ? '0' : '1'
       }
+      // return {
+      //   opacity: '1'
+      // }
     },
     ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
     headerStyle () {
       const style = {
-        top: '0px',
-        opacity: '1'
+        top: '0px'
+        // opacity: '1'
         // position: 'fixed'
       }
       if (this.currentScroll > this.lastScroll && this.currentScroll > this.headerHeight) {
         style.top = `-${this.headerHeight}px`
-        style.opacity = '0'
+        // style.opacity = '0'
       } else if (this.currentScroll < this.lastScroll) {
         style.top = '0'
-        style.opacity = '1'
+        // style.opacity = '1'
       }
       return style
     }
@@ -38,7 +43,13 @@ export default {
       'toggleSidebar'
     ]),
     getHeaderHeight () {
+      console.log('被调用')
       return this.$refs.headerContent ? this.$refs.headerContent.clientHeight : 0
+    },
+    broadcastHeight () {
+      const height = this.getHeaderHeight()
+      console.log(height)
+      EventBus.$emit('headerHeightChanged', height)
     }
   }
 }
@@ -76,6 +87,8 @@ export default {
       .icon-sidebar {
         transition: opacity 0.2s ease;
         opacity: 1;
+        position: fixed;
+        z-index: 1001;
       }
     }
     .header-chat {
@@ -86,7 +99,7 @@ export default {
 
 .sidebar-close {
   .icon-sidebar {
-    opacity: 0;
+    //opacity: 0;
   }
 }
 </style>

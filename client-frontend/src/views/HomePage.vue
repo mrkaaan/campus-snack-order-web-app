@@ -62,6 +62,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import { EventBus } from '@/eventBus'
+
 export default {
   name: 'HomePage',
   data () {
@@ -160,25 +163,38 @@ export default {
     },
 
     handleScroll () {
+      // const now = Date.now()
+      // if (now - this.lastCall < this.throttlePeriod) return
+      // this.lastCall = now
+
+      const currentScroll = window.pageYOffset
+      const headerHeight = this.$refs.header ? this.$refs.header.getHeaderHeight() : 0
       window.requestAnimationFrame(() => {
-        const searchOffset = this.$refs.search.getBoundingClientRect().top
-        if (searchOffset <= 0 && !this.stickyActive) {
-          this.stickyActive = true
-          this.applyStickyStyles()
-        } else if (searchOffset > 0 && this.stickyActive) {
-          this.stickyActive = false
-          this.resetStickyStyles()
-        }
+        this.updatePaddingLeft(currentScroll, headerHeight)
       })
     },
-    applyStickyStyles () {
-      this.$refs.search.style.backgroundColor = '#f8f9fa' // 更改背景色
-      this.$refs.search.style.width = '90%' // 改变宽度
+    updatePaddingLeft (currentScroll, headerHeight) {
+      const scrollStart = 0 // 滚动起点
+      const scrollEnd = this.headerHeight / 2 // 根据需要调整，滚动结束点
+      let paddingLeft = this.isSmallScreen ? 0 : 15
+
+      if (currentScroll > scrollStart && currentScroll < scrollEnd) {
+        const progress = (currentScroll - scrollStart) / (scrollEnd - scrollStart)
+        paddingLeft = Math.min(50, progress * 50) // 最大paddingLeft为3.13rem
+      } else if (currentScroll >= scrollEnd) {
+        paddingLeft = 50
+      }
+      console.log(paddingLeft)
+      if (!this.isSmallScreen) {
+        this.$refs.search.style.paddingLeft = `${paddingLeft}px`
+      }
     },
     resetStickyStyles () {
-      this.$refs.search.style.backgroundColor = 'white' // 重置背景色
-      this.$refs.search.style.width = '100%' // 重置宽度
+      this.$refs.search.style.paddingLeft = '0.00rem' // 重置左内边距
     }
+  },
+  computed: {
+    ...mapGetters('sidebar', ['isSmallScreen'])
   },
   mounted () {
     // this.fetchProducts() // 组件挂载后加载数据
@@ -187,6 +203,15 @@ export default {
   },
   beforeDestroy () {
     window.removeEventListener('scroll', this.handleScroll)
+    EventBus.$off('headerHeightChanged')
+  },
+  watch: {
+    // 监听 isSmallScreen 的变化
+    isSmallScreen (newValue) {
+      if (newValue) {
+        this.$refs.search.style.paddingLeft = '0.94rem'
+      }
+    }
   }
 }
 </script>
@@ -203,13 +228,13 @@ export default {
     display: flex;
     row-gap: 0.5rem;
     flex-direction: column;
-    padding:1rem 0;
+    //padding:1rem 0;
     .fixed-search {
       position: sticky;
       top: 0; /* 调整这个值以适应可能存在的页面顶部边距或其他元素 */
       background-color: white; /* 确保搜索框背景不透明 */
       z-index: 1000; /* 提高层级确保它在其他内容上方 */
-      transition: background-color 0.3s, width 0.3s; /* 平滑过渡效果 */
+      transition: padding-left 0.3s; /* 平滑过渡效果 */
     }
     .content-search-bar {
       color: $orange;

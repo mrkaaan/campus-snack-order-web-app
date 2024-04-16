@@ -84,9 +84,9 @@ export default {
     onScroll () {
       if (this.$refs.header) {
         const currentScroll = window.pageYOffset
-        console.log(currentScroll)
+        // console.log(currentScroll)
         const headerHeight = this.$refs.header.getHeaderHeight()
-        console.log(headerHeight)
+        // console.log(headerHeight)
         this.handleScroll({
           currentScroll,
           headerHeight
