@@ -19,78 +19,15 @@
             </div>
           </div>
         </div>
-        <div class="content-dishes-list" v-if="isLoading">
-          <ul class="product-list">
-            <li class="skeleton-item" v-for="n in skeletonCount" :key="`skeleton-${n}`">
-              <el-skeleton animated :throttle="500">
-                <template slot="template">
-                  <div class="skeleton-template">
-                    <div class="skeleton-image">
-                      <el-skeleton-item class="skeleton-img" variant="image"></el-skeleton-item>
-                    </div>
-                    <div class="item-detail">
-                      <el-skeleton-item variant="text" ></el-skeleton-item>
-                      <el-skeleton-item variant="text" ></el-skeleton-item>
-                      <el-skeleton-item variant="text"></el-skeleton-item>
-                    </div>
-                  </div>
-                </template>
-              </el-skeleton>
-            </li>
+        <div class="content-wrapper" v-if="isLoading">
+          <ul class="merchant-list">
+            <merchant-skeleton-item  v-for="n in skeletonCount" :key="`skeleton-${n}`"></merchant-skeleton-item>
           </ul>
         </div>
-        <div class="content-dishes-list" v-else>
-          <ul class="product-list">
-            <li  v-for="item in products" :key="item.id">
-              <a class="product-item-link">
-                <div class="product-item">
-                  <div class="item-img">
-                    <el-image class="image" :src="item.image" fit="cover" @load="() => item.imageLoaded = true"></el-image>
-                  </div>
-                  <div class="item-detail">
-                    <p class="detail-title"><strong>{{ item.storeName }}</strong></p>
-                    <div class="item-wrapper">
-                      <div class="detail-column column-left">
-                        <div class="detail-row">
-                          <div class="detail-rating">
-                            <el-rate v-model="item.rating" disabled :colors="['#99A9BF', '#F7BA2A', '#FF9900']"/>
-                            <p class="detail-text detail-rating">{{ item.rating.toFixed(1) }}分</p>
-                          </div>
-                        </div>
-                        <div class="detail-row">
-                          <p class="detail-text detail-price">人均 ￥{{ item.priceRange[0] }}-{{ item.priceRange[1] }}</p>
-                        </div>
-                        <div class="detail-row">
-                          <div class="detail-dish-list">
-                            <div class="detail-dish" v-for="(dish, index) in item.mainDish" :key="`dish-${index}-${dish}`">
-                              <p class="detail-text">{{ dish }}</p>
-                              <span v-if="index < item.mainDish.length - 1" class="separator">|</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="detail-row">
-                          <div class="detail-tag">
-                            <i class="el-icon-dish"></i>
-                            <p class="detail-text">{{ item.operatingHours }}</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="detail-column column-right">
-                        <div class="detail-row">
-                          <div class="detail-local">
-                            <i class="el-icon-location-outline"></i>
-                            <p class="detail-text">{{ item.locationDescription }}</p>
-                          </div>
-                        </div>
-                        <div class="detail-row">
-                          <p class="detail-text">月售{{ item.monthlySales }}+</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </li>
+        <div class="content-wrapper" v-else>
+          <ul class="merchant-list">
+            <merchant-item v-for="item in products" :key="item.id" :item="item">
+            </merchant-item>
           </ul>
         </div>
       </div>
@@ -101,9 +38,12 @@
 <script>
 import { mapGetters } from 'vuex'
 import { EventBus } from '@/eventBus'
+import MerchantItem from '@/components/MerchantItem.vue'
+import MerchantSkeletonItem from '@/components/MerchantSkeletonItem.vue'
 
 export default {
   name: 'HomePage',
+  components: { MerchantSkeletonItem, MerchantItem },
   data () {
     return {
       categories: [
@@ -407,161 +347,15 @@ export default {
       height: 0;
     }
 
-    .content-dishes-list {
+    .content-wrapper {
       cursor:pointer;
       padding:0 1rem;
 
-      .product-list {
+      .merchant-list {
         display: flex;
         flex-direction: column;
         row-gap: 1.5rem;
-        a,
-        a:hover,
-        a:focus,
-        a:active {
-          text-decoration: none !important;
-        }
-        .skeleton-item {
-          .skeleton-template {
-            width: 100%;
-            height: 10rem;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            flex-direction: row;
-            justify-content: start;
-            @extend .box-shadow-2;
-          }
 
-          .skeleton-image {
-            width: 10rem; /* 根据实际图片大小调整 */
-            height: 100%; // 保持图片的高度与项目一致
-            object-fit: cover; // 确保图片覆盖整个区域
-            border-radius: 1rem 0 0 1rem; // 为图片添加圆角，仅左侧
-            overflow: hidden;
-
-            .skeleton-img {
-              height: 100%;
-              width: 100%;
-            }
-          }
-
-          .item-detail {
-            height: 100%;
-            display: flex;
-            row-gap: 1rem;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 0 1rem;
-            flex: 1;
-          }
-        }
-
-        .product-item{
-          width: 100%;
-          height: 10rem;
-          border-radius: 1rem;
-          display: flex;
-          flex-direction: row;
-          justify-content: start;
-          align-items: center;
-          @extend .box-shadow-2;
-
-          .item-img {
-            width: 10rem;
-            height: 100%; // 保持图片的高度与项目一致
-            object-fit: cover; // 确保图片覆盖整个区域
-            border-radius: 1rem 0 0 1rem; // 为图片添加圆角，仅左侧
-            overflow: hidden;
-            .image {
-              height: 100%;
-              width: 100%;
-            }
-          }
-          .item-detail {
-            flex: 1;
-            height: 100%;
-            width: 100%;
-            padding: 0.5rem 1rem; // 给详情文本添加一些左边距
-            display: flex;
-            flex-direction: column;
-            gap: 0.1rem;
-
-            .detail-title {
-              display: flex;
-              justify-content: start;
-              font-size: 110%;
-            }
-
-            .item-wrapper{
-              display: flex; /* 设置为表格布局 */
-              flex-direction: row;
-              width: 100%;
-              height: 100%;
-              font-size: 85%;
-              overflow: hidden; /* 防止文本溢出 */
-              text-overflow: ellipsis;
-              white-space: nowrap; /* 可以移除这个，如果你想让文本换行 */
-              color: #666666;
-
-              .detail-column {
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-                //gap:0.5rem;
-                //justify-content: space-between;
-              }
-              .column-left {
-                flex: 8 0 auto;
-                align-items: start;
-                gap: 0.5rem;
-              }
-              .column-right {
-                flex: 1 0 auto;
-                align-items: end;
-              }
-              .detail-row {
-                display: flex;
-                flex-direction: row;
-                gap:1rem;
-              }
-              .detail-tag {
-                @extend .tag-1;
-              }
-              .detail-rating {
-                color: $orange;
-              }
-              .detail-price {
-                color: $orange;
-              }
-              .detail-local {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                gap:0.2rem;
-              }
-              .detail-rating {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                //gap:0.2rem;
-              }
-              .detail-dish-list {
-                @extend .tag-2;
-                .detail-dish {
-                  display: flex;
-                  gap:0.2rem;
-                  flex-direction: row;
-                  //align-items: center;
-                }
-              }
-              .separator {
-              }
-            }
-
-          }
-        }
       }
     }
   }
