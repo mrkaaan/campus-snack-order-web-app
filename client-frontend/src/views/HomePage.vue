@@ -48,8 +48,45 @@
                     <el-image class="image" :src="item.image" fit="cover" @load="() => item.imageLoaded = true"></el-image>
                   </div>
                   <div class="item-detail">
-                    <p><strong>{{ item.storeName }}</strong></p>
-                    <p><strong>{{ item.price }}</strong></p>
+                    <p class="detail-title"><strong>{{ item.storeName }}</strong></p>
+                    <div class="item-wrapper">
+                      <div class="detail-column column-left">
+                        <div class="detail-row">
+                          <div class="detail-rating">
+                            <el-rate v-model="item.rating" disabled :colors="['#99A9BF', '#F7BA2A', '#FF9900']"/>
+                            <p class="detail-text detail-rating">{{ item.rating.toFixed(1) }}分</p>
+                          </div>
+                        </div>
+                        <div class="detail-row">
+                          <p class="detail-text detail-price">人均 ￥{{ item.priceRange[0] }}-{{ item.priceRange[1] }}</p>
+                        </div>
+                        <div class="detail-row">
+                          <div class="detail-dish-list">
+                            <div class="detail-dish" v-for="(dish, index) in item.mainDish" :key="`dish-${index}-${dish}`">
+                              <p class="detail-text">{{ dish }}</p>
+                              <span v-if="index < item.mainDish.length - 1" class="separator">|</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="detail-row">
+                          <div class="detail-tag">
+                            <i class="el-icon-dish"></i>
+                            <p class="detail-text">{{ item.operatingHours }}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="detail-column column-right">
+                        <div class="detail-row">
+                          <div class="detail-local">
+                            <i class="el-icon-location-outline"></i>
+                            <p class="detail-text">{{ item.locationDescription }}</p>
+                          </div>
+                        </div>
+                        <div class="detail-row">
+                          <p class="detail-text">月售{{ item.monthlySales }}+</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </a>
@@ -80,65 +117,128 @@ export default {
       products: [],
       MockProducts: [
         {
-          id: 0,
-          storeName: '脆皮鸡排',
-          price: '￥45.00',
-          image: 'https://via.placeholder.com/150?text=0',
-          imageLoaded: true
-        },
-        {
           id: 1,
-          storeName: '烤羊排',
-          price: '￥60.00',
+          storeName: '李大夫小吃',
           image: 'https://via.placeholder.com/150?text=1',
-          imageLoaded: true
+          priceRange: [10, 20],
+          mainDish: ['煎饼果子'],
+          operatingHours: '09:00-17:00',
+          locationDescription: '图书馆旁边',
+          rating: 4.5,
+          monthlySales: 120
         },
         {
           id: 2,
-          storeName: '香辣鱿鱼',
-          price: '￥20.00',
+          storeName: '张姐快餐',
           image: 'https://via.placeholder.com/150?text=2',
-          imageLoaded: true
+          priceRange: [15, 25],
+          mainDish: ['盖浇饭', '小炒肉'],
+          operatingHours: '10:00-20:00',
+          locationDescription: '体育馆对面',
+          rating: 4.0,
+          monthlySales: 95
         },
         {
           id: 3,
-          storeName: '烤羊排',
-          price: '￥51.00',
+          storeName: '周师傅面馆',
           image: 'https://via.placeholder.com/150?text=3',
-          imageLoaded: true
+          priceRange: [12, 30],
+          mainDish: ['拉面', '牛肉面', '鸡蛋面'],
+          operatingHours: '08:00-18:00',
+          locationDescription: '学生活动中心旁',
+          rating: 4.2,
+          monthlySales: 150
         },
         {
           id: 4,
-          storeName: '烤羊排',
-          price: '￥97.00',
+          storeName: '老李水果店',
           image: 'https://via.placeholder.com/150?text=4',
-          imageLoaded: true
+          priceRange: [5, 15],
+          mainDish: ['新鲜水果', '果汁'],
+          operatingHours: '08:00-22:00',
+          locationDescription: '北门外',
+          rating: 3.8,
+          monthlySales: 80
         },
         {
           id: 5,
-          storeName: '烤羊排',
-          price: '￥97.00',
+          storeName: '黄阿姨早餐',
           image: 'https://via.placeholder.com/150?text=5',
-          imageLoaded: true
+          priceRange: [3, 10],
+          mainDish: ['豆浆油条', '煎饼'],
+          operatingHours: '05:00-11:00',
+          locationDescription: '东门内',
+          rating: 4.5,
+          monthlySales: 200
         },
         {
           id: 6,
-          storeName: '烤羊排',
-          price: '￥97.00',
+          storeName: '刘师傅烧烤',
           image: 'https://via.placeholder.com/150?text=6',
-          imageLoaded: true
+          priceRange: [20, 50],
+          mainDish: ['烧烤', '烤鱼', '羊肉串'],
+          operatingHours: '18:00-24:00',
+          locationDescription: '南门外',
+          rating: 4.3,
+          monthlySales: 180
         },
         {
           id: 7,
-          storeName: '烤羊排',
-          price: '￥97.00',
+          storeName: '香辣虾大王',
           image: 'https://via.placeholder.com/150?text=7',
-          imageLoaded: true
+          priceRange: [25, 45],
+          mainDish: ['香辣虾'],
+          operatingHours: '10:00-22:00',
+          locationDescription: '西门外',
+          rating: 3.9,
+          monthlySales: 140
+        },
+        {
+          id: 8,
+          storeName: '清心茶铺',
+          image: 'https://via.placeholder.com/150?text=8',
+          priceRange: [8, 20],
+          mainDish: ['各式茶饮', '点心'],
+          operatingHours: '10:00-21:00',
+          locationDescription: '图书馆对面',
+          rating: 4.1,
+          monthlySales: 110
+        },
+        {
+          id: 9,
+          storeName: '甜心蛋糕坊',
+          image: 'https://via.placeholder.com/150?text=9',
+          priceRange: [15, 50],
+          mainDish: ['蛋糕', '甜点', '咖啡'],
+          operatingHours: '09:00-19:00',
+          locationDescription: '艺术学院旁',
+          rating: 4.7,
+          monthlySales: 160
+        },
+        {
+          id: 10,
+          storeName: '韩式料理屋',
+          image: 'https://via.placeholder.com/150?text=10',
+          priceRange: [18, 40],
+          mainDish: ['韩国料理', '泡菜', '烤肉'],
+          operatingHours: '11:00-21:00',
+          locationDescription: '国际学生宿舍旁',
+          rating: 4.4,
+          monthlySales: 190
         }
       ],
       isLoading: true, // 初始时数据正在加载
-      skeletonCount: 5 // 假设初始加载显示5个骨架屏
+      skeletonCount: 5, // 假设初始加载显示5个骨架屏
+      stickyActive: false,
+      lastCall: 0,
+      throttlePeriod: 100, // 节流时间间隔（毫秒）
+      headerHeight: 0
     }
+  },
+  created () {
+    EventBus.$on('headerHeightChanged', (height) => {
+      this.headerHeight = height
+    })
   },
   methods: {
     async fetchProducts () {
@@ -308,13 +408,19 @@ export default {
     }
 
     .content-dishes-list {
+      cursor:pointer;
       padding:0 1rem;
 
       .product-list {
         display: flex;
         flex-direction: column;
         row-gap: 1.5rem;
-
+        a,
+        a:hover,
+        a:focus,
+        a:active {
+          text-decoration: none !important;
+        }
         .skeleton-item {
           .skeleton-template {
             width: 100%;
@@ -375,16 +481,101 @@ export default {
           }
           .item-detail {
             flex: 1;
-            padding-left: 1rem; // 给详情文本添加一些左边距
+            height: 100%;
+            width: 100%;
+            padding: 0.5rem 1rem; // 给详情文本添加一些左边距
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
 
-            p {
-              margin: 0.5rem 0; // 给文本添加一些间距
+            .detail-title {
+              display: flex;
+              justify-content: start;
+              font-size: 110%;
             }
+
+            .item-wrapper{
+              display: flex; /* 设置为表格布局 */
+              flex-direction: row;
+              width: 100%;
+              height: 100%;
+              font-size: 85%;
+              overflow: hidden; /* 防止文本溢出 */
+              text-overflow: ellipsis;
+              white-space: nowrap; /* 可以移除这个，如果你想让文本换行 */
+              color: #666666;
+
+              .detail-column {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                //gap:0.5rem;
+                //justify-content: space-between;
+              }
+              .column-left {
+                flex: 8 0 auto;
+                align-items: start;
+                gap: 0.5rem;
+              }
+              .column-right {
+                flex: 1 0 auto;
+                align-items: end;
+              }
+              .detail-row {
+                display: flex;
+                flex-direction: row;
+                gap:1rem;
+              }
+              .detail-tag {
+                @extend .tag-1;
+              }
+              .detail-rating {
+                color: $orange;
+              }
+              .detail-price {
+                color: $orange;
+              }
+              .detail-local {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap:0.2rem;
+              }
+              .detail-rating {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                //gap:0.2rem;
+              }
+              .detail-dish-list {
+                @extend .tag-2;
+                .detail-dish {
+                  display: flex;
+                  gap:0.2rem;
+                  flex-direction: row;
+                  //align-items: center;
+                }
+              }
+              .separator {
+              }
+            }
+
           }
         }
       }
     }
   }
 }
+</style>
 
+<style>
+.detail-rating {
+  .el-rate {
+    height: auto;
+    line-height: normal;
+  }
+  .el-rate__icon {
+    margin-right: 0;
+  }
+}
 </style>
