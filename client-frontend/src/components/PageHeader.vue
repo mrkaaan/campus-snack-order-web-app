@@ -43,12 +43,12 @@ export default {
       'toggleSidebar'
     ]),
     getHeaderHeight () {
-      console.log('被调用')
+      // console.log('被调用')
       return this.$refs.headerContent ? this.$refs.headerContent.clientHeight : 0
     },
     broadcastHeight () {
       const height = this.getHeaderHeight()
-      console.log(height)
+      // console.log(height)
       EventBus.$emit('headerHeightChanged', height)
     }
   }

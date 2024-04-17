@@ -3,33 +3,33 @@
     <a class="merchant-item-link">
       <div class="merchant-item">
         <div class="item-img">
-          <el-image class="image" :src="item.image" fit="cover" @load="() => item.imageLoaded = true"></el-image>
+          <el-image class="image" :src="merchant.image" fit="cover" @load="() => merchant.imageLoaded = true"></el-image>
         </div>
         <div class="item-detail">
-          <p class="detail-title"><strong>{{ item.storeName }}</strong></p>
+          <p class="detail-title"><strong>{{ merchant.storeName }}</strong></p>
           <div class="item-wrapper">
             <div class="detail-column column-left">
               <div class="detail-row">
                 <div class="detail-rating">
-                  <el-rate v-model="item.rating" disabled :colors="['#99A9BF', '#F7BA2A', '#FF9900']"/>
-                  <p class="detail-text detail-rating">{{ item.rating.toFixed(1) }}分</p>
+                  <el-rate v-model="merchant.rating" disabled :colors="['#99A9BF', '#F7BA2A', '#FF9900']"/>
+                  <p class="detail-text detail-rating">{{ merchant.rating.toFixed(1) }}分</p>
                 </div>
               </div>
               <div class="detail-row">
-                <p class="detail-text detail-price">人均 ￥{{ item.priceRange[0] }}-{{ item.priceRange[1] }}</p>
+                <p class="detail-text detail-price">人均 ￥{{ merchant.priceRange[0] }}-{{ merchant.priceRange[1] }}</p>
               </div>
               <div class="detail-row">
                 <div class="detail-dish-list">
-                  <div class="detail-dish" v-for="(dish, index) in item.mainDish" :key="`dish-${index}-${dish}`">
+                  <div class="detail-dish" v-for="(dish, index) in merchant.mainDish" :key="`dish-${index}-${dish}`">
                     <p class="detail-text">{{ dish }}</p>
-                    <span v-if="index < item.mainDish.length - 1" class="separator">|</span>
+                    <span v-if="index < merchant.mainDish.length - 1" class="separator">|</span>
                   </div>
                 </div>
               </div>
               <div class="detail-row">
                 <div class="detail-tag">
                   <i class="el-icon-dish"></i>
-                  <p class="detail-text">{{ item.operatingHours }}</p>
+                  <p class="detail-text">{{ merchant.operatingHours }}</p>
                 </div>
               </div>
             </div>
@@ -37,11 +37,11 @@
               <div class="detail-row">
                 <div class="detail-local">
                   <i class="el-icon-location-outline"></i>
-                  <p class="detail-text">{{ item.locationDescription }}</p>
+                  <p class="detail-text">{{ merchant.locationDescription }}</p>
                 </div>
               </div>
               <div class="detail-row">
-                <p class="detail-text">月售{{ item.monthlySales }}+</p>
+                <p class="detail-text">月售{{ merchant.monthlySales }}+</p>
               </div>
             </div>
           </div>
@@ -54,7 +54,15 @@
 <script>
 export default {
   name: 'MerchantItem',
-  props: ['item']
+  data () {
+    return {
+      merchant: {}
+    }
+  },
+  props: ['item'],
+  created () {
+    this.merchant = JSON.parse(JSON.stringify(this.item))
+  }
 }
 </script>
 
