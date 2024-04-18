@@ -115,15 +115,15 @@ export default {
       }
 
       .item-wrapper {
-        display: flex; /* 设置为表格布局 */
+        display: flex;
         flex-direction: row;
         width: 100%;
         height: 100%;
         font-size: 85%;
         overflow: hidden; /* 防止文本溢出 */
         text-overflow: ellipsis;
-        white-space: nowrap; /* 可以移除这个，如果你想让文本换行 */
-        color: #666666;
+        white-space: nowrap;
+        color: $dark-gray;
 
         .detail-column {
           height: 100%;

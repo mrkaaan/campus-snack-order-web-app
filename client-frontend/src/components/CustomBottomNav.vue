@@ -71,7 +71,7 @@ export default {
   width: calc(100% / 4); /* 假设有4个nav-item */
   transition: transform 0.3s ease; /* 平滑过渡效果 */
   .nav-background-content {
-    background-color: rgba(127, 255, 212, 0.3); /* 背景颜色 */
+    background-color: $green-trans3; /* 背景颜色 */
     height: 80%;
     width: 90%;
     border-radius: 0.9375rem;

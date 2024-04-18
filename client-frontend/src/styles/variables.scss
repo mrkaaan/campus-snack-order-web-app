@@ -1,13 +1,19 @@
 // 定义颜色变量
-$primary-color: #fff; // 主要颜色
-$secondary-color: #ecf0f1; // 次要颜色
-$border-color: #efefef; // 边框颜色
+// 主要颜色
+$primary-color: #fff;
 
-$grey: grey;
+// 灰色
+$light-gray: #f0f0f0;
+$medium-gray: #999;
+$dark-gray: #666;
+$darker-gray: #333;
 
+// 绿色
 $green: #21B05D;
-$green-light: rgba(33, 176, 93, 0.1);
-$green-light2: rgba(33, 176, 93, 0.4);
+$green-trans1: rgba(33, 176, 93, 0.1);
+$green-trans2: rgba(33, 176, 93, 0.4);
+$green-trans3: rgba(127, 255, 212, 0.3);
+$green-light3: #42b983;
 
 $orange: #DA6317;
 $orange-light: rgba(249, 168, 77, 0.1);

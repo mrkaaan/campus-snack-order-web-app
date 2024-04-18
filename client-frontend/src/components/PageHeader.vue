@@ -1,3 +1,17 @@
+<template>
+  <div class="page-header" :style="headerStyle" ref="headerContent">
+    <el-row class="header-wrapper" type="flex" justify="center" align="middle">
+      <el-col class="header-menu" :span="4">
+        <i class="el-icon-menu icon-button-1 big-icon-size icon-sidebar" @click="toggleSidebar" :style="sidebarIconStyle"></i>
+      </el-col>
+      <el-col :span="16" class="header-title normal-title"><h2>Delicious.</h2></el-col>
+      <el-col :span="4" class="header-chat">
+        <i class="el-icon-chat-line-round icon-button-1 big-icon-size"></i>
+      </el-col>
+    </el-row>
+  </div>
+</template>
+
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex'
 import { EventBus } from '@/eventBus'
@@ -17,9 +31,6 @@ export default {
       return {
         opacity: this.isSmallScreen ? '0' : '1'
       }
-      // return {
-      //   opacity: '1'
-      // }
     },
     ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
     headerStyle () {
@@ -54,20 +65,6 @@ export default {
   }
 }
 </script>
-
-<template>
-  <div class="page-header" :style="headerStyle" ref="headerContent">
-    <el-row class="header-wrapper" type="flex" justify="center" align="middle">
-      <el-col class="header-menu" :span="4">
-        <i class="el-icon-menu icon-button-1 big-icon-size icon-sidebar" @click="toggleSidebar" :style="sidebarIconStyle"></i>
-      </el-col>
-      <el-col :span="16" class="header-title normal-title"><h2>Delicious.</h2></el-col>
-      <el-col :span="4" class="header-chat">
-        <i class="el-icon-chat-line-round icon-button-1 big-icon-size"></i>
-      </el-col>
-    </el-row>
-  </div>
-</template>
 
 <style scoped lang="scss">
 @import '../styles/multi';

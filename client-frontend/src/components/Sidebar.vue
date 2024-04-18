@@ -80,11 +80,9 @@ export default {
 
 .menu {
   list-style: none;
-  //padding: 10px 0 0 20px;
   display: flex;
   gap: 20px;
   flex-direction: column;
-  //align-items: center;
 
   .menu-wrapper {
     display: flex;
@@ -112,7 +110,7 @@ export default {
     .item-selected {
       height: 80px;
       width: 0;
-      background-color: #42b983;
+      background-color: $green-light3;
     }
     &:not(.is-active) {
       .item-selected {
@@ -150,10 +148,10 @@ export default {
 
         }
         .item-icon{
-          color: white;
+          color: $primary-color;
         }
         span {
-          color: white;
+          color: $primary-color;
         }
       }
     }

@@ -14,8 +14,8 @@
         </div>
         <div class="content-categories">
           <div class="category-wrapper">
-            <div class="category-item" v-for="category in categories" :key="category.value">
-              {{ category.name }}
+            <div class="category-item" v-for="(category, index) in categories" :key="`category-${index}`">
+              {{ category }}
             </div>
           </div>
         </div>
@@ -47,20 +47,11 @@ export default {
   components: { MerchantSkeletonItem, MerchantItem },
   data () {
     return {
-      categories: [
-        { name: 'category', value: 1 },
-        { name: 'category', value: 2 },
-        { name: 'category', value: 3 },
-        { name: 'category', value: 4 },
-        { name: 'category', value: 5 },
-        { name: 'category', value: 6 }
-      ],
+      categories: ['快餐', '甜点', '饮料', '传统美食', '海鲜', '烧烤', '火锅', '素食', '小吃', '早餐'],
       products: [],
       isLoading: true, // 初始时数据正在加载
       skeletonCount: 5, // 假设初始加载显示5个骨架屏
       stickyActive: false,
-      lastCall: 0,
-      throttlePeriod: 100, // 节流时间间隔（毫秒）
       headerHeight: 0
     }
   },
@@ -71,10 +62,9 @@ export default {
   },
   methods: {
     async fetchMerchants () {
-      // 模拟数据加载
       this.isLoading = true // 开始加载数据
       try {
-        const response = await getMerchants() // 假设的API请求方法
+        const response = await getMerchants()
         this.products = response.data
       } catch (error) {
         console.error('Failed to fetch products:', error)
@@ -82,7 +72,6 @@ export default {
         this.isLoading = false // 完成加载
       }
     },
-
     // MockFetchProducts () {
     //   // 使用setTimeout来模拟数据的异步加载
     //   setTimeout(() => {
@@ -90,14 +79,10 @@ export default {
     //     this.isLoading = false // 数据加载完成，更新加载状态
     //   }, 2000) // 延迟2秒来模拟网络请求延迟
     // },
-
     handleScroll () {
-      // const now = Date.now()
-      // if (now - this.lastCall < this.throttlePeriod) return
-      // this.lastCall = now
-
       const currentScroll = window.pageYOffset
       const headerHeight = this.$refs.header ? this.$refs.header.getHeaderHeight() : 0
+      console.log(headerHeight)
       window.requestAnimationFrame(() => {
         this.updatePaddingLeft(currentScroll, headerHeight)
       })
@@ -117,16 +102,12 @@ export default {
       if (!this.isSmallScreen) {
         this.$refs.search.style.paddingLeft = `${paddingLeft}px`
       }
-    },
-    resetStickyStyles () {
-      this.$refs.search.style.paddingLeft = '0.00rem' // 重置左内边距
     }
   },
   computed: {
     ...mapGetters('sidebar', ['isSmallScreen'])
   },
   mounted () {
-    // this.fetchProducts() // 组件挂载后加载数据
     this.fetchMerchants()
     window.addEventListener('scroll', this.handleScroll)
   },
@@ -157,13 +138,12 @@ export default {
     display: flex;
     row-gap: 0.5rem;
     flex-direction: column;
-    //padding:1rem 0;
     .fixed-search {
       position: sticky;
-      top: 0; /* 调整这个值以适应可能存在的页面顶部边距或其他元素 */
-      background-color: white; /* 确保搜索框背景不透明 */
-      z-index: 1000; /* 提高层级确保它在其他内容上方 */
-      transition: padding-left 0.3s; /* 平滑过渡效果 */
+      top: 0;
+      background-color: $primary-color;
+      z-index: 1000;
+      transition: padding-left 0.3s;
     }
     .content-search-bar {
       color: $orange;

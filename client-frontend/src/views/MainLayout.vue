@@ -32,16 +32,13 @@
 </template>
 
 <script>
-import CustomBottomNav from '@/components/CustomBottomNav.vue' // 确保路径正确
-import Sidebar from '@/components/Sidebar.vue' // 确保路径正确
+import CustomBottomNav from '@/components/CustomBottomNav.vue'
+import Sidebar from '@/components/Sidebar.vue'
 import { mapState, mapActions, mapGetters } from 'vuex'
 import PageHeader from '@/components/PageHeader.vue'
+
 export default {
   name: 'MainLayout',
-  data () {
-    return {
-    }
-  },
   components: {
     PageHeader,
     CustomBottomNav,
@@ -104,7 +101,7 @@ export default {
   beforeDestroy () {
     // 移除监听器以避免潜在的内存泄露
     window.removeEventListener('resize', this.updateWindowSize)
-    window.addEventListener('scroll', this.onScroll)
+    window.removeEventListener('scroll', this.onScroll)
   }
 }
 </script>
@@ -132,7 +129,7 @@ export default {
   top: 0;
   width: 0;
   height: 100%;
-  background-color: #f0f0f0;
+  background-color: $light-gray;
   transition: all 0.3s ease; /* 平滑过渡效果 */
 }
 
