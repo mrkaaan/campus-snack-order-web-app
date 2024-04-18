@@ -3,7 +3,7 @@
   <div>
     <div class="page-container">
       <div class="page-content">
-        <div class="content-search-bar fixed-search" ref="search">
+        <div class="content-search-bar fixed-search" :style="{paddingLeft: paddingLeft + 'rem'}">
           <div class="search-wrapper">
             <i class="el-icon-search icon-search"></i>
             <el-input class="custom-input" placeholder="搜索食物"></el-input>
@@ -36,8 +36,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { EventBus } from '@/eventBus'
+import { mapGetters, mapState } from 'vuex'
 import MerchantItem from '@/components/MerchantItem.vue'
 import MerchantSkeletonItem from '@/components/MerchantSkeletonItem.vue'
 import { getMerchants } from '@/api/merchant'
@@ -51,14 +50,8 @@ export default {
       products: [],
       isLoading: true, // 初始时数据正在加载
       skeletonCount: 5, // 假设初始加载显示5个骨架屏
-      stickyActive: false,
-      headerHeight: 0
+      stickyActive: false
     }
-  },
-  created () {
-    EventBus.$on('headerHeightChanged', (height) => {
-      this.headerHeight = height
-    })
   },
   methods: {
     async fetchMerchants () {
@@ -71,57 +64,45 @@ export default {
       } finally {
         this.isLoading = false // 完成加载
       }
-    },
-    // MockFetchProducts () {
-    //   // 使用setTimeout来模拟数据的异步加载
-    //   setTimeout(() => {
-    //     this.products = this.MockProducts // 更新products数据
-    //     this.isLoading = false // 数据加载完成，更新加载状态
-    //   }, 2000) // 延迟2秒来模拟网络请求延迟
-    // },
-    handleScroll () {
-      const currentScroll = window.pageYOffset
-      const headerHeight = this.$refs.header ? this.$refs.header.getHeaderHeight() : 0
-      console.log(headerHeight)
-      window.requestAnimationFrame(() => {
-        this.updatePaddingLeft(currentScroll, headerHeight)
-      })
-    },
-    updatePaddingLeft (currentScroll, headerHeight) {
-      const scrollStart = 0 // 滚动起点
-      const scrollEnd = this.headerHeight / 2 // 根据需要调整，滚动结束点
-      let paddingLeft = this.isSmallScreen ? 0 : 15
+    }
+  },
+  watch: {
+    currentScroll (newHeight) {
+      if (newHeight >= 0 && newHeight <= this.headerHeight) {
 
-      if (currentScroll > scrollStart && currentScroll < scrollEnd) {
-        const progress = (currentScroll - scrollStart) / (scrollEnd - scrollStart)
-        paddingLeft = Math.min(50, progress * 50) // 最大paddingLeft为3.13rem
-      } else if (currentScroll >= scrollEnd) {
-        paddingLeft = 50
-      }
-      // console.log(paddingLeft)
-      if (!this.isSmallScreen) {
-        this.$refs.search.style.paddingLeft = `${paddingLeft}px`
       }
     }
   },
   computed: {
-    ...mapGetters('sidebar', ['isSmallScreen'])
+    ...mapGetters('sidebar', ['isSmallScreen']),
+    ...mapState('header', ['headerHeight', 'currentScroll']),
+    paddingLeft () {
+      // 默认值设置为最小值0.94
+      let paddingLeft = 0.94
+
+      // console.log('currentScroll', this.currentScroll)
+      // console.log('headerHeight', this.headerHeight)
+
+      if (!this.isSmallScreen) {
+        if (this.currentScroll >= 0 && this.currentScroll <= this.headerHeight) {
+          // 计算 currentScroll 占 headerHeight 的比例
+          const ratio = this.currentScroll / this.headerHeight
+
+          // 使用线性插值计算 paddingLeft
+          // 初始值0.94，最大值3，线性增长
+          paddingLeft = 0.94 + (3 - 0.94) * ratio
+        } else if (this.currentScroll > this.headerHeight) {
+          // 如果滚动超过 headerHeight，固定 paddingLeft 为最大值3
+          paddingLeft = 3
+        }
+      }
+
+      // console.log('paddingLeft', paddingLeft)
+      return paddingLeft
+    }
   },
   mounted () {
     this.fetchMerchants()
-    window.addEventListener('scroll', this.handleScroll)
-  },
-  beforeDestroy () {
-    window.removeEventListener('scroll', this.handleScroll)
-    EventBus.$off('headerHeightChanged')
-  },
-  watch: {
-    // 监听 isSmallScreen 的变化
-    isSmallScreen (newValue) {
-      if (newValue) {
-        this.$refs.search.style.paddingLeft = '0.94rem'
-      }
-    }
   }
 }
 </script>
@@ -152,7 +133,7 @@ export default {
       align-items: center;
       column-gap: 0.4rem;
       min-height: 3.5rem;
-      padding:1rem;
+      padding:0.5rem 1rem;
       background-color: white;
 
       .search-wrapper,

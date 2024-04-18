@@ -24,7 +24,7 @@
       </nav>
     </el-drawer>
     <main class="home-page content-shift">
-      <page-header ref="header"></page-header>
+      <page-header></page-header>
       <router-view></router-view>
     </main>
     <CustomBottomNav></CustomBottomNav>
@@ -55,7 +55,8 @@ export default {
       'isWideScreen',
       'isMediumScreen',
       'isSmallScreen'
-    ])
+    ]),
+    ...mapState('header', ['headerHeight'])
   },
   mounted () {
     // 组件挂载时设置初始侧边栏状态
@@ -78,17 +79,13 @@ export default {
       'setSidebarDrawer'
     ]),
     ...mapActions('header', ['handleScroll']),
+    // 监听滚动 实时更新vuex数据
     onScroll () {
-      if (this.$refs.header) {
-        const currentScroll = window.pageYOffset
-        // console.log(currentScroll)
-        const headerHeight = this.$refs.header.getHeaderHeight()
-        // console.log(headerHeight)
-        this.handleScroll({
-          currentScroll,
-          headerHeight
-        })
-      }
+      const currentScroll = window.pageYOffset
+      // console.log('currentScroll', currentScroll)
+      window.requestAnimationFrame(() => {
+        this.handleScroll({ currentScroll })
+      })
     },
     handleDrawerVisibilityChange (newVisibility) {
       this.setSidebarDrawer(newVisibility)

@@ -14,13 +14,12 @@
 
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex'
-import { EventBus } from '@/eventBus'
 
 export default {
   name: 'PageHeader',
   mounted () {
-    // console.log(this.$refs.headerContent.clientHeight)
-    this.broadcastHeight()
+    this.updateDimensions()
+    // console.log('header', this.$refs.headerContent.clientHeight)
   },
   computed: {
     ...mapGetters('sidebar', [
@@ -37,15 +36,17 @@ export default {
       const style = {
         top: '0px'
         // opacity: '1'
-        // position: 'fixed'
       }
       if (this.currentScroll > this.lastScroll && this.currentScroll > this.headerHeight) {
-        style.top = `-${this.headerHeight}px`
+        // style.top = `-${this.headerHeight}px`
+        style.top = '0'
+
         // style.opacity = '0'
       } else if (this.currentScroll < this.lastScroll) {
         style.top = '0'
         // style.opacity = '1'
       }
+      console.log('style.top', style.top)
       return style
     }
   },
@@ -53,14 +54,13 @@ export default {
     ...mapActions('sidebar', [
       'toggleSidebar'
     ]),
-    getHeaderHeight () {
-      // console.log('被调用')
-      return this.$refs.headerContent ? this.$refs.headerContent.clientHeight : 0
-    },
-    broadcastHeight () {
-      const height = this.getHeaderHeight()
-      // console.log(height)
-      EventBus.$emit('headerHeightChanged', height)
+    ...mapActions('header', ['updateHeaderHeight', 'updateHeaderTop']),
+    updateDimensions () {
+      const header = this.$refs.headerContent
+      if (header) {
+        this.updateHeaderHeight(header.clientHeight)
+        this.updateHeaderTop(header.getBoundingClientRect().top)
+      }
     }
   }
 }
@@ -71,8 +71,14 @@ export default {
 
 .page-header {
   background-color: $primary-color;
+
+  .header-title {
+    height: 3.5rem;
+    line-height: 3.5rem;
+  }
+
   .header-wrapper {
-    padding: 1rem;
+    padding: 0.5rem 1rem;
     height: 100%;
     .header-menu, .header-chat {
       height: 100%;
