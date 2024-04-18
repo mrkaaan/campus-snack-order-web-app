@@ -24,10 +24,10 @@
       </nav>
     </el-drawer>
     <main class="home-page content-shift">
-      <page-header></page-header>
+      <page-header v-if="isWideScreen || !$route.meta.hideHeader"></page-header>
       <router-view></router-view>
     </main>
-    <CustomBottomNav></CustomBottomNav>
+    <CustomBottomNav v-if="isWideScreen || !$route.meta.hideFooter"></CustomBottomNav>
   </div>
 </template>
 

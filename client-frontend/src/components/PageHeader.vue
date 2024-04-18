@@ -46,7 +46,7 @@ export default {
         style.top = '0'
         // style.opacity = '1'
       }
-      console.log('style.top', style.top)
+      // console.log('style.top', style.top)
       return style
     }
   },

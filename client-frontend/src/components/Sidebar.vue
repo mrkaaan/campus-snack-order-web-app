@@ -65,6 +65,9 @@ export default {
       return this.isSidebarCollapsed ? 'Del.' : 'Delicious.'
     },
     activeRoute () {
+      if (this.$route.path.startsWith('/shop/')) {
+        return '/home' // 强制返回主页路由以高亮主页菜单项
+      }
       return this.$route.path === '/' ? '/home' : this.$route.path
     }
   }

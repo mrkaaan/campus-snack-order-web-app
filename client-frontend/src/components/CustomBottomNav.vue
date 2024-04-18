@@ -3,7 +3,7 @@
     <div class="nav-background" :style="{ 'transform': backgroundPosition }">
       <div class="nav-background-content"></div>
     </div>
-    <div v-for="item in navItems" :key="item.id" class="nav-item" @click="selectBottomNvaTab(item)" :class="{active: currenBottomNavTag === item.id}">
+    <div v-for="item in navItems" :key="item.id" class="nav-item" @click="selectBottomNvaTab(item)" :class="{active: currentBottomNavTag === item.id}">
       <!-- 使用el-badge时判断是否有badge值，且大于0 -->
       <el-badge v-if="item.badge" :value="item.badge" class="nav-icon">
         <i :class="[item.icon, 'big-icon-size']"></i>
@@ -33,7 +33,7 @@ export default {
         { id: 'message', icon: 'el-icon-chat-line-round', text: '消息', route: '/message', badge: 3 },
         { id: 'profile', icon: 'el-icon-user-solid', text: '我的', route: '/profile', badge: 0 }
       ],
-      currenBottomNavTag: 'home', // 当前选中的标签页
+      // currentBottomNavTag: 'home', // 当前选中的标签页
       cartCount: 5, // 购物车商品数量
       messageCount: 3 // 未读消息数量
     }
@@ -41,15 +41,29 @@ export default {
   computed: {
     // 计算背景移动的距离
     backgroundPosition () {
-      const index = this.navItems.findIndex(item => item.id === this.currenBottomNavTag)
+      const index = this.navItems.findIndex(item => item.id === this.currentBottomNavTag)
       const width = 400 / this.navItems.length // 计算每个nav-item占据的百分比宽度
       return `translateX(${index * width}%)`
+    },
+    currentBottomNavTag () {
+      // console.log(this.$route)
+      if (this.$route.path.includes('home')) {
+        return 'home'
+      } else if (this.$route.path.includes('message')) {
+        return 'message'
+      } else if (this.$route.path.includes('profile')) {
+        return 'profile'
+      } else if (this.$route.path.includes('cart')) {
+        return 'cart'
+      } else {
+        return 'home'
+      }
     }
   },
   methods: {
     // 选中底部标签
     selectBottomNvaTab (item) {
-      this.currenBottomNavTag = item.id // 切换选中的标签页
+      // this.currentBottomNavTag = item.id // 切换选中的标签页
       this.$router.push(item.route)
     }
   }

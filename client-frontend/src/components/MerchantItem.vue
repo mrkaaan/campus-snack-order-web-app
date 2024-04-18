@@ -1,54 +1,52 @@
 <template>
-  <li>
-    <a class="merchant-item-link">
-      <div class="merchant-item">
-        <div class="item-img">
-          <el-image class="image" :src="merchant.image" fit="cover" @load="() => merchant.imageLoaded = true"></el-image>
-        </div>
-        <div class="item-detail">
-          <p class="detail-title"><strong>{{ merchant.storeName }}</strong></p>
-          <div class="item-wrapper">
-            <div class="detail-column column-left">
-              <div class="detail-row">
-                <div class="detail-rating">
-                  <el-rate v-model="merchant.rating" disabled :colors="['#99A9BF', '#F7BA2A', '#FF9900']"/>
-                  <p class="detail-text detail-rating">{{ merchant.rating.toFixed(1) }}分</p>
-                </div>
+  <a class="merchant-item-link">
+    <div class="merchant-item">
+      <div class="item-img">
+        <el-image class="image" :src="merchant.image" fit="cover" @load="() => merchant.imageLoaded = true"></el-image>
+      </div>
+      <div class="item-detail">
+        <p class="detail-title"><strong>{{ merchant.storeName }}</strong></p>
+        <div class="item-wrapper">
+          <div class="detail-column column-left">
+            <div class="detail-row">
+              <div class="detail-rating">
+                <el-rate v-model="merchant.rating" disabled :colors="['#99A9BF', '#F7BA2A', '#FF9900']"/>
+                <p class="detail-text detail-rating">{{ merchant.rating.toFixed(1) }}分</p>
               </div>
-              <div class="detail-row">
-                <p class="detail-text detail-price">人均 ￥{{ merchant.priceRange[0] }}-{{ merchant.priceRange[1] }}</p>
-              </div>
-              <div class="detail-row">
-                <div class="detail-dish-list">
-                  <div class="detail-dish" v-for="(dish, index) in merchant.mainDish" :key="`dish-${index}-${dish}`">
-                    <p class="detail-text">{{ dish }}</p>
-                    <span v-if="index < merchant.mainDish.length - 1" class="separator">|</span>
-                  </div>
-                </div>
-              </div>
-              <div class="detail-row">
-                <div class="detail-tag">
-                  <i class="el-icon-dish"></i>
-                  <p class="detail-text">{{ merchant.operatingHours }}</p>
+            </div>
+            <div class="detail-row">
+              <p class="detail-text detail-price">人均 ￥{{ merchant.priceRange[0] }}-{{ merchant.priceRange[1] }}</p>
+            </div>
+            <div class="detail-row">
+              <div class="detail-dish-list">
+                <div class="detail-dish" v-for="(dish, index) in merchant.mainDish" :key="`dish-${index}-${dish}`">
+                  <p class="detail-text">{{ dish }}</p>
+                  <span v-if="index < merchant.mainDish.length - 1" class="separator">|</span>
                 </div>
               </div>
             </div>
-            <div class="detail-column column-right">
-              <div class="detail-row">
-                <div class="detail-local">
-                  <i class="el-icon-location-outline"></i>
-                  <p class="detail-text">{{ merchant.locationDescription }}</p>
-                </div>
+            <div class="detail-row">
+              <div class="detail-tag">
+                <i class="el-icon-dish"></i>
+                <p class="detail-text">{{ merchant.operatingHours }}</p>
               </div>
-              <div class="detail-row">
-                <p class="detail-text">月售{{ merchant.monthlySales }}+</p>
+            </div>
+          </div>
+          <div class="detail-column column-right">
+            <div class="detail-row">
+              <div class="detail-local">
+                <i class="el-icon-location-outline"></i>
+                <p class="detail-text">{{ merchant.locationDescription }}</p>
               </div>
+            </div>
+            <div class="detail-row">
+              <p class="detail-text">月售{{ merchant.monthlySales }}+</p>
             </div>
           </div>
         </div>
       </div>
-    </a>
-  </li>
+    </div>
+  </a>
 </template>
 
 <script>

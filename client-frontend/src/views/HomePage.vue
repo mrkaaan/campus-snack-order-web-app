@@ -26,8 +26,10 @@
         </div>
         <div class="content-wrapper" v-else>
           <ul class="merchant-list">
-            <merchant-item v-for="item in products" :key="item.id" :item="item">
-            </merchant-item>
+            <li  v-for="item in products" :key="item.id"  @click="goToMerchantDetails(item.id)">
+              <merchant-item :item="item">
+              </merchant-item>
+            </li>
           </ul>
         </div>
       </div>
@@ -64,13 +66,9 @@ export default {
       } finally {
         this.isLoading = false // 完成加载
       }
-    }
-  },
-  watch: {
-    currentScroll (newHeight) {
-      if (newHeight >= 0 && newHeight <= this.headerHeight) {
-
-      }
+    },
+    goToMerchantDetails (merchantId) {
+      this.$router.push({ name: 'shopDetails', params: { shopId: merchantId } })
     }
   },
   computed: {
