@@ -1,5 +1,11 @@
 <template>
-  <div :class="{ 'sidebar-active': isSidebarOpen, 'sidebar-active-collapsed': isSidebarCollapsed, 'sidebar-drawer':isMediumScreen, 'sidebar-active-drawer': isSidebarDrawer, 'sidebar-close': isSmallScreen}">
+  <div :class="{
+    'sidebar-active': isSidebarOpen,
+    'sidebar-active-collapsed': isSidebarCollapsed,
+    'sidebar-drawer':isMediumScreen,
+    'sidebar-active-drawer': isSidebarDrawer,
+    'sidebar-close': isSmallScreen && !$route.meta.hideHeader
+  }">
     <nav class="sidebar" v-if="!isMediumScreen">
       <Sidebar
         :isSidebarOpen="isSidebarOpen"

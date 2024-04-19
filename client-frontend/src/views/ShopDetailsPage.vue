@@ -1,10 +1,15 @@
 <template>
   <div>
     <div class="shop-details-container">
-      <page-header class="shop-header"></page-header>
+      <div class="shop-header" :style="headerStyle"><div class="header-wrapper">
+        <el-button type="text" icon="el-icon-search"></el-button>
+        <el-button type="text" icon="el-icon-message"></el-button>
+        <el-button type="text" icon="el-icon-star-off"></el-button>
+      </div></div>
       <div class="image-container">
         <img src="https://via.placeholder.com/600x300?text=Shop+Details" alt="Shop Details">
       </div>
+
       <div class="shop-brand">
         <div class="brand-wrapper">
           <h1>{{ merchant.storeName }}</h1>
@@ -51,10 +56,10 @@
 </template>
 
 <script>
-import PageHeader from '@/components/PageHeader.vue'
+
+import { mapState } from 'vuex'
 
 export default {
-  components: { PageHeader },
   data () {
     return {
       merchant: {}, // 商家详情数据
@@ -70,6 +75,27 @@ export default {
     }
   },
   computed: {
+    ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
+    headerStyle () {
+      let opacity = 0 // 初始透明度为0，完全透明
+      const effectiveHeight = this.headerHeight || 100 // 如果headerHeight为0或未定义，使用100作为默认高度
+
+      if (this.currentScroll >= 0 && this.currentScroll <= effectiveHeight * 5) {
+        // 计算透明度
+        opacity = this.currentScroll / effectiveHeight
+      } else if (this.currentScroll > effectiveHeight * 5) {
+        // 如果滚动距离超过 headerHeight，透明度固定为1
+        opacity = 1
+      }
+
+      // 计算颜色从白色到黑色的渐变
+      const colorValue = Math.floor(255 * (1 - opacity)) // 从 255 (白色) 减到 0 (黑色)
+      // 返回用于绑定的样式对象
+      return {
+        backgroundColor: `rgba(255, 255, 255, ${opacity})`, // 假设背景色为白色，调整透明度
+        color: `rgb(${colorValue}, ${colorValue}, ${colorValue})` // 从白色渐变到黑色
+      }
+    },
     // 计算背景移动的距离
     backgroundPosition () {
       const index = this.menuItem.findIndex(item => item.id === this.currentBottomNavTag)
@@ -97,26 +123,53 @@ export default {
 @import '../styles/multi';
 
 .shop-details-container {
-  overflow: hidden;
+  height: 100%;
+  //overflow: hidden;
   position: relative;
   .shop-header {
-    position: fixed;
-    width: 100%;
-    background-color: transparent;
-    z-index: 100;
+    position: sticky;
+    top: 0;
+    transition: background-color 0.3s;
+    z-index: 1000;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    column-gap: 0.4rem;
+    padding:0.5rem 1rem;
+    color: white;
+
+    .header-wrapper{
+      height: 3.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      color: inherit;
+      .el-button {
+        color: inherit;
+        //color: white;
+        transition: color 0.3s;
+        @extend .big-icon-size;
+      }
+    }
   }
   .image-container {
-      //height: 20rem;
+      width: 100%;
+      position: absolute;
+      transform: translateY(-4.5rem);
+      height: 20rem;
       img {
         width: 100%;
-        display: block; // Removes bottom margin/gap
-        user-select: none; // Prevents dragging image
-        pointer-events: none; // Prevents image from capturing mouse events
+        height: 100%;  // 使图片高度充满容器
+        display: block;  // 去除图片下方的空隙
+        user-select: none;  // 防止用户选择图片
+        pointer-events: none;  // 图片不接受鼠标事件
+        object-fit: cover;  // 保持图片的宽高比，多余的部分会被裁剪
       }
   }
   .shop-brand {
-    transform: translateY(-10rem);
-    padding: 1rem;
+    position: relative;
+    padding: 6rem 1rem 1rem;
     .brand-wrapper{
       background-color: $primary-color;
       width: 100%;
@@ -127,7 +180,7 @@ export default {
   }
   .content {
     padding: 0 1rem;
-    transform: translateY(-10rem);
+    //transform: translateY(-10rem);
     .content-wrapper {
       @extend .box-shadow-3;
       .menu {
