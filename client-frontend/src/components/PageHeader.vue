@@ -59,6 +59,7 @@ export default {
       const header = this.$refs.headerContent
       if (header) {
         this.updateHeaderHeight(header.clientHeight)
+        console.log('header', header.clientHeight)
         this.updateHeaderTop(header.getBoundingClientRect().top)
       }
     }

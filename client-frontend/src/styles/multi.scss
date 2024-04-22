@@ -47,29 +47,49 @@
   font-size: 1.5rem;
 }
 
-.tag-1 {
-  border: #df8c50 solid 0.06rem ;
-  color: #DA6317FF;
-  padding: 0.2rem 0.63rem;
-  font-size: 80%;
-  border-radius: 3.7rem;
-  box-sizing: border-box;
+
+.teg-base {
   white-space: nowrap;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap:0.2rem;
+  font-size: 80%;
+
+}
+.tag-orange-1 {
+  border: #df8c50 solid 0.06rem ;
+  color: #DA6317FF;
+  border-radius: 3.7rem;
+  padding: 0.2rem 0.63rem;
+
+  @extend .teg-base
 }
 
-.tag-2 {
+.tag-red-1 {
   border: #e34e4d solid 0.08rem ;
   color: #E03D3C;
-  padding: 0.06rem 0.63rem;
-  font-size: 80%;
   border-radius: 0.3rem;
-  box-sizing: border-box;
-  white-space: nowrap;
-  gap:0.2rem;
-  display: flex;
-  flex-direction: row;
+  padding: 0.06rem 0.63rem;
+
+  @extend .teg-base
+}
+
+.tag-red-2 {
+  border: #e34e4d solid 0.06rem ;
+  color: #E03D3C;
+  padding: 0.06rem 0.3rem;
+  border-radius: 0.3rem;
+  background-color: rgba(224, 61, 60, 0.05);
+
+  @extend .teg-base
+}
+
+.tag-gray-1 {
+  background-color: $light-gray;
+  color: $darker-gray;
+  border-radius: 0.3rem;
+  padding: 0.06rem 0.3rem;
+
+  @extend .teg-base
 }

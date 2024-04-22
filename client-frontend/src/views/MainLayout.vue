@@ -5,7 +5,7 @@
     'sidebar-drawer':isMediumScreen,
     'sidebar-active-drawer': isSidebarDrawer,
     'sidebar-close': isSmallScreen && !$route.meta.hideHeader
-  }">
+  }" style="height: 100%">
     <nav class="sidebar" v-if="!isMediumScreen">
       <Sidebar
         :isSidebarOpen="isSidebarOpen"
@@ -117,6 +117,8 @@ export default {
   height: 100%;
   padding-bottom: 0;
   transition: all 0.3s ease; /* 平滑过渡效果 */
+  display: flex;
+  flex-direction: column;
 }
 
 .container-cart {

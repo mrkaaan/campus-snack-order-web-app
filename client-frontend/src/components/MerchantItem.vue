@@ -149,7 +149,7 @@ export default {
         }
 
         .detail-tag {
-          @extend .tag-1;
+          @extend .tag-orange-1;
         }
 
         .detail-rating {
@@ -175,7 +175,7 @@ export default {
         }
 
         .detail-dish-list {
-          @extend .tag-2;
+          @extend .tag-red-1;
 
           .detail-dish {
             display: flex;

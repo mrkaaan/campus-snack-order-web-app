@@ -1,11 +1,16 @@
 <template>
-  <div>
+  <div style="flex:1;">
     <div class="shop-details-container">
-      <div class="shop-header" :style="headerStyle"><div class="header-wrapper">
-        <el-button type="text" icon="el-icon-search"></el-button>
-        <el-button type="text" icon="el-icon-message"></el-button>
-        <el-button type="text" icon="el-icon-star-off"></el-button>
-      </div></div>
+      <div class="shop-header" :style="headerStyle">
+        <div class="header-return">
+          <el-button type="text" icon="el-icon-arrow-left" v-if="!isWideScreen" @click="handleReturnToSuperior"></el-button>
+        </div>
+        <div class="header-wrapper">
+          <el-button type="text" icon="el-icon-search"></el-button>
+          <el-button type="text" icon="el-icon-message"></el-button>
+          <el-button type="text" icon="el-icon-star-off"></el-button>
+        </div>
+      </div>
       <div class="image-container">
         <img src="https://via.placeholder.com/600x300?text=Shop+Details" alt="Shop Details">
       </div>
@@ -31,20 +36,65 @@
             </div>
             <hr/>
           </div>
-          <div class="container">
-            <div class="food-menu">
-              <ul class="list">
-                <li v-for="n in 20" :key="n">
-                  <div class="hover-target">
-                    <div class="text-content">分类{{ n }}</div>
+          <div class="shop-layout">
+            <div class="categories-menu ">
+              <ul class="categories sticky-wrapper" @click="scrollToCategory">
+                <li v-for="category in categories" :id="'left-cat-' + category.id" :key="category.id">
+                  <div class="category" :class="{active: activeCategory === category.id}">
+                    <div class="text-content">分类{{ category.name }}</div>
                   </div>
                 </li>
               </ul>
             </div>
-            <div class="food-list">
-              <div class="food-item" v-for="n in 100" :key="n">
-                <div class="item-wrapper">
-                  <p >Content {{ n }}</p>
+            <div class="items" @scroll="handleScroll" :style="{ overflowY: allowItemsScroll ? 'scroll' : 'scroll' }">
+              <div v-for="(category, cat_index) in categories" :id="'cat-' + category.id" :key="category.id" class="category-items">
+                <!-- 分类名称区域 -->
+                <div class="category-title">
+                  {{ cat_index }} - {{ category.name }}
+                </div>
+                <!-- 项目列表区域 -->
+                <div class="category-content">
+                  <div v-for="item in category.items" :key="item.id" class="item">
+                    <div class="item-wrapper">
+                      <!-- 左侧图片 -->
+                      <div class="item-image">
+                        <div class="item-image-wrapper">
+                          <img src="https://via.placeholder.com/100" alt="商品图片">
+                        </div>
+                      </div>
+                      <!-- 右侧详情和功能按钮 -->
+                      <div class="item-details">
+                        <div class="item-name">商品名</div>
+                        <div class="item-detail-wrapper">
+                          <div class="item-detail-top">
+                            <div class="item-detail-row">
+                              <div class="item-portion">几人份</div>
+                              <div class="item-description">商品描述</div>
+                            </div>
+                            <div class="item-sales">月售 xxxx</div>
+                            <div class="item-discount">折扣信息</div>
+                          </div>
+                          <div class="item-detail-bottom">
+                            <div class="item-pricing">
+                              <span class="sale-price" v-if="item.discountPrice" :class="{ 'item-price': item.discountPrice }">
+                                ￥ {{ item.discountPrice.toFixed(1) }}
+                              </span>
+                              <span  :class="item.discountPrice ? 'original-price' : 'item-price'">
+                                ￥ {{ item.price.toFixed(1) }}
+                              </span>
+                            </div>
+                            <div class="item-quantity-controls">
+                              <div class="controls-wrapper">
+                                <div class='add icon' @click="decrement(item)"><i class="el-icon-minus"></i></div>
+                                <span class="item-quantity">10</span>
+                                <div class='sub icon' @click="increment(item)"><i class="el-icon-plus"></i></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -57,7 +107,7 @@
 
 <script>
 
-import { mapState } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 
 export default {
   data () {
@@ -71,11 +121,75 @@ export default {
         { id: 'cart', icon: 'el-icon-shopping-cart-full', text: '评价', route: '/cart', badge: 5 },
         { id: 'message', icon: 'el-icon-chat-line-round', text: '商家', route: '/message', badge: 3 }
       ],
+      categories: [
+        {
+          id: 1,
+          name: '饮料',
+          items: [
+            { id: 101, name: '可乐', price: 3.00, discountPrice: 2.00 },
+            { id: 102, name: '雪碧', price: 3.00 },
+            { id: 103, name: '雪碧', price: 3.00, discountPrice: 2.00 },
+            { id: 104, name: '雪碧', price: 3.00, discountPrice: 2.00 },
+            { id: 105, name: '雪碧', price: 3.00 },
+            { id: 106, name: '雪碧', price: 3.00, discountPrice: 2.00 }
+          ]
+        },
+        {
+          id: 2,
+          name: '小吃',
+          items: [
+            { id: 201, name: '薯条', price: 6.00 },
+            { id: 202, name: '炸鸡', price: 12.00 }
+          ]
+        },
+        {
+          id: 3,
+          name: '饮料',
+          items: [
+            { id: 101, name: '可乐', price: 3.00 },
+            { id: 102, name: '雪碧', price: 3.00 },
+            { id: 103, name: '雪碧', price: 3.00 },
+            { id: 104, name: '雪碧', price: 3.00 },
+            { id: 105, name: '雪碧', price: 3.00 },
+            { id: 106, name: '雪碧', price: 3.00 }
+          ]
+        },
+        {
+          id: 4,
+          name: '小吃',
+          items: [
+            { id: 201, name: '薯条', price: 6.00 },
+            { id: 202, name: '炸鸡', price: 12.00 }
+          ]
+        },
+        {
+          id: 5,
+          name: '饮料',
+          items: [
+            { id: 101, name: '可乐', price: 3.00 },
+            { id: 102, name: '雪碧', price: 3.00 },
+            { id: 103, name: '雪碧', price: 3.00 },
+            { id: 104, name: '雪碧', price: 3.00 },
+            { id: 105, name: '雪碧', price: 3.00 },
+            { id: 106, name: '雪碧', price: 3.00 }
+          ]
+        },
+        {
+          id: 6,
+          name: '小吃',
+          items: [
+            { id: 201, name: '薯条', price: 6.00 },
+            { id: 202, name: '炸鸡', price: 12.00 }
+          ]
+        }
+      ],
+      activeCategory: null,
       currentBottomNavTag: 'home'
     }
   },
   computed: {
     ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
+    ...mapGetters('sidebar', ['isWideScreen']),
     headerStyle () {
       let opacity = 0 // 初始透明度为0，完全透明
       const effectiveHeight = this.headerHeight || 100 // 如果headerHeight为0或未定义，使用100作为默认高度
@@ -101,10 +215,25 @@ export default {
       const index = this.menuItem.findIndex(item => item.id === this.currentBottomNavTag)
       const width = 300 / this.menuItem.length // 计算每个nav-item占据的百分比宽度
       return `translateX(${index * width}%)`
+    },
+    // 计算是否允许.items滚动
+    allowItemsScroll () {
+      // 假设shop-header的高度大约也是headerHeight，需根据实际情况调整
+      const baseHeight = this.headerHeight ? this.headerHeight * 2 : 72
+      // 第三个吸顶元素与第二个元素之间的距离，转换rem为px
+      const additionalDistance = 19 * 16 // 假设1rem等于16px
+      // 计算总的吸顶高度
+      const totalStickyHeight = baseHeight + additionalDistance
+      // console.log('currentScroll', this.currentScroll, 'totalStickyHeight', totalStickyHeight, this.currentScroll > totalStickyHeight)
+      return this.currentScroll > totalStickyHeight
     }
   },
   created () {
     this.fetchMerchantDetails(this.$route.params.shopId)
+  },
+  watch: {
+    currentScroll (newValue, oldValue) {
+    }
   },
   methods: {
     fetchMerchantDetails (shopId) {
@@ -113,6 +242,54 @@ export default {
     },
     selectBottomNvaTab (item) {
       this.currentBottomNavTag = item.id
+    },
+    scrollToCategory (event) {
+      // 获取被点击的分类元素的ID
+      const targetId = event.target.closest('li').id
+      // 提取数字部分，假设格式为 'left-cat-1'
+      const categoryId = targetId.split('-')[2]
+      console.log('categoryId', categoryId)
+      const categoryElement = this.$el.querySelector(`#cat-${categoryId}`)
+      console.log('categoryElement', categoryElement)
+      if (categoryElement) {
+        // 计算需要滚动到的位置
+        const topPos = categoryElement.offsetTop
+        console.log('topPos', topPos)
+        // 滚动到对应位置
+        this.$el.querySelector('.items').scrollTop = topPos - this.$el.querySelector('.items').offsetTop
+      } else {
+        console.log('Category element not found')
+      }
+    },
+    handleScroll (event) {
+      // const scrollPosition = event.target.scrollTop
+      // for (const category of this.categories) {
+      //   const element = document.getElementById('cat-' + category.id)
+      //   if (scrollPosition >= element.offsetTop && scrollPosition < element.offsetTop + element.offsetHeight) {
+      //     this.activeCategory = category.id
+      //     break
+      //   }
+      // }
+    },
+    handleReturnToSuperior () {
+      // 检查浏览历史中是否有超过一个记录
+      if (window.history.length > 1) {
+        // 有足够的历史记录，尝试回退
+        this.$router.go(-1)
+      } else {
+        // 没有足够的历史记录，跳转到首页
+        this.$router.push('/home')
+      }
+    },
+    increment (item) {
+      // 逻辑增加item的数量
+      item.quantity += 1
+    },
+    decrement (item) {
+      // 逻辑减少item的数量，确保数量不会小于0
+      if (item.quantity > 0) {
+        item.quantity -= 1
+      }
     }
 
   }
@@ -124,20 +301,29 @@ export default {
 
 .shop-details-container {
   height: 100%;
-  //overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
   .shop-header {
     position: sticky;
     top: 0;
     transition: background-color 0.3s;
     z-index: 1000;
     display: flex;
-    justify-content: right;
+    justify-content: space-between;
     align-items: center;
     column-gap: 0.4rem;
     padding:0.5rem 1rem;
     color: white;
+    .header-return {
+      color: inherit;
 
+      .el-button {
+        color: inherit;
+        transition: color 0.3s;
+        @extend .big-icon-size;
+      }
+    }
     .header-wrapper{
       height: 3.5rem;
       display: flex;
@@ -147,7 +333,6 @@ export default {
       color: inherit;
       .el-button {
         color: inherit;
-        //color: white;
         transition: color 0.3s;
         @extend .big-icon-size;
       }
@@ -156,7 +341,7 @@ export default {
   .image-container {
       width: 100%;
       position: absolute;
-      transform: translateY(-4.5rem);
+      //transform: translateY(-4.5rem);
       height: 20rem;
       img {
         width: 100%;
@@ -180,14 +365,23 @@ export default {
   }
   .content {
     padding: 0 1rem;
-    //transform: translateY(-10rem);
+    flex: 1;
     .content-wrapper {
       @extend .box-shadow-3;
+      display: flex;
+      flex-direction: column;
       .menu {
-        padding: 1rem 0;
+        height: 3rem;
+        position: sticky;
+        top: 3rem; /* 调整此值以适应头部空间或其他元素的高度 */
+        z-index: 1001; /* 确保它在滚动时能覆盖其他内容 */
+        display: flex;
+        flex-direction: column;
+        background-color: $primary-color;
         .menu-wrapper{
-          position: relative;
+          height: 100%;
           width: 50%;
+          position: relative;
           .selected {
             opacity: 0.8;
             z-index: 100;
@@ -211,6 +405,8 @@ export default {
             list-style: none;
             display: flex;
             justify-content: space-around;
+            height: 100%;
+            align-items: center;
             .active {
               font-weight: bold;
 
@@ -229,12 +425,37 @@ export default {
           transform: translateY(0.1rem);
         }
       }
-      .container {
+      .shop-layout {
         display: flex;
-        .food-menu {
+        flex: 1;
+        height: inherit;
+
+        .sticky-wrapper {
+          top: 6rem; /* 保持和 menu 相同的 top 值确保一致性 */
+          z-index: 999;
+          //top: 31rem;
+          //overflow-y: auto;
+          position: sticky;
+        }
+        .categories-menu {
+          background-color: $light-gray;
+          height: inherit;
           width: 20%;
-          .list {
+          display: flex;
+          justify-content: center;
+          align-items: start;
+          flex:1;
+
+          .categories {
             background-color: $light-gray;
+            width: 100%;
+            height: inherit;
+            flex:1;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+
             li {
               cursor: pointer;
               padding: 0.5rem 0;
@@ -243,7 +464,7 @@ export default {
               border-radius: 1rem;
               position: relative;
               z-index: 200; // 设置默认 z-index 较高
-              .hover-target {
+              .category {
                 background-color: $light-gray;
                 height: 100%;
                 transition: transform 0.3s;
@@ -254,7 +475,7 @@ export default {
               }
               &:hover {
                 z-index: 199; // 提升 hover 的 li 的 z-index
-                .hover-target {
+                .category {
                   transform: scaleY(2);
                   background-color: $primary-color;
                 }
@@ -269,8 +490,167 @@ export default {
           }
 
         }
-        .food-list {
+        .items {
           width: 80%;
+          height: 100vh;
+          //overflow-y: hidden;
+          scrollbar-width: none;
+          .category-items {
+            //border: 1px solid gray;
+            .category-title {
+              display: flex;
+              align-items: start;
+              padding: 1rem 1rem 0;
+            }
+            .category-content {
+              display: flex;
+              flex-direction: column;
+              gap: 0.5rem;
+              .item {
+                //height: 8rem;
+                //border: 1px solid $light-gray;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .item-wrapper {
+                  flex: 1;
+                  //height: 10rem;
+                  display: flex;
+                  flex-direction: row;
+                  justify-content: center;
+                  align-items: center;
+                  .item-image {
+                    //flex: 1;
+                    width: 10rem;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    object-fit: cover; // 确保图片覆盖整个区域
+                    border-radius: 1rem; // 为图片添加圆角，仅左侧
+                    overflow: hidden;
+                    .item-image-wrapper {
+                      background-color: $light-gray;
+                      border-radius: 1rem; // 为图片添加圆角，仅左侧
+                      //height: 90%;
+                      overflow: hidden;
+                      width: 90%;
+                    }
+                    img {
+                      width: 100%;
+                      height: 100%;
+                      object-fit: cover; /* 确保图片不失真 */
+                    }
+                  }
+
+                  .item-details {
+                    flex: 1; /* 使详情部分填充剩余空间 */
+                    padding: 0.4rem 0.8rem; /* 与图片间距 */
+                    display: flex;
+                    height: 100%;
+                    flex-direction: column;
+                    .item-name {
+                      text-align: start;
+                      font-weight: bold;
+                      //margin-bottom: 0.5rem; /* 给每个部分适当间距 */
+                    }
+                    .item-detail-wrapper{
+                      flex: 1;
+                      position: relative;
+                      display: flex;
+                      flex-direction: column;
+                      color: $medium-gray;
+                      justify-content: space-between;
+                      .item-detail-left {
+                        flex:8;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: start;
+                        gap:0.3rem;
+                      }
+                      .item-detail-right {
+                        flex:2;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: end;
+                        align-items: center;
+                      }
+                      .item-detail-top {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        align-items: start;
+                        gap:0.5rem;
+                      }
+                      .item-detail-bottom {
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+                        align-items: end;
+                        gap:0.5rem;
+                      }
+                      .item-detail-row {
+                        display: flex;
+                        flex-direction: row;
+                        gap: 0.5rem;
+                      }
+                      .item-portion {
+                        @extend .tag-gray-1;
+                      }
+                      .item-description {
+                        overflow: hidden; /* 隐藏超出部分的文本 */
+                        white-space: nowrap; /* 保持文本在一行内 */
+                        text-overflow: ellipsis; /* 超出部分显示省略号 */
+                        max-width: 100%; /* 限制最大宽度，防止溢出 */
+                        font-size: 90%;
+                      }
+                      .item-sales {
+                        font-size: 80%;
+                      }
+                      .item-discount {
+                        @extend .tag-red-2;
+                      }
+                      .sale-price {
+                      }
+                      .item-price {
+                        font-weight: bold;
+                        color: $red; /* 突出显示售价 */
+                      }
+                      .original-price {
+                        text-decoration: line-through;
+                        color: $gray; /* 原价的颜色和删除线 */
+                        font-size: 80%;
+                      }
+                      .item-quantity-controls {
+                        //position: absolute;
+                        //right: 0;
+                        //bottom: 0;
+                        color: black;
+                        .controls-wrapper {
+                          display: flex;
+                          flex-direction: row;
+                          justify-content: start;
+                          align-items: center;
+                          gap: 0.8rem;
+                          .icon {
+                            background-color: #4CAF50; /* 按钮颜色 */
+                            border: none;
+                            color: white;
+                            height: 1.5rem;
+                            width: 1.5rem;
+
+                            font-size: 1rem;
+                            cursor: pointer;
+                            border-radius: 0.5rem; /* 按钮圆角 */
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

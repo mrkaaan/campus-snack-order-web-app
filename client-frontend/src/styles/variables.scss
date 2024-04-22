@@ -7,6 +7,8 @@ $light-gray: #f0f0f0;
 $medium-gray: #999;
 $dark-gray: #666;
 $darker-gray: #333;
+$gray : #B0BEC5;
+
 
 // 绿色
 $green: #21B05D;
@@ -19,7 +21,7 @@ $orange: #DA6317;
 $orange-light: rgba(249, 168, 77, 0.1);
 $orange-light2: rgba(249, 168, 77, 0.4);
 
-
+$red : #E53935;
 @mixin flex-cc {
   display: flex;
   justify-content: center;
