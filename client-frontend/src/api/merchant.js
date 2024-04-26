@@ -6,3 +6,17 @@ export function getMerchants () {
     method: 'GET'
   })
 }
+
+export function getMerchant (id) {
+  return request({
+    url: `/merchants/${id}`,
+    method: 'GET'
+  })
+}
+
+export function getMerchantProducts (id) {
+  return request({
+    url: `/merchants/${id}/products`,
+    method: 'GET'
+  })
+}

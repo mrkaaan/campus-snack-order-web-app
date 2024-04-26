@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import sidebar from './modules/sidebar' // 引入 sidebar 模块
 import header from './modules/header' // 引入 sidebar 模块
+import merchant from './modules/merchant' // 引入 sidebar 模块
 
 Vue.use(Vuex)
 
@@ -16,6 +17,7 @@ export default new Vuex.Store({
   },
   modules: {
     sidebar, // 使用 sidebar 模块
-    header
+    header,
+    merchant
   }
 })

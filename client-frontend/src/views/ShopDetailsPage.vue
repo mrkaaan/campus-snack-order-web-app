@@ -17,7 +17,7 @@
 
       <div class="shop-brand">
         <div class="brand-wrapper">
-          <h1>{{ merchant.storeName }}</h1>
+          <merchant-detail-shop-brand :details="merchantDetails"></merchant-detail-shop-brand>
         </div>
       </div>
 
@@ -108,8 +108,11 @@
 <script>
 
 import { mapGetters, mapState } from 'vuex'
+import { getMerchant } from '@/api/merchant'
+import MerchantDetailShopBrand from '@/components/MerchantDetailShopBrand.vue'
 
 export default {
+  components: { MerchantDetailShopBrand },
   data () {
     return {
       merchant: {}, // 商家详情数据
@@ -121,6 +124,8 @@ export default {
         { id: 'cart', icon: 'el-icon-shopping-cart-full', text: '评价', route: '/cart', badge: 5 },
         { id: 'message', icon: 'el-icon-chat-line-round', text: '商家', route: '/message', badge: 3 }
       ],
+      merchantDetails: {},
+      isLoadingMerchantDetails: false,
       categories: [
         {
           id: 1,
@@ -190,6 +195,7 @@ export default {
   computed: {
     ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
     ...mapGetters('sidebar', ['isWideScreen']),
+    ...mapState('merchant', ['currentMerchant']),
     headerStyle () {
       let opacity = 0 // 初始透明度为0，完全透明
       const effectiveHeight = this.headerHeight || 100 // 如果headerHeight为0或未定义，使用100作为默认高度
@@ -290,8 +296,28 @@ export default {
       if (item.quantity > 0) {
         item.quantity -= 1
       }
+    },
+    async fetchMerchant () {
+      this.isLoadingMerchantDetails = true
+      const currentMerchantId = this.$route.params.shopId
+      if (this.currentMerchant && currentMerchantId === this.currentMerchant.id) {
+        console.log('Using cached merchant details')
+        this.merchantDetails = this.currentMerchant
+      } else {
+        try {
+          console.log('Fetching merchant details')
+          const response = await getMerchant(currentMerchantId)
+          this.merchantDetails = response.data
+        } catch (error) {
+          console.error('Error fetching merchant details:', error)
+        } finally {
+          this.isLoadingMerchantDetails = false
+        }
+      }
     }
-
+  },
+  mounted () {
+    this.fetchMerchant()
   }
 }
 </script>
@@ -356,6 +382,7 @@ export default {
     position: relative;
     padding: 6rem 1rem 1rem;
     .brand-wrapper{
+      padding: 1rem 2rem;
       background-color: $primary-color;
       width: 100%;
       height: 12rem;
@@ -495,12 +522,15 @@ export default {
           height: 100vh;
           //overflow-y: hidden;
           scrollbar-width: none;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
           .category-items {
             //border: 1px solid gray;
             .category-title {
               display: flex;
               align-items: start;
-              padding: 1rem 1rem 0;
+              padding: 0.5rem 1rem 0;
             }
             .category-content {
               display: flex;

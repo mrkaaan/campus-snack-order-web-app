@@ -26,7 +26,7 @@
         </div>
         <div class="content-wrapper" v-else>
           <ul class="merchant-list">
-            <li  v-for="item in products" :key="item.id"  @click="goToMerchantDetails(item.id)">
+            <li  v-for="item in products" :key="item.id"  @click="goToMerchantDetails(item)">
               <merchant-item :item="item">
               </merchant-item>
             </li>
@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 import MerchantItem from '@/components/MerchantItem.vue'
 import MerchantSkeletonItem from '@/components/MerchantSkeletonItem.vue'
 import { getMerchants } from '@/api/merchant'
@@ -56,6 +56,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions('merchant', ['updateCurrentMerchant']),
     async fetchMerchants () {
       this.isLoading = true // 开始加载数据
       try {
@@ -67,8 +68,9 @@ export default {
         this.isLoading = false // 完成加载
       }
     },
-    goToMerchantDetails (merchantId) {
-      this.$router.push({ name: 'shopDetails', params: { shopId: merchantId } })
+    goToMerchantDetails (merchant) {
+      this.updateCurrentMerchant(merchant)
+      this.$router.push({ name: 'shopDetails', params: { shopId: merchant.id } })
     }
   },
   computed: {
