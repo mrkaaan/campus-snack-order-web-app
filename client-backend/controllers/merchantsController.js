@@ -1,29 +1,56 @@
 // Mock data
 const Merchant = require('../models/Merchant');
 
-exports.getMerchants = (req, res) => {
-  Merchant.getMerchants((error, results) => {
-    if (error) {
-      res.status(500).json({
+exports.getMerchants = async (req, res) => {
+  try {
+    const merchants = await Merchant.getAllMerchants();
+    const data = merchants.map(merchant => ({
+      ...merchant,
+      priceRange: [merchant.priceRangeLow, merchant.priceRangeHigh],
+      mainDish: merchant.mainDish.split(','),
+      hasSpecialPrice: !!merchant.hasSpecialPrice,
+      hasDiscount: !!merchant.hasDiscount
+    }));
+    res.status(200).json({
+      success: true,
+      message: "Data retrieved successfully",
+      data: data
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving merchant data",
+      data: null
+    });
+  }
+};
+
+exports.getMerchant = async (req, res) => {
+  const merchantId = req.params.merchantId;
+  try {
+    const merchant = await Merchant.getMerchant(merchantId);
+    if (!merchant) {
+      res.status(404).json({
         success: false,
-        message: "Error retrieving merchant data",
+        message: "Merchant not found",
         data: null
       });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: "Data retrieved successfully",
-        data: results.map(merchant => ({
-          ...merchant,
-          priceRange: [merchant.priceRangeLow, merchant.priceRangeHigh],
-          mainDish: merchant.mainDish.split(','),
-          hasSpecialPrice: !!merchant.hasSpecialPrice,
-          hasDiscount: !!merchant.hasDiscount
-        }))
-      });
+      return;
     }
-  });
+    res.status(200).json({
+      success: true,
+      message: "Merchant retrieved successfully",
+      data: merchant
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving merchant",
+      data: null
+    });
+  }
 };
+
 
 exports.getMerchantProducts = async (req, res) => {
   const merchantId = req.params.merchantId;
