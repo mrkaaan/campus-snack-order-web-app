@@ -25,7 +25,14 @@ const Merchant = {
 
   getMerchantProducts: (merchantId) => {
     return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM Products WHERE merchantId = ?";
+      const query = `
+      SELECT c.name AS categoryName, p.*
+      FROM Products p
+      JOIN MerchantProductCategories mpc ON p.id = mpc.productId
+      JOIN Categories c ON mpc.categoryId = c.id
+      WHERE p.merchantId = ?
+      ORDER BY c.name, p.name;
+    `;
       db.query(query, [merchantId], (error, results) => {
         if (error) reject(error);
         else resolve(results);
