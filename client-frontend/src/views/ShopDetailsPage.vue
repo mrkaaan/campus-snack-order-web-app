@@ -39,57 +39,59 @@
           <div class="shop-layout">
             <div class="shop-wrapper" :style="{ 'transform': `translateX(-${currentBottomNavTag * 100}%)` }">
               <div class="category-section" v-for="(item, item_index) in menuItem" :key="item_index">
-                <div class="categories-menu ">
-                  <ul class="categories sticky-wrapper" @click="scrollToCategory">
-                    <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
-                      <div class="category" :class="{active: activeCategory === category_index}">
-                        <div class="text-content">{{ category.categoryName }}</div>
+                <div v-if="item.text === '点餐'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">
+                  <div class="categories-menu ">
+                    <ul class="categories sticky-wrapper" @click="scrollToCategory">
+                      <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
+                        <div class="category" :class="{active: activeCategory === category_index}">
+                          <div class="text-content">{{ category.categoryName }}</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="items" @scroll="handleScroll" :style="{ overflowY: allowItemsScroll ? 'scroll' : 'scroll' }">
+                    <div v-for="(category, cat_index) in merchantProducts" :id="'cat-' + cat_index" :key="cat_index" class="category-items">
+                      <!-- 分类名称区域 -->
+                      <div class="category-title">
+                        {{ category.categoryName }}
                       </div>
-                    </li>
-                  </ul>
-                </div>
-                <div class="items" @scroll="handleScroll" :style="{ overflowY: allowItemsScroll ? 'scroll' : 'scroll' }">
-                  <div v-for="(category, cat_index) in merchantProducts" :id="'cat-' + cat_index" :key="cat_index" class="category-items">
-                    <!-- 分类名称区域 -->
-                    <div class="category-title">
-                      {{ category.categoryName }}
-                    </div>
-                    <!-- 项目列表区域 -->
-                    <div class="category-content">
-                      <div v-for="item in category.products" :key="item.id" class="item">
-                        <div class="item-wrapper">
-                          <!-- 左侧图片 -->
-                          <div class="item-image">
-                            <div class="item-image-wrapper">
-                              <img src="https://via.placeholder.com/100" alt="商品图片">
-                            </div>
-                          </div>
-                          <!-- 右侧详情和功能按钮 -->
-                          <div class="item-details">
-                            <div class="item-name">{{ item.name }}</div>
-                            <div class="item-detail-wrapper">
-                              <div class="item-detail-top">
-                                <div class="item-detail-row">
-                                  <div class="item-portion">{{ item.portions || 1 }}人份</div>
-                                  <div class="item-description">{{ item.description }}</div>
-                                </div>
-                                <div class="item-sales">月售 {{ item.monthlySales }}+</div>
-                                <div class="item-discount" :style="{ opacity: item.discountInfo ? '1' : '0' }">{{ item.discountInfo }} 折</div>
+                      <!-- 项目列表区域 -->
+                      <div class="category-content">
+                        <div v-for="item in category.products" :key="item.id" class="item">
+                          <div class="item-wrapper">
+                            <!-- 左侧图片 -->
+                            <div class="item-image">
+                              <div class="item-image-wrapper">
+                                <img src="https://via.placeholder.com/100" alt="商品图片">
                               </div>
-                              <div class="item-detail-bottom">
-                                <div class="item-pricing">
-                                  <span class="sale-price" v-if="item.salePrice" :class="{ 'item-price': item.salePrice }">
-                                    ￥ {{ item.salePrice }}
-                                  </span>
-                                  <span  :class="item.salePrice ? 'original-price' : 'item-price'">
-                                    ￥ {{ item.originalPrice }}
-                                  </span>
+                            </div>
+                            <!-- 右侧详情和功能按钮 -->
+                            <div class="item-details">
+                              <div class="item-name">{{ item.name }}</div>
+                              <div class="item-detail-wrapper">
+                                <div class="item-detail-top">
+                                  <div class="item-detail-row">
+                                    <div class="item-portion">{{ item.portions || 1 }}人份</div>
+                                    <div class="item-description">{{ item.description }}</div>
+                                  </div>
+                                  <div class="item-sales">月售 {{ item.monthlySales }}+</div>
+                                  <div class="item-discount" :style="{ opacity: item.discountInfo ? '1' : '0' }">{{ item.discountInfo }} 折</div>
                                 </div>
-                                <div class="item-quantity-controls">
-                                  <div class="controls-wrapper">
-                                    <div class='add icon' @click="decrement(item)"><i class="el-icon-minus"></i></div>
-                                    <span class="item-quantity">10</span>
-                                    <div class='sub icon' @click="increment(item)"><i class="el-icon-plus"></i></div>
+                                <div class="item-detail-bottom">
+                                  <div class="item-pricing">
+                                    <span class="sale-price" v-if="item.salePrice" :class="{ 'item-price': item.salePrice }">
+                                      ￥ {{ item.salePrice }}
+                                    </span>
+                                    <span  :class="item.salePrice ? 'original-price' : 'item-price'">
+                                      ￥ {{ item.originalPrice }}
+                                    </span>
+                                  </div>
+                                  <div class="item-quantity-controls">
+                                    <div class="controls-wrapper">
+                                      <div class='add icon' @click="decrement(item)"><i class="el-icon-minus"></i></div>
+                                      <span class="item-quantity">10</span>
+                                      <div class='sub icon' @click="increment(item)"><i class="el-icon-plus"></i></div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -100,6 +102,8 @@
                     </div>
                   </div>
                 </div>
+                <div v-else-if="item.text === '评价'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">评价</div>
+                <div v-else-if="item.text === '商家'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">商家</div>
               </div>
             </div>
           </div>
@@ -412,7 +416,7 @@ export default {
         height: inherit;
 
         position: relative;
-        overflow: hidden;
+        //overflow: hidden;
         width: 100%;
 
         .shop-wrapper {
@@ -426,10 +430,12 @@ export default {
         .category-section {
           height: inherit;
           min-width: 100%; /* Ensure each section takes full width */
-          display: flex;
           flex: 1;
         }
-
+        .order-wrapper {
+          display: flex;
+          transition: opacity 0.3s ease-in-out;
+        }
         .sticky-wrapper {
           top: 6rem; /* 保持和 menu 相同的 top 值确保一致性 */
           z-index: 999;
@@ -443,7 +449,7 @@ export default {
           width: 20%;
           display: flex;
           justify-content: center;
-          //align-items: start;
+          align-items: start;
           flex:1;
 
           .categories {
@@ -517,6 +523,7 @@ export default {
                 align-items: center;
                 .item-wrapper {
                   flex: 1;
+                  width: 100%;
                   //height: 10rem;
                   display: flex;
                   flex-direction: row;
@@ -525,6 +532,7 @@ export default {
                   .item-image {
                     //flex: 1;
                     width: 10rem;
+                    flex-shrink: 0; /* 不允许缩小 */
                     height: 100%;
                     display: flex;
                     justify-content: center;
@@ -549,6 +557,7 @@ export default {
                   .item-details {
                     flex: 1; /* 使详情部分填充剩余空间 */
                     padding: 0.4rem 0.8rem; /* 与图片间距 */
+                    min-width: 0; /* 重要: 在flex容器中避免溢出 */
                     display: flex;
                     height: 100%;
                     flex-direction: column;
@@ -596,6 +605,7 @@ export default {
                         display: flex;
                         flex-direction: row;
                         gap: 0.5rem;
+                        width: 100%;
                       }
                       .item-portion {
                         @extend .tag-gray-1;
