@@ -49,7 +49,7 @@
 
         <div class="brand-top-r">
           <div class="image-wrapper">
-            <el-image class="image" :src="details.image" fit="cover"></el-image>
+            <el-image class="image" :src="`${baseUrl}/${details.image}`" fit="cover"></el-image>
           </div>
         </div>
       </div>
@@ -69,7 +69,9 @@
 export default {
   name: 'detailshopBrand',
   props: {
-    details: Object
+    details: Object,
+    loading: Boolean,
+    baseUrl: String
   }
 }
 </script>

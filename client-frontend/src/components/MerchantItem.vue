@@ -2,7 +2,8 @@
   <a class="merchant-item-link">
     <div class="merchant-item">
       <div class="item-img">
-        <el-image class="image" :src="merchant.image" fit="cover" @load="() => merchant.imageLoaded = true"></el-image>
+        <el-image class="image" :src="`${baseUrl}/${merchant.image}`" fit="cover" @load="() => merchant.imageLoaded = true"></el-image>
+        <!--        <img :src="" alt="image" class="image">-->
       </div>
       <div class="item-detail">
         <p class="detail-title"><strong>{{ merchant.storeName }}</strong></p>
@@ -54,11 +55,13 @@ export default {
   name: 'MerchantItem',
   data () {
     return {
-      merchant: {}
+      merchant: {},
+      baseUrl: process.env.VUE_APP_BASE_URL
     }
   },
   props: ['item'],
   created () {
+    console.log('process.env.VUE_APP_BASE_URL', process.env.VUE_APP_BASE_URL)
     this.merchant = JSON.parse(JSON.stringify(this.item))
   }
 }
