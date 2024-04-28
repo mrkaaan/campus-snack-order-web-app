@@ -1,20 +1,21 @@
 <template>
   <div style="flex:1;">
-    <div class="categories-sticky-container" v-if="currentScroll >= categoriesStickTop">
-      <div class="categories-sticky-wrapper">
-        <div class="categories-sticky">
-          <ul class="categories" @click="scrollToCategory">
-            <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
-              <div class="category" :class="{active: activeCategory === category_index}">
-                <div class="text-content">{{ category.categoryName }}</div>
-              </div>
-            </li>
-          </ul>
-        </div>
-        <div class="categories-temp"></div>
-      </div>
-    </div>
+
     <div class="shop-details-container">
+      <div class="categories-sticky-container" v-if="currentScroll >= categoriesStickTop" :style="stickyWidth">
+        <div class="categories-sticky-wrapper">
+          <div class="categories-sticky">
+            <ul class="categories" @click="scrollToCategory">
+              <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
+                <div class="category" :class="{active: activeCategory === category_index}">
+                  <div class="text-content">{{ category.categoryName }}</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="categories-temp"></div>
+        </div>
+      </div>
       <div class="shop-header" :style="headerStyle">
         <div class="header-return">
           <el-button type="text" icon="el-icon-arrow-left" v-if="!isWideScreen" @click="handleReturnToSuperior"></el-button>
@@ -161,7 +162,17 @@ export default {
   computed: {
     ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
     ...mapGetters('sidebar', ['isWideScreen']),
+    ...mapState('sidebar', ['isSidebarOpen', 'isSidebarCollapsed']),
     ...mapState('merchant', ['currentMerchant']),
+    stickyWidth () {
+      if (this.isSidebarOpen) {
+        return { width: 'calc(100% - 15.625rem)' }
+      } else if (this.isSidebarCollapsed) {
+        return { width: 'calc(100% - 5rem)' }
+      } else {
+        return { width: '100%' }
+      }
+    },
     headerStyle () {
       let opacity = 0 // 初始透明度为0，完全透明
       const effectiveHeight = this.headerHeight || 100 // 如果headerHeight为0或未定义，使用100作为默认高度
@@ -370,6 +381,7 @@ export default {
   z-index: 1000;
   padding: 0 1rem;
   width:100%;
+  transition: width 0.05s;
   .categories-sticky-wrapper {
     display: flex;
   }
