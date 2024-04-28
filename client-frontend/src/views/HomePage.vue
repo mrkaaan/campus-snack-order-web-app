@@ -62,10 +62,11 @@ export default {
       try {
         const response = await getMerchants()
         this.products = response.data
+        this.isLoading = false // 请求成功后停止加载
       } catch (error) {
         console.error('Failed to fetch products:', error)
       } finally {
-        this.isLoading = false // 完成加载
+        // this.isLoading = false // 完成加载
       }
     },
     goToMerchantDetails (merchant) {

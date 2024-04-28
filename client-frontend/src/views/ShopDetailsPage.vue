@@ -1,5 +1,19 @@
 <template>
   <div style="flex:1;">
+    <div class="categories-sticky-container" v-if="currentScroll >= categoriesStickTop">
+      <div class="categories-sticky-wrapper">
+        <div class="categories-sticky">
+          <ul class="categories" @click="scrollToCategory">
+            <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
+              <div class="category" :class="{active: activeCategory === category_index}">
+                <div class="text-content">{{ category.categoryName }}</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="categories-temp"></div>
+      </div>
+    </div>
     <div class="shop-details-container">
       <div class="shop-header" :style="headerStyle">
         <div class="header-return">
@@ -21,9 +35,9 @@
         </div>
       </div>
 
-      <div class="content">
+      <div class="content" ref="content">
         <div class="content-wrapper">
-          <div class="menu">
+          <div class="menu" ref="menu">
             <div class="menu-wrapper">
               <div class="selected" :style="{ 'transform': backgroundPosition }">
                 <div class="selected-wrapper"/>
@@ -40,8 +54,8 @@
             <div class="shop-wrapper" :style="{ 'transform': `translateX(-${currentBottomNavTag * 100}%)` }">
               <div class="category-section" v-for="(item, item_index) in menuItem" :key="item_index">
                 <div v-if="item.text === '点餐'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">
-                  <div class="categories-menu ">
-                    <ul class="categories sticky-wrapper" @click="scrollToCategory">
+                  <div class="categories-menu">
+                    <ul class="categories" @click="scrollToCategory" :style="{ opacity: currentScroll >= categoriesStickTop ? '0' : '1' }">
                       <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
                         <div class="category" :class="{active: activeCategory === category_index}">
                           <div class="text-content">{{ category.categoryName }}</div>
@@ -138,8 +152,10 @@ export default {
       isLoadingMerchantProducts: false,
       activeCategory: null,
       currentBottomNavTag: 0,
-      baseUrl: process.env.VUE_APP_BASE_URL
-
+      baseUrl: process.env.VUE_APP_BASE_URL,
+      categoriesNode: null,
+      menuHeight: 0,
+      contentTop: 0
     }
   },
   computed: {
@@ -181,7 +197,25 @@ export default {
       const totalStickyHeight = baseHeight + additionalDistance
       // console.log('currentScroll', this.currentScroll, 'totalStickyHeight', totalStickyHeight, this.currentScroll > totalStickyHeight)
       return this.currentScroll > totalStickyHeight
+    },
+    categoriesStickTop () {
+      return this.contentTop + this.menuHeight - (this.headerHeight || 72)
     }
+  },
+  mounted () {
+    this.menuHeight = this.$refs.menu.clientHeight
+    this.contentTop = this.$refs.content.offsetTop
+
+    console.log('headerHeight', this.headerHeight || 72)
+    const menuHeight = this.$refs.menu.clientHeight
+    console.log('menuHeight', menuHeight)
+    const contentTop = this.$refs.content.offsetTop
+    console.log('contentTop', contentTop)
+
+    console.log('top', contentTop + menuHeight - (this.headerHeight || 72) - menuHeight)
+
+    const orderWrapper = document.querySelector('.order-wrapper')
+    console.log('orderWrapperTop', orderWrapper.offsetTop)
   },
   created () {
     this.fetchMerchantDetails()
@@ -189,9 +223,55 @@ export default {
   },
   watch: {
     currentScroll (newValue, oldValue) {
+      console.log('currentScroll', newValue)
+    //   const content = document.querySelector('.content')
+    //   const contentOffset = content.offsetTop
+    //   //   console.log('contentOffset', contentOffset)
+    //   const menuHeight = 3 * 16
+    //   //   console.log('menuHeight', menuHeight)
+    //   const top = contentOffset + menuHeight - 4.5 * 16
+    //   console.log('top', top)
+    //
+    //   const categoriesStick = document.querySelector('.categories-sticky')
+    //   console.log('categoriesLength', categoriesStick)
+    //   const categories = document.querySelector('.categories')
+    //   const categoriesMenu = document.querySelector('.categories-menu')
+    //   console.log('categories', categories)
+    //   // console.log('categoriesMenu', categoriesMenu)
+    //   // categoriesStick.removeChild(categoriesStick.firstChild)
+    //
+    //   if (newValue >= top) {
+    //     if (categoriesStick.hasChildNodes()) {
+    //       // categoriesStick.removeChild(categoriesStick.firstChild)
+    //       this.categoriesNode = categories
+    //     } else {
+    //       categoriesStick.appendChild(categories)
+    //     }
+    //   } else {
+    //     if (categoriesStick.hasChildNodes()) {
+    //       categoriesMenu.append(this.categoriesNode)
+    //       console.log('移除')
+    //       categoriesStick.removeChild(categoriesStick.firstChild)
+    //     }
+    //   }
     }
   },
   methods: {
+    // handleStickyDom (model) {
+    // const content = document.querySelector('.content')
+    // const contentOffset = content.offsetTop
+    // //   console.log('contentOffset', contentOffset)
+    // const menuHeight = 3 * 16
+    // //   console.log('menuHeight', menuHeight)
+    // const top = contentOffset + menuHeight - 4.5 * 16
+    // console.log('top', top)
+    //
+    // if (model === 'isSticky') {
+    //
+    // } else (model === 'isNotSticky') {
+    //
+    // }
+    // },
     selectBottomNvaTab (index) {
       this.currentBottomNavTag = index
     },
@@ -283,6 +363,84 @@ export default {
 <style scoped lang="scss">
 @import '../styles/multi';
 
+.categories-sticky-container {
+  position: fixed;
+  top: 6rem;
+  //left:1rem;
+  z-index: 1000;
+  padding: 0 1rem;
+  width:100%;
+  .categories-sticky-wrapper {
+    display: flex;
+  }
+}
+.categories-sticky{
+
+  background-color: $light-gray;
+  height: inherit;
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex:1;
+}
+.categories-temp {
+  width: 80%;
+}
+.categories-menu {
+  background-color: $light-gray;
+  height: inherit;
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex:1;
+  z-index: 999;
+
+}
+
+.categories {
+  background-color: $light-gray;
+  width: 100%;
+  height: inherit;
+  flex:1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+
+  li {
+    cursor: pointer;
+    padding: 0.5rem 0;
+    height: 3rem;
+    background-color: $light-gray;
+    border-radius: 1rem;
+    position: relative;
+    z-index: 200; // 设置默认 z-index 较高
+    .category {
+      background-color: $light-gray;
+      height: 100%;
+      transition: transform 0.3s;
+      transform-origin: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    &:hover {
+      z-index: 199; // 提升 hover 的 li 的 z-index
+      .category {
+        transform: scaleY(2);
+        background-color: $primary-color;
+      }
+      .text-content {
+        transform: scaleY(0.5); // 反向缩放以抵消 hover-target 的放大
+      }
+    }
+    .text-content {
+      transition: transform 0.3s; // 平滑过渡效果
+    }
+  }
+}
 .shop-details-container {
   height: 100%;
   position: relative;
@@ -416,7 +574,11 @@ export default {
         height: inherit;
 
         position: relative;
-        //overflow: hidden;
+        overflow: hidden;
+        //overflow-x: hidden;
+        //overflow-y: visible;
+        clip-path: inset(0);
+
         width: 100%;
 
         .shop-wrapper {
@@ -431,6 +593,7 @@ export default {
           height: inherit;
           min-width: 100%; /* Ensure each section takes full width */
           flex: 1;
+          transition: min-width 0.5s cubic-bezier(0.5, 0, 1, 1);
         }
         .order-wrapper {
           display: flex;
@@ -443,59 +606,7 @@ export default {
           //overflow-y: auto;
           position: sticky;
         }
-        .categories-menu {
-          background-color: $light-gray;
-          height: inherit;
-          width: 20%;
-          display: flex;
-          justify-content: center;
-          align-items: start;
-          flex:1;
 
-          .categories {
-            background-color: $light-gray;
-            width: 100%;
-            height: inherit;
-            flex:1;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: start;
-
-            li {
-              cursor: pointer;
-              padding: 0.5rem 0;
-              height: 3rem;
-              background-color: $light-gray;
-              border-radius: 1rem;
-              position: relative;
-              z-index: 200; // 设置默认 z-index 较高
-              .category {
-                background-color: $light-gray;
-                height: 100%;
-                transition: transform 0.3s;
-                transform-origin: center;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              }
-              &:hover {
-                z-index: 199; // 提升 hover 的 li 的 z-index
-                .category {
-                  transform: scaleY(2);
-                  background-color: $primary-color;
-                }
-                .text-content {
-                  transform: scaleY(0.5); // 反向缩放以抵消 hover-target 的放大
-                }
-              }
-              .text-content {
-                transition: transform 0.3s; // 平滑过渡效果
-              }
-            }
-          }
-
-        }
         .items {
           width: 80%;
           height: 100vh;
