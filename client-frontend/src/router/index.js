@@ -6,7 +6,8 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    component: () => import('@/views/MainLayout.vue'), // 更改为新的布局组件名
+    // component: () => import('@/views/MainLayout.vue'), // 更改为新的布局组件名
+    component: () => import('@/views/initialPage.vue'), // 更改为新的布局组件名
     children: [
       {
         path: '',

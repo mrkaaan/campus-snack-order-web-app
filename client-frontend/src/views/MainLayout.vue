@@ -80,7 +80,7 @@ export default {
   methods: {
     ...mapActions('sidebar', [
       'toggleSidebar',
-      'updateWindowWidth',
+      // 'updateWindowWidth',
       'checkSidebarStatus',
       'setSidebarDrawer'
     ]),
@@ -95,15 +95,15 @@ export default {
     },
     handleDrawerVisibilityChange (newVisibility) {
       this.setSidebarDrawer(newVisibility)
-    },
-    updateWindowSize () {
-      this.updateWindowWidth(window.innerWidth) // 使用 action
     }
+    // updateWindowSize () {
+    //   this.updateWindowWidth(window.innerWidth) // 使用 action
+    // }
 
   },
   beforeDestroy () {
     // 移除监听器以避免潜在的内存泄露
-    window.removeEventListener('resize', this.updateWindowSize)
+    // window.removeEventListener('resize', this.updateWindowSize)
     window.removeEventListener('scroll', this.onScroll)
   }
 }
