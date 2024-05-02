@@ -2,13 +2,14 @@
   <div class="initial-container">
     <div class="initial-wrapper" :style="initialStyles" ref="initialWrapper">
       <div class="pre-box" ref="preBox" :style="preBoxStyles">
+        <div class="pro-box-mask" v-if="isWideScreen" :style="preBoxMask"></div>
         <h1 class="pro-box-title">WELCOME</h1>
         <p class="pro-box-text" v-if="!isSmallScreen">JOIN US!</p>
         <div class="img-box" :style="imageBoxStyles">
           <img :src="preImage" alt="" id="avatar" ref="avatar" />
         </div>
       </div>
-      <div class="register-form info-box"  :style="infoBoxStyles" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'register' " >
+      <div class="register-form info-box"  :style="[infoBoxStyles, isWideScreen && currentPage === 'login' ? { opacity: 0 } : {}]" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'register' " >
         <div class="info-box-wrapper" :style="infoBoxWrapperStyles">
           <div class="info-title-content">
             <h1>注册</h1>
@@ -35,6 +36,7 @@
                 type="password"
                 placeholder="密码"
                 suffix-icon="el-icon-lock"
+                show-password
                 v-model="registerForm.password"
               />
             </el-form-item>
@@ -43,26 +45,31 @@
                 type="password"
                 placeholder="确认密码"
                 suffix-icon="el-icon-lock"
+                show-password
                 v-model="registerForm.confirmPassword"
               />
             </el-form-item>
           </el-form>
           <div class="info-button-content">
             <div class="button-box">
-              <button @click="register">注册</button>
+              <button type="button" @click="triggerRegister">注册</button>
             </div>
             <div class="switch-box">
               <p @click="mySwitch">已有账号?去登录</p>
             </div>
+            <div class="tourist-box" @click="temporarilyLoggingIn">
+              <p>暂不登录</p>
+            </div>
           </div>
         </div>
       </div>
-      <div class="login-form info-box" :style="infoBoxStyles" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'login' ">
+      <div class="login-form info-box" :style="[infoBoxStyles, isWideScreen && currentPage === 'register' ? { opacity: 0 } : {}]" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'login' ">
         <div class="info-box-wrapper" :style="infoBoxWrapperStyles">
           <div class="info-title-content">
             <h1>登录</h1>
           </div>
           <el-form
+            id="loginForm"
             class="info-from-content"
             :style="infoFromStyles"
             ref="loginFormRef"
@@ -70,6 +77,7 @@
             :rules="rulesLogin"
             label-with="5px"
             :hide-required-asterisk = "true"
+            @submit.prevent="handleLogin"
           >
             <el-form-item class='info-item' prop="username" label=" ">
               <el-input
@@ -83,6 +91,7 @@
               <el-input
                 type="password"
                 placeholder="密码"
+                show-password
                 suffix-icon="el-icon-lock"
                 v-model="loginForm.password"
               />
@@ -90,10 +99,13 @@
           </el-form>
           <div class="info-button-content">
             <div class="button-box">
-              <button @click="login">登录</button>
+              <button type="button" @click="triggerLogin">登录</button>
             </div>
             <div class="switch-box">
-              <p @click="mySwitch">已有账号?去登录</p>
+              <p @click="mySwitch">没有账号?去注册</p>
+            </div>
+            <div class="tourist-box" @click="temporarilyLoggingIn">
+              <p>暂不登录</p>
             </div>
           </div>
         </div>
@@ -104,22 +116,24 @@
 
 <script>
 // import backImg from '@/assets/initial/background.png'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
+import { login as apiLogin, register, loginGuest as loginGuestApi } from '@/api/auth' // 导入API方法
 
 export default {
   name: 'initialPage',
   data () {
     return {
-      flag: false,
+      flag: true,
       loginForm: {
-        username: '',
-        password: ''
+        username: '123',
+        password: '123456'
       },
       registerForm: {
-        username: '',
-        password: '',
+        username: '123',
+        password: '123456',
         confirmPassword: ''
       },
+      rememberMe: false,
       rulesRegister: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -128,11 +142,11 @@ export default {
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
           { min: 6, message: '长度应该大于6', trigger: 'blur' }
-        ],
-        confirmPassword: [
-          { required: true, message: '请输入确认密码', trigger: 'blur' },
-          { min: 6, message: '长度应该大于6', trigger: 'blur' }
         ]
+        // confirmPassword: [
+        //   { required: true, message: '请输入确认密码', trigger: 'blur' },
+        //   { min: 6, message: '长度应该大于6', trigger: 'blur' }
+        // ]
       },
       rulesLogin: {
         username: [
@@ -149,14 +163,109 @@ export default {
     }
   },
   methods: {
-    register () {
-
-    },
-    login () {
-
-    },
     mySwitch () {
       this.flag = !this.flag
+      // 延迟一秒清空数据
+      setTimeout(() => {
+        this.loginForm = { username: '', password: '' }
+        this.registerForm = { username: '', password: '', confirmPassword: '' }
+      }, 500)
+    },
+    ...mapActions('auth', ['login', 'logout', 'loginGuest']),
+    triggerLogin () {
+      this.$refs.loginFormRef.validate((valid) => {
+        // 弹出$message输出测试信息
+        // this.$message.info('Registering...')
+        if (valid) {
+          this.handleLogin()
+        } else {
+          console.log('表单验证失败')
+        }
+      })
+    },
+
+    async handleLogin (mode = 'normal') {
+      let dataToSend
+      if (mode === 'guest') {
+        dataToSend = { mode: 'guest' } // 游客登录时发送的数据
+      } else {
+        dataToSend = {
+          ...this.loginForm,
+          rememberMe: this.rememberMe,
+          mode: 'normal' // 添加模式字段以区分请求类型
+        }
+      }
+      try {
+        const response = await apiLogin(dataToSend) // 调用API
+        console.log('login', response.data)
+        if (response.data.user) {
+          this.login({ user: response.data.user, token: response.data.token, mode: response.data.mode })
+        } else {
+          this.login({ token: response.data.token, mode: response.data.mode })
+        }
+        await this.$router.push('/').catch(err => {
+          // 处理错误，例如导航到相同的路由或者导航被一个导航守卫阻止等
+          console.error(err)
+        })
+        this.$message.success('登陆成功')
+      } catch (error) {
+        if (error.message.includes('found')) {
+          this.$message.error('该用户未注册')
+        } else if (error.message.includes('Password')) {
+          this.$message.error('密码错误')
+        } else {
+          this.$message.error('登录失败, 请稍后再试')
+        }
+      }
+    },
+    async temporarilyLoggingIn () {
+      try {
+        this.$message.info('尝试登录游客账号')
+        const response = await loginGuestApi() // 调用API
+        this.loginGuest({ token: response.data.token })
+        await this.$router.push('/').catch(err => {
+          // 处理错误，例如导航到相同的路由或者导航被一个导航守卫阻止等
+          console.error(err)
+        })
+        this.$message.success('登陆成功')
+      } catch (error) {
+        this.$message.error('游客登录失败, 请稍后再试')
+        console.error('Guest login error', error)
+      }
+    },
+    async handleRegister () {
+      // if (this.registerForm.password !== this.registerForm.confirmPassword) {
+      //   alert('Passwords do not match')
+      //   return
+      // }
+
+      const { username, password } = this.registerForm
+
+      try {
+        await register({ username, password }) // 调用API
+        this.$message.success('注册成功')
+        setTimeout(() => {
+          this.flag = !this.flag
+        }, 500)
+        this.registerForm = { username: '', password: '', confirmPassword: '' }
+      } catch (error) {
+        if (error.message.includes('timeout')) {
+          this.$message.error('注册超时, 请稍后再试')
+        } else {
+          this.$message.error(error.message || '注册失败')
+        }
+      }
+    },
+    triggerRegister () {
+      this.$refs.registerFormRef.validate((valid) => {
+        // 弹出$message输出测试信息
+        // this.$message.info('Registering...')
+        if (valid) {
+          this.handleRegister()
+        } else {
+          console.log('表单验证失败')
+        }
+      })
     }
   },
   computed: {
@@ -172,18 +281,22 @@ export default {
       // 小屏
       if (this.isMediumScreen) {
         style.width = '20%'
+        style.overflow = 'visible'
         if (this.currentPage === 'login') {
           style.left = '0%'
           // style.transform = 'translateX(0%)'
-          style.backgroundColor = '#edd4dc'
+          // style.backgroundColor = '#edd4dc'
+          style.backgroundColor = '#42b983'
           style.alignItems = 'start'
         } else if (this.currentPage === 'register') {
           style.left = '80%'
           // style.transform = 'translateX(400%)'
-          style.backgroundColor = '#c9e0ed'
+          // style.backgroundColor = '#c9e0ed'
+          style.backgroundColor = '#61bc84'
           style.alignItems = 'end'
         }
       } else if (this.isSmallScreen) {
+        style.overflow = 'visible'
         // style.opacity = '0'
         // style.display = 'none'
         style.width = '100%'
@@ -194,12 +307,34 @@ export default {
         style.boxShadow = 'none'
       } else {
         style.width = '50%'
+        style.boxShadow = 'none'
+        style.overflow = 'hidden'
         if (this.currentPage === 'login') {
           style.transform = 'translateX(0%)'
-          style.backgroundColor = '#edd4dc'
+          // style.backgroundColor = '#edd4dc'
+          // style.backgroundColor = '#61bc84'
+          // style.background = 'linear-gradient(to left, rgba(255, 255, 255, 0.6), rgb(66, 185, 131))'
         } else if (this.currentPage === 'register') {
           style.transform = 'translateX(100%)'
-          style.backgroundColor = '#c9e0ed'
+          // style.backgroundColor = '#2E8B57'
+          // style.backgroundColor = '#c9e0ed'
+          // style.background = 'linear-gradient(to left, rgb(66, 185, 131), rgba(255, 255, 255, 0.6))'
+        }
+      }
+      return style
+    },
+    preBoxMask () {
+      const style = {
+        left: '-50%',
+        right: '-50%'
+      }
+      if (this.isWideScreen) {
+        if (this.currentPage === 'login') {
+          style.right = 0
+          style.left = '-100%'
+        } else {
+          style.left = 0
+          style.right = '-100%'
         }
       }
       return style
@@ -350,6 +485,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
+@import '../styles/multi';
+
 .el-form-item {
   margin-bottom: 0;
 }
@@ -364,7 +501,10 @@ input {
   overflow-x: hidden;
   display: flex;
   /* 渐变方向从左到右 */
-  background: linear-gradient(to right, rgb(247, 209, 215), rgb(191, 227, 241));
+  //background: linear-gradient(to right, rgb(247, 209, 215), rgb(191, 227, 241));
+  background-image:
+    linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0)), /* 渐变遮罩 */
+    url('@/assets/initial/background.png'); /* 图片路径 */
 }
 
 /* 最外层的大盒子 */
@@ -380,6 +520,8 @@ input {
   border-radius: 8px;
   /* 设置边框 */
   border: 1px solid rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 255, 255, 0.5); /* 半透明白色背景 */
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
   /* 设置盒子阴影 */
   box-shadow: 2px 1px 19px rgba(0, 0, 0, 0.1);
   transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
@@ -404,14 +546,24 @@ input {
   align-items: center;
   gap: 1rem;
   opacity: 1;
+  background: white;
+
+  .pro-box-mask {
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(168,222,198,1) 14%, rgba(120,204,166,1) 31%, rgba(80,189,140,1) 41%, rgba(66,183,131,1) 50%, rgba(83,189,142,1) 58%, rgba(119,203,165,1) 66%, rgba(181,226,206,1) 85%, rgba(252,252,252,0.06) 100%);
+    transition: left 0.3s, right 0.3s;
+    z-index: 100;
+  }
+
   /* 滑动盒子的标题 */
   .pro-box-title {
-    z-index: 100;
+    z-index: 102;
     width: 200px;
     text-align: center;
     /* 文字间距 */
     letter-spacing: 5px;
-    color: white;
     /* 禁止选中 */
     user-select: none;
     /* 文字阴影 */
@@ -420,6 +572,7 @@ input {
 
   /* 滑动盒子的文字 */
   .pro-box-text {
+    z-index: 102;
     width: 200px;
     height: 30px;
     line-height: 30px;
@@ -427,11 +580,12 @@ input {
     /* 禁止选中 */
     user-select: none;
     font-weight: bold;
-    color: white;
     text-shadow: 4px 4px 3px rgba(0, 0, 0, 0.1);
   }
 
   .img-box {
+    z-index: 101;
+
     width: 200px;
     height: 200px;
     //margin: 20px auto;
@@ -476,7 +630,6 @@ input {
 .info-title-content {
   //height: 300px;
   //line-height: 500px;
-  color: white;
   display: flex;
   justify-content: center;
   align-items: end;
@@ -530,7 +683,7 @@ input {
     border-radius: 4px;
     background-color: #69b3f0;
     color: white;
-
+    //
     &:hover {
       cursor: pointer;
       opacity: 0.8;
@@ -541,13 +694,23 @@ input {
     height: 30px;
     line-height: 30px;
     /* 禁止选中 */
+    color: $dark-gray;
     user-select: none;
     font-size: 14px;
-    color: white;
+    transition: color 0.2s;
   }
   .switch-box:hover {
     cursor: pointer;
-    border-bottom: 1px solid white;
+    color: $darker-gray;
+  }
+  .tourist-box {
+    font-size: 70%;
+    color: $medium-gray;
+    cursor: pointer;
+    transition: color 0.2s;
+    &:hover {
+      color: $dark-gray;
+    }
   }
 }
 

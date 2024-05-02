@@ -13,7 +13,14 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // 这里可以设置一些请求头等信息
-    // config.headers.Authorization = 'Your Auth Token';
+    const authUser = localStorage.getItem('authUser')
+    if (authUser) {
+      const { token } = JSON.parse(authUser)
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    }
+
     return config
   },
   error => {
@@ -39,12 +46,18 @@ service.interceptors.response.use(
   },
   error => {
     console.error('Response error:', error) // for debug
-    Message({
-      message: error.message,
-      type: 'error',
-      duration: 5 * 1000
-    })
-    return Promise.reject(error)
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      // 处理登录失效，如跳转登录页或提示
+      // router.push('/login');
+      // alert('Session expired. Please login again.')
+      Message({
+        message: error.message,
+        type: 'error',
+        duration: 5 * 1000
+      })
+    }
+    // return Promise.reject(error)
+    return Promise.reject(error.response.data)
   }
 )
 

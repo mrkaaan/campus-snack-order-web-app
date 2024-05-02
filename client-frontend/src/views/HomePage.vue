@@ -1,7 +1,7 @@
 
 <template>
   <div>
-    <div class="page-container">
+    <div class="page-container" :style="isSmallScreen ? {paddingBottom: '6rem'} : {paddingBottom: '0'}">
       <div class="page-content">
         <div class="content-search-bar fixed-search" :style="{paddingLeft: paddingLeft + 'rem'}">
           <div class="search-wrapper">
@@ -67,6 +67,7 @@ export default {
         console.error('Failed to fetch products:', error)
       } finally {
         // this.isLoading = false // 完成加载
+        // this.isLoading = true // 开始加载数据
       }
     },
     goToMerchantDetails (merchant) {
@@ -114,7 +115,6 @@ export default {
 .page-container {
   height: 100%;
   padding-top: 0;
-
   .page-content {
     height: 100%;
     display: flex;
