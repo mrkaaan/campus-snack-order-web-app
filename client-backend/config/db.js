@@ -1,5 +1,5 @@
-const mysql = require('mysql2');
-
+// 不支持promise 停用
+const mysql = require('mysql');
 const dbConfig = {
   host: 'localhost',
   user: 'root',
@@ -7,7 +7,7 @@ const dbConfig = {
   database: 'CampusSnackDB'
 };
 
-const connection = mysql.createConnection(dbConfig).promise();  // 添加 .promise()
+const connection = mysql.createConnection(dbConfig);
 connection.connect(error => {
   if (error) {
     console.error('Error connecting to the database: ' + error.stack);
@@ -15,7 +15,5 @@ connection.connect(error => {
   }
   console.log("Successfully connected to the database.");
 });
-
-module.exports = connection;
 
 module.exports = connection;

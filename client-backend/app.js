@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const merchantRoutes = require('./routes/merchantRoutes');
+const authRoutes = require('./routes/authRoutes');
+require('dotenv').config();
 
 const app = express();
 
@@ -11,5 +13,6 @@ app.use(express.static('public'));
 
 // Routes 注册
 app.use('/api/merchants', merchantRoutes);
+app.use('/api/auth', authRoutes);
 
 module.exports = app;
