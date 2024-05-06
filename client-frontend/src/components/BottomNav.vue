@@ -18,7 +18,7 @@ export default {
 
 .bottom-nav {
   position: fixed;
-  z-index: 100;
+  z-index: 1600;
   left: 0;
   right: 0;
   bottom: 0;

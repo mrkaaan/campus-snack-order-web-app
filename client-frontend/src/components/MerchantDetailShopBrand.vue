@@ -1,5 +1,5 @@
 <template>
-  <el-skeleton :throttle="1000" :loading="!loading" style="height: 100%">
+  <el-skeleton :loading="loading" style="height: 100%">
     <template slot="template">
       <div class="brand-inner">
         <div class="brand-top">

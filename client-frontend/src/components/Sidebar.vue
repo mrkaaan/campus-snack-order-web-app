@@ -14,11 +14,12 @@
       </div>
     </transition>
     <ul class="menu">
-      <li class="menu-wrapper" v-for="item in menuItems" :key="item.route" @click="handleSelect(item.route)"
-          :class="{ 'is-active': activeRoute === item.route, 'is-collapsed': isSidebarCollapsed && !isSmallScreen}">
+      <li class="menu-wrapper" v-for="item in menuItems" :key="item.route" @click="handleSelect(item) "
+          :class="{'cannot-click' :item.id === 'merchant' && merchantTags.length === 0,'is-active': activeRoute === item.route, 'is-collapsed': isSidebarCollapsed && !isSmallScreen}"
+      >
         <div class="item-selected">
         </div>
-        <div class="menu-item">
+        <div class="menu-item" :style="{'cursor' :item.id === 'merchant' && merchantTags === 0 ? 'default' : 'pointer'}">
           <el-badge v-if="item.badge" :value="item.badge" class="item-icon">
             <i :class="[item.icon, 'big-icon-size']"></i>
           </el-badge>
@@ -35,13 +36,15 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'Sidebar',
   data () {
     return {
       menuItems: [
         { id: 'home', icon: 'el-icon-house', name: '主页', route: '/home', badge: 0 },
-        { id: 'shop', icon: 'el-icon-shopping-bag-2', name: '商店', route: '/shop', badge: 0 },
+        { id: 'merchant', icon: 'el-icon-shopping-bag-2', name: '商店', route: '/merchant', badge: 0 },
         { id: 'cart', icon: 'el-icon-shopping-cart-full', name: '购物车', route: '/cart', badge: 5 },
         { id: 'message', icon: 'el-icon-message', name: '消息', route: '/message', badge: 3 },
         { id: 'profile', icon: 'el-icon-user', name: '我的', route: '/profile', badge: 0 }
@@ -50,8 +53,16 @@ export default {
     }
   },
   methods: {
-    handleSelect (route) {
-      this.$router.push(route)
+    handleSelect (item) {
+      if (item.id !== 'merchant') {
+        this.$router.push(item.route)
+      } else if (item.id === 'merchant') {
+        console.log('merchantTag', this.merchantTags)
+        console.log('merchantTag', this.merchantTags[-1])
+        if (this.merchantTags.length !== 0) {
+          this.$router.push({ name: 'merchantDetails', params: { merchantId: this.merchantTags[this.merchantTags.length - 1].merchantId } })
+        }
+      }
     }
   },
   props: {
@@ -61,12 +72,13 @@ export default {
     isSmallScreen: Boolean
   },
   computed: {
+    ...mapState('merchant', ['merchantTags']),
     headerTitle () {
       return this.isSidebarCollapsed ? 'Del.' : 'Delicious.'
     },
     activeRoute () {
-      if (this.$route.path.startsWith('/shop/')) {
-        return '/home' // 强制返回主页路由以高亮主页菜单项
+      if (this.$route.path.startsWith('/merchant/')) {
+        return '/merchant' // 强制返回主页路由以高亮主页菜单项
       }
       return this.$route.path === '/' ? '/home' : this.$route.path
     }
@@ -180,4 +192,8 @@ export default {
   opacity: 0;
 }
 
+.cannot-click {
+  cursor: default;
+  color: #909399;
+}
 </style>

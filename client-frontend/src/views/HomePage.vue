@@ -72,7 +72,8 @@ export default {
     },
     goToMerchantDetails (merchant) {
       this.updateCurrentMerchant(merchant)
-      this.$router.push({ name: 'shopDetails', params: { shopId: merchant.id } })
+      console.log('merchant', merchant.merchantId)
+      this.$router.push({ name: 'merchantDetails', params: { merchantId: merchant.merchantId } })
     }
   },
   computed: {

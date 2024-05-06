@@ -1,14 +1,14 @@
 <template>
   <div style="flex:1;">
 
-    <div class="shop-details-container">
+    <div class="shop-details-container" :style="shopDetailsContainerStyles" ref="shopDetailsContainer">
       <div class="categories-sticky-container" v-if="currentScroll >= categoriesStickTop" :style="stickyWidth">
         <div class="categories-sticky-wrapper">
           <div class="categories-sticky">
             <ul class="categories" @click="scrollToCategory">
               <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
                 <div class="category" :class="{active: activeCategory === category_index}">
-                  <div class="text-content">{{ category.categoryName }}</div>
+                  <div class="text-content">{{ category.name }}</div>
                 </div>
               </li>
             </ul>
@@ -59,7 +59,7 @@
                     <ul class="categories" @click="scrollToCategory" :style="{ opacity: currentScroll >= categoriesStickTop ? '0' : '1' }">
                       <li v-for="(category, category_index) in merchantProducts" :id="'left-cat-' + category_index" :key="category_index">
                         <div class="category" :class="{active: activeCategory === category_index}">
-                          <div class="text-content">{{ category.categoryName }}</div>
+                          <div class="text-content">{{ category.name }}</div>
                         </div>
                       </li>
                     </ul>
@@ -68,11 +68,11 @@
                     <div v-for="(category, cat_index) in merchantProducts" :id="'cat-' + cat_index" :key="cat_index" class="category-items">
                       <!-- 分类名称区域 -->
                       <div class="category-title">
-                        {{ category.categoryName }}
+                        {{ category.name }}
                       </div>
                       <!-- 项目列表区域 -->
                       <div class="category-content">
-                        <div v-for="item in category.products" :key="item.id" class="item">
+                        <div v-for="item in category.items" :key="item.productId" class="item">
                           <div class="item-wrapper">
                             <!-- 左侧图片 -->
                             <div class="item-image">
@@ -90,7 +90,7 @@
                                     <div class="item-description">{{ item.description }}</div>
                                   </div>
                                   <div class="item-sales">月售 {{ item.monthlySales }}+</div>
-                                  <div class="item-discount" :style="{ opacity: item.discountInfo ? '1' : '0' }">{{ item.discountInfo }} 折</div>
+                                  <div class="item-discount" :style="{ opacity: item.discountInfo!=='1.00' ? '1' : '0' }">{{ item.discountInfo }} 折</div>
                                 </div>
                                 <div class="item-detail-bottom">
                                   <div class="item-pricing">
@@ -103,10 +103,13 @@
                                   </div>
                                   <div class="item-quantity-controls">
                                     <div class="controls-wrapper">
-                                      <div class='add icon' @click="decrement(item)"><i class="el-icon-minus"></i></div>
-                                      <span class="item-quantity">10</span>
+                                      <div class='add icon' @click="decrement(item)" v-if="item.quantity"><i class="el-icon-minus"></i></div>
+                                      <span class="item-quantity" v-if="item.quantity">{{ item.quantity }}</span>
                                       <div class='sub icon' @click="increment(item)"><i class="el-icon-plus"></i></div>
                                     </div>
+                                    <!--                                    <div class="controls-wrapper" v-else>-->
+                                    <!--                                      <div class='icon' @click="openOption(item)">选规格</div>-->
+                                    <!--                                    </div>-->
                                   </div>
                                 </div>
                               </div>
@@ -123,19 +126,22 @@
             </div>
           </div>
         </div>
+      <!--      <div class="masking-box" v-if="isExpanded" @click="handelCloseCart"></div>-->
       </div>
+      <CartComponent :merchantId="merchantDetails.merchantId" :storeName="merchantDetails.storeName"/>
     </div>
   </div>
 </template>
 
 <script>
 
-import { mapGetters, mapState } from 'vuex'
-import { getMerchant, getMerchantProducts } from '@/api/merchant'
+import { mapActions, mapGetters, mapState } from 'vuex'
+import { getMerchant } from '@/api/merchant'
 import MerchantDetailShopBrand from '@/components/MerchantDetailShopBrand.vue'
+import CartComponent from '@/components/CartComponent.vue'
 
 export default {
-  components: { MerchantDetailShopBrand },
+  components: { MerchantDetailShopBrand, CartComponent },
   data () {
     return {
       merchant: {}, // 商家详情数据
@@ -149,19 +155,22 @@ export default {
       ],
       merchantDetails: {},
       isLoadingMerchantDetails: false,
-      merchantProducts: [],
       isLoadingMerchantProducts: false,
       activeCategory: null,
       currentBottomNavTag: 0,
       baseUrl: process.env.VUE_APP_BASE_URL,
       categoriesNode: null,
       menuHeight: 0,
-      contentTop: 0
+      contentTop: 0,
+      // 是否打开选规格窗口
+      isOpenOption: false,
+      currentProduct: null
     }
   },
   computed: {
     ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
     ...mapGetters('sidebar', ['isWideScreen']),
+    ...mapGetters('cart', ['isExpanded']),
     ...mapState('sidebar', ['isSidebarOpen', 'isSidebarCollapsed']),
     ...mapState('merchant', ['currentMerchant']),
     stickyWidth () {
@@ -211,6 +220,21 @@ export default {
     },
     categoriesStickTop () {
       return this.contentTop + this.menuHeight - (this.headerHeight || 72)
+    },
+    ...mapGetters('sidebar', ['isSmallScreen', 'isWideScreen', 'isMediumScreen']),
+    shopDetailsContainerStyles () {
+      const style = {}
+      if (this.isSmallScreen) {
+        style.paddingBottom = '13%'
+      } else if (this.isMediumScreen) {
+        style.paddingBottom = '13%'
+      } else if (this.isWideScreen) {
+        style.paddingBottom = '6rem'
+      }
+      return style
+    },
+    merchantProducts () {
+      return this.$store.state.merchant.merchantProducts
     }
   },
   mounted () {
@@ -234,7 +258,7 @@ export default {
   },
   watch: {
     currentScroll (newValue, oldValue) {
-      console.log('currentScroll', newValue)
+      // console.log('currentScroll', newValue)
     //   const content = document.querySelector('.content')
     //   const contentOffset = content.offsetTop
     //   //   console.log('contentOffset', contentOffset)
@@ -268,6 +292,14 @@ export default {
     }
   },
   methods: {
+    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart']),
+    handelCloseCart () {
+      console.log('handelCloseCart')
+      if (this.isExpanded) {
+        this.updateIsExpanded(false)
+      }
+      console.log('handelCloseCart', this.isExpanded)
+    },
     // handleStickyDom (model) {
     // const content = document.querySelector('.content')
     // const contentOffset = content.offsetTop
@@ -325,26 +357,35 @@ export default {
       }
     },
     increment (item) {
-      // 逻辑增加item的数量
-      item.quantity += 1
+      this.$store.dispatch('cart/addToCart', {
+        item,
+        merchant: this.merchantDetails
+      })
     },
     decrement (item) {
       // 逻辑减少item的数量，确保数量不会小于0
       if (item.quantity > 0) {
-        item.quantity -= 1
+        this.removeFromCart({ item, merchant: this.merchantDetails })
       }
+    },
+    // 选规格窗口打开
+    openOption (product) {
+      this.isOpenOption = true
+      this.currentProduct = product
     },
     async fetchMerchantDetails () {
       this.isLoadingMerchantDetails = true
-      const currentMerchantId = this.$route.params.shopId
-      if (this.currentMerchant && currentMerchantId === this.currentMerchant.id) {
+      const currentMerchantId = this.$route.params.merchantId
+      if (this.currentMerchant && currentMerchantId === this.currentMerchant.merchantId) {
         console.log('Using cached merchant details')
         this.merchantDetails = this.currentMerchant
+        this.isLoadingMerchantDetails = false
       } else {
         try {
           console.log('Fetching merchant details')
           const response = await getMerchant(currentMerchantId)
           this.merchantDetails = response.data
+          console.log('merchantDetails', this.merchantDetails)
         } catch (error) {
           console.error('Error fetching merchant details:', error)
         } finally {
@@ -354,15 +395,16 @@ export default {
     },
     async fetchMerchantProducts () {
       this.isLoadingMerchantProducts = true
-      const currentMerchantId = this.$route.params.shopId
       try {
-        const response = await getMerchantProducts(currentMerchantId)
-        this.merchantProducts = response.data
+        const currentMerchantId = this.$route.params.merchantId
+        console.log('currentMerchantId', currentMerchantId)
+        await this.$store.dispatch('merchant/fetchProducts', currentMerchantId)
+        this.isLoadingMerchantProducts = false
       } catch (error) {
         console.error('Error fetching merchant products:', error)
-      } finally {
         this.isLoadingMerchantProducts = false
       }
+      console.log('merchantProducts', this.merchantProducts)
     },
     handleAddToCart (product) {
       // 处理添加到购物车的逻辑
@@ -373,7 +415,6 @@ export default {
 
 <style scoped lang="scss">
 @import '../styles/multi';
-
 .categories-sticky-container {
   position: fixed;
   top: 6rem;
@@ -767,7 +808,7 @@ export default {
                           flex-direction: row;
                           justify-content: start;
                           align-items: center;
-                          gap: 0.8rem;
+                          gap: 0.3rem;
                           .icon {
                             background-color: #4CAF50; /* 按钮颜色 */
                             border: none;
@@ -792,5 +833,22 @@ export default {
     }
   }
 }
-
+//.masking-box {
+//  position: absolute;
+//  top: 0;
+//  left: 0;
+//  margin: 0;
+//  right: 0;
+//  bottom: 0;
+//  width: 100%;
+//  height: 100%;
+//  background-color: rgba(0, 0, 0, 0.5);
+//  display: flex;
+//  justify-content: center;
+//  align-items: center;
+//
+//  //background-color: rgba(0, 0, 0, 0.7);
+//  z-index: 1009;
+//  transition: opacity .3s;
+//}
 </style>

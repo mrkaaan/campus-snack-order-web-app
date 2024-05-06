@@ -1,11 +1,13 @@
 <template>
   <div :class="{
-    'sidebar-active': isSidebarOpen,
-    'sidebar-active-collapsed': isSidebarCollapsed,
-    'sidebar-drawer':isMediumScreen,
-    'sidebar-active-drawer': isSidebarDrawer,
-    'sidebar-close': isSmallScreen && !$route.meta.hideHeader
-  }" style="height: 100%">
+         'sidebar-active': isSidebarOpen,
+         'sidebar-active-collapsed': isSidebarCollapsed,
+         'sidebar-drawer':isMediumScreen,
+         'sidebar-active-drawer': isSidebarDrawer,
+         'sidebar-close': isSmallScreen && !$route.meta.hideHeader
+       }"
+       style="">
+    <!--     style="height: 100%">-->
     <nav class="sidebar" v-if="!isMediumScreen">
       <Sidebar
         :isSidebarOpen="isSidebarOpen"
@@ -32,6 +34,7 @@
     <main class="home-page content-shift">
       <page-header v-if="isWideScreen || !$route.meta.hideHeader"></page-header>
       <router-view></router-view>
+      <div class="masking-box" v-if="isMaskVisible" @click="hideOverlay"></div>
     </main>
     <CustomBottomNav v-if="isWideScreen || !$route.meta.hideFooter"></CustomBottomNav>
   </div>
@@ -62,7 +65,8 @@ export default {
       'isMediumScreen',
       'isSmallScreen'
     ]),
-    ...mapState('header', ['headerHeight'])
+    ...mapState('header', ['headerHeight']),
+    ...mapGetters('mask', ['isMaskVisible'])
   },
   mounted () {
     // 组件挂载时设置初始侧边栏状态
@@ -85,6 +89,7 @@ export default {
       'setSidebarDrawer'
     ]),
     ...mapActions('header', ['handleScroll']),
+    ...mapActions('mask', ['hideOverlay']),
     // 监听滚动 实时更新vuex数据
     onScroll () {
       const currentScroll = window.pageYOffset
@@ -113,6 +118,7 @@ export default {
 @import '../styles/multi';
 
 .home-page {
+  position: relative;
   background-color: $primary-color;
   height: 100%;
   padding-bottom: 0;
@@ -180,6 +186,24 @@ export default {
 @media (max-width: 36rem) {
 }
 
+.masking-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  //background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1100;
+  transition: opacity .3s;
+}
 </style>
 
 <style lang="scss">

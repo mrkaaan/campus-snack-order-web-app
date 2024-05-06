@@ -18,16 +18,17 @@ const routes = [
         meta: { requiresAuth: true } // 确保需要认证
       },
       {
-        path: 'shop',
-        name: 'shop',
-        component: () => import('@/views/ShopPage.vue'),
-        meta: { requiresAuth: true } // 确保需要认证
-      },
-      {
-        path: 'shop/:shopId', // 仍然使用动态路由参数
-        name: 'shopDetails',
-        component: () => import('@/views/ShopDetailsPage.vue'), // 商家详情组件
-        meta: { hideHeader: true, hideFooter: true, requiresAuth: true }
+        path: 'merchant',
+        component: () => import('@/views/MerchantPage.vue'), // 新商家页面
+        children: [
+          {
+            path: ':merchantId',
+            name: 'merchantDetails',
+            component: () => import('@/views/MerchantDetailsPage.vue'), // 商家详情组件
+            meta: { hideHeader: true, hideFooter: true, requiresAuth: true }
+          }
+        ],
+        meta: { requiresAuth: true }
       },
       {
         path: 'cart',
@@ -76,9 +77,10 @@ const router = new VueRouter({
 })
 router.beforeEach((to, from, next) => {
   (async () => {
+    console.log('to.path:', to.path, 'from.path:', from.path)
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
     const authUserStr = localStorage.getItem('authUser')
-    console.log('routing authUser', authUserStr)
+    // console.log('routing authUser', authUserStr)
     if (!requiresAuth) {
       next()
       return
