@@ -20,17 +20,17 @@
                     <div class="cart-item-info-b">
                       <div class="cart-item-price">
                         <span class="sale-price" v-if="item.salePrice" :class="{ 'item-price': item.salePrice}">
-                          ￥ {{ item.salePrice }}
+                          ￥ {{ item.totalOriginalPrice }}
                         </span>
                         <span  :class="item.salePrice ? 'original-price' : 'item-price'">
-                          ￥ {{ item.originalPrice }}
+                          ￥ {{ item.totalSalePrice}}
                         </span>
                       </div>
                       <div class="cart-item-quantity">
                         <div class="controls-wrapper">
-                          <div class='add icon' @click="increment(item)"><i class="el-icon-minus"></i></div>
+                          <div class='add icon' @click="decrement(item)"><i class="el-icon-minus"></i></div>
                           <span class="item-quantity">{{ item.quantity }}</span>
-                          <div class='sub icon' @click="decrement(item)"><i class="el-icon-plus"></i></div>
+                          <div class='sub icon' @click="increment(item)"><i class="el-icon-plus"></i></div>
                         </div>
                       </div>
                     </div>
@@ -48,11 +48,11 @@
               <div class="cart-sum-icon"><i class="el-icon-shopping-bag-2"></i></div>
               <div class="cart-sun-info">
                 <div class="cart-sum-info-t">
-                  <span>￥ 总价 </span>
-                  <i :class="isExpanded ? 'el-icon-arrow-down': 'el-icon-arrow-up'"></i>
+                  <span>￥ {{ totalSalePrice }} </span>
+                  <i v-if="totalSalePrice" :class="isExpanded ? 'el-icon-arrow-down': 'el-icon-arrow-up'"></i>
                 </div>
-                <div class="cart-sum-info-b">
-                  <p>￥ 折扣价</p>
+                <div class="cart-sum-info-b" v-if="totalSalePrice" >
+                  <p>￥ {{ totalOriginalPrice }} </p>
                 </div>
               </div>
             </div>
@@ -81,6 +81,9 @@ export default {
     ...mapActions('mask', ['showOverlay', 'hideOverlay']),
     ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart']),
     toggleCart () {
+      if (!this.totalSalePrice) {
+        return
+      }
       const isExpanded = !this.isExpanded
       this.updateIsExpanded(isExpanded)
       if (isExpanded) {
@@ -113,7 +116,7 @@ export default {
   computed: {
     ...mapGetters('cart', ['isExpanded']),
     ...mapGetters('sidebar', ['isSmallScreen', 'isWideScreen', 'isMediumScreen']),
-    ...mapGetters('cart', ['cartByMerchant']),
+    ...mapGetters('cart', ['cartByMerchant', 'getTotalSalePriceByMerchant', 'getTotalOriginalPriceByMerchant']),
     ...mapState('sidebar', ['isSidebarCollapsed']),
     total () {
       return this.items.reduce((acc, item) => acc + item.price, 0)
@@ -161,7 +164,19 @@ export default {
     },
     cartItems () {
       return this.cartByMerchant(this.merchantId)
+    },
+    totalOriginalPrice () {
+      return this.getTotalOriginalPriceByMerchant(this.merchantId)
+    },
+    totalSalePrice () {
+      return this.getTotalSalePriceByMerchant(this.merchantId)
     }
+    // cartSummary () {
+    //   return this.cartItems.reduce((acc, item) => acc + item.quantity, 0)
+    // },
+    // cartSummaryPrice () {
+    //   return this.cartItems.reduce((acc, item) => acc + item
+    // }
   }
 }
 </script>

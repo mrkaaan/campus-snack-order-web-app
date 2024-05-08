@@ -3,7 +3,7 @@
     <div class="initial-wrapper" :style="initialStyles" ref="initialWrapper">
       <div class="pre-box" ref="preBox" :style="preBoxStyles">
         <div class="pro-box-mask" v-if="isWideScreen" :style="preBoxMask"></div>
-        <h1 class="pro-box-title">WELCOME</h1>
+        <h1 class="pro-box-title" :style="boxTitleStyles">WELCOME</h1>
         <p class="pro-box-text" v-if="!isSmallScreen">JOIN US!</p>
         <div class="img-box" :style="imageBoxStyles">
           <img :src="preImage" alt="" id="avatar" ref="avatar" />
@@ -11,17 +11,21 @@
       </div>
       <div class="register-form info-box"  :style="[infoBoxStyles, isWideScreen && currentPage === 'login' ? { opacity: 0 } : {}]" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'register' " >
         <div class="info-box-wrapper" :style="infoBoxWrapperStyles">
-          <div class="info-title-content">
+          <div class="info-title-content" :style="infoTitleStyles">
             <h1>注册</h1>
           </div>
           <el-form
+            v-if="!useEmailByRegister"
             class="info-from-content"
             :style="infoFromStyles"
+            key="registerForm"
             ref="registerFormRef"
             :model="registerForm"
-            :rules="rulesRegister"
+            :rules="registerRules"
             label-with="5px"
             :hide-required-asterisk = "true"
+            :validate-on-rule-change="false"
+            @submit="triggerRegister"
           >
             <el-form-item class='info-item' prop="username" label=" ">
               <el-input
@@ -50,39 +54,77 @@
               />
             </el-form-item>
           </el-form>
+          <el-form
+            v-else
+            class="info-from-content"
+            :style="infoFromStyles"
+            key="registerByEmailForm"
+            ref="registerByEmailFormRef"
+            :model="registerByEmailForm"
+            :rules="registerByEmailRules"
+            label-with="5px"
+            :hide-required-asterisk = "true"
+            :validate-on-rule-change="false"
+            @submit="triggerRegister"
+          >
+            <el-form-item class='info-item' prop="email" label=" ">
+              <el-input
+                type="email"
+                placeholder="邮箱"
+                suffix-icon="el-icon-message"
+                v-model="registerByEmailForm.email"
+              />
+            </el-form-item>
+            <el-form-item class='info-item' prop="verCode" label=" ">
+              <el-input
+                type="text"
+                placeholder="验证码"
+                v-model="registerByEmailForm.verCode"
+              >
+                <el-button slot="append" @click="sendVerCode" type="text" size="small" :style="sendVerCodeStyles">
+                  {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
+                </el-button>
+              </el-input>
+            </el-form-item>
+          </el-form>
           <div class="info-button-content">
             <div class="button-box">
+              <div class="prompt-text" v-if="useEmailByRegister">使用邮箱注册将会自动登录</div>
               <button type="button" @click="triggerRegister">注册</button>
+              <div class="tourist-box" >
+                <p @click="temporarilyLoggingIn">暂不注册</p>
+                <p @click="switchToEmail('register')">{{ useEmailByRegister ? "用户密码注册" : "邮箱注册" }}</p>
+              </div>
             </div>
             <div class="switch-box">
               <p @click="mySwitch">已有账号?去登录</p>
-            </div>
-            <div class="tourist-box" @click="temporarilyLoggingIn">
-              <p>暂不登录</p>
             </div>
           </div>
         </div>
       </div>
       <div class="login-form info-box" :style="[infoBoxStyles, isWideScreen && currentPage === 'register' ? { opacity: 0 } : {}]" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'login' ">
         <div class="info-box-wrapper" :style="infoBoxWrapperStyles">
-          <div class="info-title-content">
+          <div class="info-title-content" :style="infoTitleStyles">
             <h1>登录</h1>
           </div>
           <el-form
+            v-if="!useEmailByLogin"
             id="loginForm"
             class="info-from-content"
             :style="infoFromStyles"
+            key="loginForm"
             ref="loginFormRef"
             :model="loginForm"
-            :rules="rulesLogin"
+            :rules="loginRules"
             label-with="5px"
             :hide-required-asterisk = "true"
-            @submit.prevent="handleLogin"
+            :validate-on-rule-change="false"
+            @submit="triggerLogin"
           >
             <el-form-item class='info-item' prop="username" label=" ">
               <el-input
                 type="text"
-                placeholder="用户名"
+                placeholder="用户名/UID/邮箱"
                 suffix-icon="el-icon-user-solid"
                 v-model="loginForm.username"
               />
@@ -97,15 +139,51 @@
               />
             </el-form-item>
           </el-form>
+          <el-form
+            v-else
+            id="loginForm"
+            class="info-from-content"
+            :style="infoFromStyles"
+            key="loginByEmailForm"
+            ref="loginByEmailFormRef"
+            :model="loginFormByEmail"
+            :rules="loginRulesByEmail"
+            label-with="5px"
+            :hide-required-asterisk = "true"
+            :validate-on-rule-change="false"
+            @submit="triggerLogin"
+          >
+            <el-form-item class='info-item' prop="email" label=" ">
+              <el-input
+                type="email"
+                placeholder="邮箱"
+                suffix-icon="el-icon-message"
+                v-model="loginFormByEmail.email"
+              />
+            </el-form-item>
+            <el-form-item class='info-item' prop="verCode" label=" ">
+              <el-input
+                type="text"
+                placeholder="验证码"
+                v-model="loginFormByEmail.verCode"
+              >
+                <el-button slot="append" @click="sendVerCode" type="text" size="small" :style="sendVerCodeStyles">
+                  {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
+                </el-button>
+              </el-input>
+            </el-form-item>
+          </el-form>
           <div class="info-button-content">
             <div class="button-box">
+              <div class="prompt-text" v-if="useEmailByLogin">若该邮箱未注册则自动注册</div>
               <button type="button" @click="triggerLogin">登录</button>
+              <div class="tourist-box">
+                <p @click="temporarilyLoggingIn">暂不登录</p>
+                <p @click="switchToEmail('login')">{{ useEmailByLogin ?  "用户名密码登录" : "邮箱验证码登录" }}</p>
+              </div>
             </div>
             <div class="switch-box">
               <p @click="mySwitch">没有账号?去注册</p>
-            </div>
-            <div class="tourist-box" @click="temporarilyLoggingIn">
-              <p>暂不登录</p>
             </div>
           </div>
         </div>
@@ -117,52 +195,133 @@
 <script>
 // import backImg from '@/assets/initial/background.png'
 import { mapGetters, mapActions } from 'vuex'
-import { login as apiLogin, register, loginGuest as loginGuestApi } from '@/api/auth' // 导入API方法
-
+import { login as apiLogin, register, loginGuest as loginGuestApi, sendEmailCode } from '@/api/auth' // 导入API方法
+import { encryptData } from '@/utils/encryption'
 export default {
   name: 'initialPage',
   data () {
     return {
+      useEmailByRegister: true,
+      useEmailByLogin: false,
       flag: true,
       loginForm: {
-        username: '123',
-        password: '123456'
+        username: 'demo123',
+        password: '12345678'
+      },
+      loginFormByEmail: {
+        email: '',
+        verCode: ''
       },
       registerForm: {
         username: '123',
         password: '123456',
-        confirmPassword: ''
+        confirmPassword: '123456'
+      },
+      registerByEmailForm: {
+        email: '',
+        verCode: ''
       },
       rememberMe: false,
-      rulesRegister: {
+      registerRules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
-          { min: 3, max: 5, message: '长度应该在3~5个字符之间', trigger: 'blur' }
+          { min: 6, max: 20, message: '长度应该为6-20', trigger: 'blur' },
+          { pattern: /^[A-Za-z0-9]+$/, message: '只能包含字母和数字', trigger: 'blur' }
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
-          { min: 6, message: '长度应该大于6', trigger: 'blur' }
+          { min: 8, max: 20, message: '长度应为8-20', trigger: 'blur' },
+          { pattern: /^[A-Za-z0-9_@.]+$/, message: '只能包含字母、数字和@._', trigger: 'blur' }
+        ],
+        confirmPassword: [
+          { required: true, message: '请确认密码', trigger: 'blur' },
+          { validator: this.matchPassword, trigger: 'blur' }
         ]
-        // confirmPassword: [
-        //   { required: true, message: '请输入确认密码', trigger: 'blur' },
-        //   { min: 6, message: '长度应该大于6', trigger: 'blur' }
-        // ]
       },
-      rulesLogin: {
+      registerByEmailRules: {
+        email: [
+          { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+          { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+        ],
+        verCode: [
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { pattern: /^\d{6}$/, message: '验证码为6位数字', trigger: 'blur' }
+        ]
+      },
+      loginRules: {
         username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' }
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 6, max: 20, message: '长度应该为6-20', trigger: 'blur' },
+          { pattern: /^[A-Za-z0-9]+$/, message: '只能包含字母和数字', trigger: 'blur' }
         ],
         password: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度应为8-20', trigger: 'blur' },
+          { pattern: /^[A-Za-z0-9_@.]+$/, message: '只能包含字母、数字和@._', trigger: 'blur' }
+        ]
+      },
+      loginRulesByEmail: {
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+        ],
+        verCode: [
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { pattern: /^\d{6}$/, message: '验证码为6位数字', trigger: 'blur' }
         ]
       },
       // imgWuwu: require('@/assets/img/wuwu.jpeg'),
       // imgWaoku: require('@/assets/img/waoku.jpg')
       imgLogin: 'https://via.placeholder.com/300x300?text=Login',
-      imgRegister: 'https://via.placeholder.com/300x300?text=Register'
+      imgRegister: 'https://via.placeholder.com/300x300?text=Register',
+      timer: null,
+      countdown: 0
     }
   },
   methods: {
+    async sendVerCode () {
+      if (this.countdown > 0) {
+        return // 如果当前倒计时正在进行，则不执行任何操作
+      }
+      const email = !this.flag ? this.registerByEmailForm.email : this.loginFormByEmail.email
+      console.log(this.registerByEmailForm)
+      if (!email) {
+        this.$message.error('请输入邮箱')
+        return
+      }
+      // 启动倒计时
+      this.countdown = 60 // 设置倒计时秒数
+      this.timer = setInterval(() => {
+        this.countdown -= 1
+        if (this.countdown <= 0) {
+          clearInterval(this.timer)
+          this.timer = null
+        }
+      }, 1000)
+      this.$message.success('验证码已发送')
+      try {
+        await sendEmailCode({ email })
+      } catch (error) {
+        this.$message.error(error.message || 'Failed to send verification code.')
+      }
+      // console.log(email)
+    },
+    matchPassword (rule, value, callback) {
+      if (value === '') {
+        callback(new Error('请再次输入密码'))
+      } else if (value !== this.registerForm.password) {
+        callback(new Error('两次输入密码不一致!'))
+      } else {
+        callback()
+      }
+    },
+    switchToEmail (mod) {
+      if (mod === 'login') {
+        this.useEmailByLogin = !this.useEmailByLogin
+      } else {
+        this.useEmailByRegister = !this.useEmailByRegister
+      }
+    },
     mySwitch () {
       this.flag = !this.flag
       // 延迟一秒清空数据
@@ -173,49 +332,75 @@ export default {
     },
     ...mapActions('auth', ['login', 'logout', 'loginGuest']),
     triggerLogin () {
-      this.$refs.loginFormRef.validate((valid) => {
-        // 弹出$message输出测试信息
-        // this.$message.info('Registering...')
-        if (valid) {
-          this.handleLogin()
-        } else {
-          console.log('表单验证失败')
-        }
-      })
-    },
-
-    async handleLogin (mode = 'normal') {
-      let dataToSend
-      if (mode === 'guest') {
-        dataToSend = { mode: 'guest' } // 游客登录时发送的数据
+      if (!this.useEmailByLogin) {
+        this.$refs.loginFormRef.validate((valid) => {
+          if (valid) {
+            this.handleLogin('normal')
+            console.log('正常登录')
+          } else {
+            console.log('表单验证失败')
+          }
+        })
       } else {
-        dataToSend = {
-          ...this.loginForm,
-          rememberMe: this.rememberMe,
-          mode: 'normal' // 添加模式字段以区分请求类型
-        }
+        this.$refs.loginByEmailFormRef.validate((valid) => {
+          if (valid) {
+            this.handleLogin('email')
+            console.log('邮箱登录')
+          } else {
+            console.log('表单验证失败')
+          }
+        })
       }
+    },
+    triggerRegister () {
+      if (!this.useEmailByRegister) {
+        this.$refs.registerFormRef.validate((valid) => {
+          if (valid) {
+            this.handleRegister('normal')
+          } else {
+            console.log('表单验证失败')
+          }
+        })
+      } else {
+        this.$refs.registerByEmailFormRef.validate((valid) => {
+          if (valid) {
+            this.handleRegister('email')
+          } else {
+            console.log('邮箱注册信息错误')
+          }
+        })
+      }
+    },
+    async handleLogin (loginType) {
+      let dataToSend = {}
+
+      if (loginType === 'normal') {
+        const { username, password } = this.loginForm
+        dataToSend = { userinfo: username, password }
+      } else if (loginType === 'email') {
+        const { email, verCode } = this.loginFormByEmail
+        dataToSend = { email, verCode }
+      } else {
+        this.$message.error('无效的登录方式')
+        return
+      }
+
+      // {
+      //   ...this.loginForm,
+      //   rememberMe: this.rememberMe,
+      //   mode: 'normal' // 添加模式字段以区分请求类型
+      // }
       try {
-        const response = await apiLogin(dataToSend) // 调用API
+        const response = await apiLogin({ userData: dataToSend, loginType }) // 调用API
         console.log('login', response.data)
-        if (response.data.user) {
-          this.login({ user: response.data.user, token: response.data.token, mode: response.data.mode })
-        } else {
-          this.login({ token: response.data.token, mode: response.data.mode })
-        }
+        // 登录成功，保存用户信息到Vuex
+        this.login({ user: response.data.user || null, token: response.data.token, mode: response.data.mode })
         await this.$router.push('/').catch(err => {
-          // 处理错误，例如导航到相同的路由或者导航被一个导航守卫阻止等
           console.error(err)
         })
         this.$message.success('登陆成功')
       } catch (error) {
-        if (error.message.includes('found')) {
-          this.$message.error('该用户未注册')
-        } else if (error.message.includes('Password')) {
-          this.$message.error('密码错误')
-        } else {
-          this.$message.error('登录失败, 请稍后再试')
-        }
+        this.$message.error(error.message || '登录失败, 请稍后再试')
       }
     },
     async temporarilyLoggingIn () {
@@ -233,40 +418,54 @@ export default {
         console.error('Guest login error', error)
       }
     },
-    async handleRegister () {
-      // if (this.registerForm.password !== this.registerForm.confirmPassword) {
-      //   alert('Passwords do not match')
-      //   return
-      // }
+    async handleRegister (registerType) {
+      const registerData = {}
 
-      const { username, password } = this.registerForm
-
+      if (registerType === 'normal') {
+        // 普通注册表单数据
+        const { username, password } = this.registerForm
+        // if (password !== confirmPassword) {
+        //   this.$message.error('密码不匹配，请重新输入')
+        //   return
+        // }
+        registerData.username = username
+        registerData.password = password
+      } else if (registerType === 'email') {
+        // 邮箱验证码注册表单数据
+        const { email, verCode } = this.registerByEmailForm
+        registerData.email = email
+        registerData.verCode = verCode
+      } else {
+        this.$message.error('无效的注册方式')
+        return
+      }
       try {
-        await register({ username, password }) // 调用API
+        const encryptedData = encryptData(registerData)
+
+        console.log(encryptedData)
+        const response = await register({ data: registerData, registerType }) // 调用API
         this.$message.success('注册成功')
+
         setTimeout(() => {
           this.flag = !this.flag
         }, 500)
-        this.registerForm = { username: '', password: '', confirmPassword: '' }
+
+        if (registerType === 'normal') {
+          this.registerForm = { username: '', password: '', confirmPassword: '' }
+        } else if (registerType === 'email') {
+          // 邮箱注册将自动登录
+          this.registerByEmailForm = { email: '', verCode: '' }
+          this.login({ user: response.data.user || null, token: response.data.token, mode: response.data.mode })
+          await this.$router.push('/').catch(err => {
+            console.error(err)
+          })
+        }
       } catch (error) {
-        if (error.message.includes('timeout')) {
-          this.$message.error('注册超时, 请稍后再试')
-        } else {
-          this.$message.error(error.message || '注册失败')
-        }
+        this.$message.error(error.message || '注册失败')
+        console.log(error.message)
       }
-    },
-    triggerRegister () {
-      this.$refs.registerFormRef.validate((valid) => {
-        // 弹出$message输出测试信息
-        // this.$message.info('Registering...')
-        if (valid) {
-          this.handleRegister()
-        } else {
-          console.log('表单验证失败')
-        }
-      })
     }
+
   },
   computed: {
     preImage () {
@@ -366,12 +565,12 @@ export default {
         newWidth = originalWidth / 2
         newHeight = originalHeight / 1.5
       } else if (this.isSmallScreen) {
-        newWidth = originalWidth / 4
+        newWidth = originalWidth / 3
         overflowX = 'clip'
         if (this.currentPage === 'login') {
-          newHeight = originalHeight / 2
+          newHeight = originalHeight / 1.5
         } else if (this.currentPage === 'register') {
-          newHeight = originalHeight / 1.8
+          newHeight = originalHeight / 1.2
         }
       } else {
         newWidth = originalWidth
@@ -428,7 +627,7 @@ export default {
         if (this.currentPage === 'login') {
           ;
         } else if (this.currentPage === 'register') {
-          style.gap = '1rem'
+          style.gap = '1.3rem'
         }
       }
       return style
@@ -438,7 +637,7 @@ export default {
         gap: '1.5rem'
       }
       if (this.isSmallScreen) {
-        style.gap = '1rem'
+        style.gap = '1.3rem'
         if (this.currentPage === 'login') {
           ;
         } else if (this.currentPage === 'register') {
@@ -446,39 +645,52 @@ export default {
         }
       }
       return style
-    }
-  },
-  created () {
-    if (this.isSmallScreen) {
-      console.log('small')
-    } else if (this.isMediumScreen) {
-      console.log('medium')
-    } else if (this.isWideScreen) {
-      console.log('wide')
-    }
-  },
+    },
+    boxTitleStyles () {
+      const style = {
+        gap: '1.5rem'
+      }
+      if (this.isSmallScreen) {
+        style.gap = '1.3rem'
+        if (this.currentPage === 'login') {
+          ;
+        } else if (this.currentPage === 'register') {
+          ;
+        }
+      }
+      return style
+    },
+    infoTitleStyles () {
+      const style = {
+      }
+      if (this.isSmallScreen) {
+        style.paddingTop = '1.3rem'
+        // if (this.currentPage === 'login') {
+        //   style.paddingTop = '1.3rem'
+        // } else if (this.currentPage === 'register') {
+        //   style.paddingTop = '1.3rem'
+        // }
+      } else if (this.isMediumScreen) {
+        style.paddingTop = '1.5rem'
+      } else {
+        style.paddingTop = '1.8rem'
+      }
 
-  mounted () {
-    if (this.isSmallScreen) {
-      console.log('small')
-    } else if (this.isMediumScreen) {
-      console.log('medium')
-    } else if (this.isWideScreen) {
-      console.log('wide')
+      return style
+    },
+    sendVerCodeStyles () {
+      const style = {
+      }
+      if (this.countdown > 0) {
+        style.color = '#909399'
+        style.cursor = 'wait'
+      }
+      return style
     }
   },
-  watch: {
-    // 使用 watch 监听 isSmallScreen 的变化
-    isSmallScreen (newValue) {
-      console.log(newValue ? 'small' : '')
-    },
-    // 使用 watch 监听 isMediumScreen 的变化
-    isMediumScreen (newValue) {
-      console.log(newValue ? 'medium' : '')
-    },
-    // 使用 watch 监听 isWideScreen 的变化
-    isWideScreen (newValue) {
-      console.log(newValue ? 'wide' : '')
+  beforeDestroy () {
+    if (this.timer) {
+      clearInterval(this.timer)
     }
   }
 }
@@ -499,6 +711,8 @@ input {
   /* 溢出隐藏 */
   height: 100vh;
   overflow-x: hidden;
+  overflow-y: scroll;
+
   display: flex;
   /* 渐变方向从左到右 */
   //background: linear-gradient(to right, rgb(247, 209, 215), rgb(191, 227, 241));
@@ -613,6 +827,7 @@ input {
   transition: padding-left 0.3s ease, padding-right 0.3s ease, opacity 0.3s ease, transform 0.3s;
   //padding: 1rem;
   .info-box-wrapper {
+    height: 100%;
     flex: 1;
     gap: 2rem;
     display: flex;
@@ -632,7 +847,8 @@ input {
   //line-height: 500px;
   display: flex;
   justify-content: center;
-  align-items: end;
+  align-items: center;
+  transition: padding-top 0.3s ease-in-out;
 
   h1 {
     font-size: 130%;
@@ -649,7 +865,7 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-evenly;
   gap: 1.5rem;
   .info-item {
     width: 65%;
@@ -667,13 +883,19 @@ input {
   justify-content: space-between;
   align-items: center;
   .button-box {
-    flex: 1;
-    height: 100%;
+    //flex: 1;
+    //height: 100%;
     width: 100%;
+    display: flex;
     justify-content: center;
-    align-items: start;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
-
+  .prompt-text {
+    color: $medium-gray;
+    font-size: 70%;
+  }
   button {
     width: 50%;
     //height: 25%;
@@ -704,12 +926,21 @@ input {
     color: $darker-gray;
   }
   .tourist-box {
-    font-size: 70%;
-    color: $medium-gray;
-    cursor: pointer;
+
+    width: 60%;
+    font-size: 80%;
+    //color: $medium-gray;
     transition: color 0.2s;
-    &:hover {
-      color: $dark-gray;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-self: center;
+    color: $dark-gray;
+    p {
+      cursor: pointer;
+      &:hover {
+        color: $darker-gray;
+      }
     }
   }
 }
@@ -737,6 +968,17 @@ input {
   /* 聚焦时隐藏文字 */
   input:focus::placeholder {
     opacity: 0;
+  }
+}
+
+.el-input-group__append {
+  border: none;
+  background-color: #fff;
+  .el-button--text {
+    padding: 0 0.5rem;
+  }
+  &:hover {
+    color: black;
   }
 }
 </style>

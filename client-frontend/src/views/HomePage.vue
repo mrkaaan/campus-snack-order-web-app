@@ -26,7 +26,7 @@
         </div>
         <div class="content-wrapper" v-else>
           <ul class="merchant-list">
-            <li  v-for="item in products" :key="item.id"  @click="goToMerchantDetails(item)">
+            <li v-for="item in merchants" :key="item.id" @click="goToMerchantDetails(item)">
               <merchant-item :item="item">
               </merchant-item>
             </li>
@@ -49,19 +49,19 @@ export default {
   data () {
     return {
       categories: ['快餐', '甜点', '饮料', '传统美食', '海鲜', '烧烤', '火锅', '素食', '小吃', '早餐'],
-      products: [],
+      merchants: [],
       isLoading: true, // 初始时数据正在加载
       skeletonCount: 5, // 假设初始加载显示5个骨架屏
       stickyActive: false
     }
   },
   methods: {
-    ...mapActions('merchant', ['updateCurrentMerchant']),
+    ...mapActions('merchant', ['updateMerchantDetails']),
     async fetchMerchants () {
       this.isLoading = true // 开始加载数据
       try {
         const response = await getMerchants()
-        this.products = response.data
+        this.merchants = response.data
         this.isLoading = false // 请求成功后停止加载
       } catch (error) {
         console.error('Failed to fetch products:', error)
@@ -70,10 +70,10 @@ export default {
         // this.isLoading = true // 开始加载数据
       }
     },
-    goToMerchantDetails (merchant) {
-      this.updateCurrentMerchant(merchant)
-      console.log('merchant', merchant.merchantId)
-      this.$router.push({ name: 'merchantDetails', params: { merchantId: merchant.merchantId } })
+    goToMerchantDetails (merchantDetails) {
+      this.updateMerchantDetails(merchantDetails)
+      console.log('merchant', merchantDetails.merchantId)
+      this.$router.push({ name: 'merchantDetails', params: { merchantId: merchantDetails.merchantId } })
     }
   },
   computed: {

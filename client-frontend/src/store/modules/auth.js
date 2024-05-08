@@ -9,7 +9,7 @@ export default {
   mutations: {
     setAuth (state, payload) {
       state.isAuthenticated = payload.isAuthenticated
-      state.user = payload.user || {} // 确保没有提供 user 时，user 为 null
+      state.user = payload.user
       state.token = payload.token
       state.mode = payload.mode
     },
@@ -37,7 +37,7 @@ export default {
       })
     },
     login ({ commit }, { user, token, mode }) {
-      console.log('login:', user, token)
+      console.log('login:', user, token, mode)
       commit('setAuth', { isAuthenticated: true, user, token, mode })
       localStorage.setItem('authUser', JSON.stringify({ user, token, mode })) // JWT
     },
@@ -53,6 +53,7 @@ export default {
         } else {
           commit('clearAuth')
           localStorage.removeItem('authUser') // 清除存储的用户信息
+          // 导航到登录页
           resolve()
         }
       })

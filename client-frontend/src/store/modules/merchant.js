@@ -1,36 +1,42 @@
-import { getMerchantProducts } from '@/api/merchant'
+import { getMerchantDetails, getMerchantProducts } from '@/api/merchant'
 
 export default {
   namespaced: true,
   state: {
-    currentMerchant: null,
     merchantTags: [],
+    merchantDetails: null,
     merchantProducts: null
   },
   mutations: {
-    updateCurrentMerchant (state, merchant) {
-      state.currentMerchant = merchant
+    SET_CURRENT_MERCHANT_DETAILS (state, merchantDetails) {
+      state.merchantDetails = merchantDetails
+      console.log('存储vuex merchantDetails', state.merchantDetails)
     },
-    addTag (state, tag) {
+    ADD_TAG (state, tag) {
       const merchantTag = state.merchantTags.find(t => t.merchantId === tag.merchantId)
       if (!merchantTag) {
-        state.merchantTags.push({
-          merchantId: tag.merchantId,
-          name: tag.storeName
-        })
+        state.merchantTags.push(tag)
       }
       console.log('merchantTags', state.merchantTags)
     },
-    removeTag (state, tag) {
-      const index = state.merchantTags.indexOf(tag)
-      if (index > -1) {
+    REMOVE_TAG (state, merchantId) {
+      const index = state.merchantTags.findIndex(t => t.merchantId === merchantId)
+      if (index !== -1) {
         state.merchantTags.splice(index, 1)
       }
     },
     SET_MERCHANT_PRODUCTS (state, products) {
+      console.log('SET_MERCHANT_PRODUCTS', products)
       state.merchantProducts = products
     },
-    UPDATE_PRODUCT_QUANTITY (state, { productId, quantity }) {
+    SET_MERCHANT_DETAILS (state, merchantDetails) {
+      console.log('SET_MERCHANT_DETAILS', merchantDetails)
+      state.merchantDetails = merchantDetails
+    },
+    UPDATE_PRODUCT_QUANTITY (state, {
+      productId,
+      quantity
+    }) {
       const product = state.merchantProducts.map(category => category.items)
         .flat() // 展平所有 items 数组为一个数组
         .find(item => item.productId === productId)
@@ -44,18 +50,28 @@ export default {
     }
   },
   actions: {
-    updateCurrentMerchant ({ commit }, merchant) {
-      commit('updateCurrentMerchant', merchant)
-      commit('addTag', merchant)
+    async updateMerchantDetails ({ commit }, merchantDetails) {
+      commit('SET_CURRENT_MERCHANT_DETAILS', merchantDetails)
+      commit('ADD_TAG', merchantDetails)
     },
-    removeMerchantTag ({ commit }, tag) {
-      commit('removeTag', tag)
+    removeMerchantTag ({ commit }, merchantId) {
+      commit('REMOVE_TAG', merchantId)
     },
+    // 获取商家商品数据并扩展 同时标记购物车中被移除商品
     async fetchProducts ({ commit, rootGetters }, merchantId) {
       try {
+        // 发送请求获取商家商品数据
         const response = await getMerchantProducts(merchantId)
         const originalData = response.data.productCategories
+        // 获取购物车数据
         const cartItems = rootGetters['cart/cartByMerchant'](merchantId)
+        // 在购物车中标记被商家移除的商品
+        const productIds = originalData.flatMap(category => category.items.map(product => product.productId)) // 提取所有商品Id
+        commit('cart/MARK_REMOVED_ITEMS', {
+          merchantId: merchantId,
+          activeProductIds: productIds
+        }, { root: true }) // 通过root: true访问cart模块
+        // 扩展商品数据，添加购物车数量和是否被选中
         const extendedData = originalData.map(category => ({
           ...category,
           items: category.items.map(product => {
@@ -66,16 +82,32 @@ export default {
             return {
               ...product,
               quantity: cartItem.quantity || 0, // 从购物车获取数量
-              salePrice: salePrice, // 假设存在此属性
+              originalPrice: originalPrice,
+              salePrice: salePrice,
               isSelected: !!cartItem.quantity // 判断购物车中是否有该商品
             }
           })
         }))
-
-        commit('SET_MERCHANT_PRODUCTS', extendedData) // 假设存在此 mutation
+        // 保存扩展后的商品数据
+        commit('SET_MERCHANT_PRODUCTS', extendedData)
       } catch (error) {
         throw new Error('Failed to fetch products: ' + error.message)
       }
+    },
+    async fetchMerchantDetails ({ commit }, merchantId) {
+      try {
+        const response = await getMerchantDetails(merchantId)
+        const merchantDetails = response.data
+        commit('SET_CURRENT_MERCHANT_DETAILS', merchantDetails)
+        commit('ADD_TAG', merchantDetails)
+      } catch (error) {
+        throw new Error('Failed to fetch merchant details: ' + error.message)
+      }
     }
+  },
+  getters: {
+    merchantTags: state => state.merchantTags,
+    merchantProducts: state => state.merchantProducts,
+    merchantDetails: state => state.merchantDetails
   }
 }

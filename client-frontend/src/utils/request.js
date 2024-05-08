@@ -6,7 +6,7 @@ console.log('Base URL:', process.env.VUE_APP_BASE_API)
 // 创建axios实例
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // 从环境变量读取API基地址
-  timeout: 10000 // 设置超时时间
+  timeout: 30000 // 设置超时时间
 })
 
 // 请求拦截器
@@ -46,16 +46,16 @@ service.interceptors.response.use(
   },
   error => {
     console.error('Response error:', error) // for debug
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      // 处理登录失效，如跳转登录页或提示
-      // router.push('/login');
-      // alert('Session expired. Please login again.')
-      Message({
-        message: error.message,
-        type: 'error',
-        duration: 5 * 1000
-      })
-    }
+    // if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+    // 处理登录失效，如跳转登录页或提示
+    // router.push('/login');
+    // alert('Session expired. Please login again.')
+    //   Message({
+    //     message: error.message,
+    //     type: 'error',
+    //     duration: 5 * 1000
+    //   })
+    // }
     // return Promise.reject(error)
     return Promise.reject(error.response.data)
   }

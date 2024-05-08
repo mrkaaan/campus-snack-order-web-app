@@ -23,3 +23,11 @@ export function register (data) {
     data
   })
 }
+
+export function sendEmailCode (data) {
+  return request({
+    url: '/auth/send-verification-email',
+    method: 'POST',
+    data
+  })
+}

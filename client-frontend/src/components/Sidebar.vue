@@ -16,15 +16,16 @@
     <ul class="menu">
       <li class="menu-wrapper" v-for="item in menuItems" :key="item.route" @click="handleSelect(item) "
           :class="{'cannot-click' :item.id === 'merchant' && merchantTags.length === 0,'is-active': activeRoute === item.route, 'is-collapsed': isSidebarCollapsed && !isSmallScreen}"
+          :style="{'cursor' :(item.id === 'merchant' && merchantTags !== 0) ? 'default' : 'pointer'}"
       >
         <div class="item-selected">
         </div>
-        <div class="menu-item" :style="{'cursor' :item.id === 'merchant' && merchantTags === 0 ? 'default' : 'pointer'}">
+        <div class="menu-item" :style="{'cursor' :(item.id === 'merchant' && merchantTags !== 0) ? 'default' : 'pointer'}">
           <el-badge v-if="item.badge" :value="item.badge" class="item-icon">
             <i :class="[item.icon, 'big-icon-size']"></i>
           </el-badge>
           <template v-else>
-            <i :class="[item.icon, 'big-icon-size', 'item-icon']"></i>
+            <i :class="[item.icon, 'big-icon-size', 'item-icon']" :style="{'cursor' :(item.id === 'merchant' && merchantTags !== 0) ? 'default' : 'pointer'}"></i>
           </template>
           <transition name="slide">
             <span v-show="!isSidebarCollapsed || isSidebarDrawer">{{ item.name }}</span>

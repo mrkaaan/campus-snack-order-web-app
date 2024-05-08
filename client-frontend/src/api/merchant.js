@@ -7,7 +7,7 @@ export function getMerchants () {
   })
 }
 
-export function getMerchant (id) {
+export function getMerchantDetails (id) {
   return request({
     url: `/merchants/${id}`,
     method: 'GET'

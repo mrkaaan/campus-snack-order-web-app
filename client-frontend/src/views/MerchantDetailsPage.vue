@@ -13,7 +13,7 @@
               </li>
             </ul>
           </div>
-          <div class="categories-temp"></div>
+          <!--          <div class="categories-temp"></div>-->
         </div>
       </div>
       <div class="shop-header" :style="headerStyle">
@@ -32,7 +32,9 @@
 
       <div class="shop-brand">
         <div class="brand-wrapper">
-          <merchant-detail-shop-brand :details="merchantDetails" :loading="isLoadingMerchantDetails" :baseUrl="baseUrl"></merchant-detail-shop-brand>
+          <div v-if="!isLoadingMerchantDetails">
+            <merchant-detail-shop-brand :details="merchantDetails" :loading="isLoadingMerchantDetails" :baseUrl="baseUrl"></merchant-detail-shop-brand>
+          </div>
         </div>
       </div>
 
@@ -128,7 +130,9 @@
         </div>
       <!--      <div class="masking-box" v-if="isExpanded" @click="handelCloseCart"></div>-->
       </div>
-      <CartComponent :merchantId="merchantDetails.merchantId" :storeName="merchantDetails.storeName"/>
+      <template v-if="!isLoadingMerchantProducts">
+        <CartComponent :merchantId="merchantDetails.merchantId" :storeName="merchantDetails.storeName"/>
+      </template>
     </div>
   </div>
 </template>
@@ -136,7 +140,6 @@
 <script>
 
 import { mapActions, mapGetters, mapState } from 'vuex'
-import { getMerchant } from '@/api/merchant'
 import MerchantDetailShopBrand from '@/components/MerchantDetailShopBrand.vue'
 import CartComponent from '@/components/CartComponent.vue'
 
@@ -153,7 +156,6 @@ export default {
         { icon: 'el-icon-shopping-cart-full', text: '评价' },
         { icon: 'el-icon-chat-line-round', text: '商家' }
       ],
-      merchantDetails: {},
       isLoadingMerchantDetails: false,
       isLoadingMerchantProducts: false,
       activeCategory: null,
@@ -169,10 +171,10 @@ export default {
   },
   computed: {
     ...mapState('header', ['currentScroll', 'lastScroll', 'headerHeight']),
+    ...mapState('merchant', ['merchantDetails']),
     ...mapGetters('sidebar', ['isWideScreen']),
     ...mapGetters('cart', ['isExpanded']),
     ...mapState('sidebar', ['isSidebarOpen', 'isSidebarCollapsed']),
-    ...mapState('merchant', ['currentMerchant']),
     stickyWidth () {
       if (this.isSidebarOpen) {
         return { width: 'calc(100% - 15.625rem)' }
@@ -235,6 +237,9 @@ export default {
     },
     merchantProducts () {
       return this.$store.state.merchant.merchantProducts
+    },
+    merchantDetails () {
+      return this.$store.state.merchant.merchantDetails
     }
   },
   mounted () {
@@ -294,11 +299,9 @@ export default {
   methods: {
     ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart']),
     handelCloseCart () {
-      console.log('handelCloseCart')
       if (this.isExpanded) {
         this.updateIsExpanded(false)
       }
-      console.log('handelCloseCart', this.isExpanded)
     },
     // handleStickyDom (model) {
     // const content = document.querySelector('.content')
@@ -323,17 +326,17 @@ export default {
       const targetId = event.target.closest('li').id
       // 提取数字部分，假设格式为 'left-cat-1'
       const categoryId = targetId.split('-')[2]
-      console.log('categoryId', categoryId)
+      // console.log('categoryId', categoryId)
       const categoryElement = this.$el.querySelector(`#cat-${categoryId}`)
-      console.log('categoryElement', categoryElement)
+      // console.log('categoryElement', categoryElement)
       if (categoryElement) {
         // 计算需要滚动到的位置
         const topPos = categoryElement.offsetTop
-        console.log('topPos', topPos)
+        // console.log('topPos', topPos)
         // 滚动到对应位置
         this.$el.querySelector('.items').scrollTop = topPos - this.$el.querySelector('.items').offsetTop
       } else {
-        console.log('Category element not found')
+        // console.log('Category element not found')
       }
     },
     handleScroll (event) {
@@ -375,24 +378,20 @@ export default {
     },
     async fetchMerchantDetails () {
       this.isLoadingMerchantDetails = true
-      const currentMerchantId = this.$route.params.merchantId
-      if (this.currentMerchant && currentMerchantId === this.currentMerchant.merchantId) {
+      const merchantId = this.$route.params.merchantId
+      if (this.merchantDetails && merchantId === this.merchantDetails.merchantId) {
         console.log('Using cached merchant details')
-        this.merchantDetails = this.currentMerchant
-        this.isLoadingMerchantDetails = false
       } else {
         try {
           console.log('Fetching merchant details')
-          const response = await getMerchant(currentMerchantId)
-          this.merchantDetails = response.data
-          console.log('merchantDetails', this.merchantDetails)
+          await this.$store.dispatch('merchant/fetchMerchantDetails', merchantId)
         } catch (error) {
           console.error('Error fetching merchant details:', error)
-        } finally {
-          this.isLoadingMerchantDetails = false
         }
       }
+      this.isLoadingMerchantDetails = false
     },
+    // 获取商家商品列表
     async fetchMerchantProducts () {
       this.isLoadingMerchantProducts = true
       try {
@@ -423,23 +422,24 @@ export default {
   padding: 0 1rem;
   width:100%;
   transition: width 0.05s;
+  pointer-events: none;
   .categories-sticky-wrapper {
     display: flex;
   }
 }
 .categories-sticky{
-
   background-color: $light-gray;
   height: inherit;
   width: 20%;
   display: flex;
   justify-content: center;
   align-items: start;
-  flex:1;
+  pointer-events: auto;
+  //flex:1;
 }
-.categories-temp {
-  width: 80%;
-}
+//.categories-temp {
+//  width: 80%;
+//}
 .categories-menu {
   background-color: $light-gray;
   height: inherit;

@@ -80,6 +80,7 @@ export default {
     async handleLogOut () {
       try {
         await this.$store.dispatch('auth/logout')
+        await this.$router.push('/initial')
       } catch (err) {
         this.$message.info(err.message)
       }

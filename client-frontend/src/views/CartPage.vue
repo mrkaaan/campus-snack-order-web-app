@@ -41,7 +41,7 @@
                     </span>
                   </div>
                   <div class="cart-item-count">
-                    <div @click="toggleVisibility(item)" v-if="!item.isShown" class="count">
+                    <div @click="toggleVisibility(item, cate.merchantId)" v-if="!item.isShowStepper" class="count">
                       {{ `x ${item.quantity}`}}
                     </div>
                     <el-input-number v-else size="mini" v-model="item.quantity" :min="0" :max="99" label="描述文字"></el-input-number>
@@ -220,7 +220,7 @@ export default {
       //         originalPrice: 699,
       //         salePrice: 599,
       //         selected: false,
-      //         isShown: false
+      //         isShowStepper: false
       //       },
       //       {
       //         name: 'Samsung Galaxy S22',
@@ -229,7 +229,7 @@ export default {
       //         originalPrice: 799,
       //         salePrice: null, // No discount
       //         selected: false,
-      //         isShown: false
+      //         isShowStepper: false
       //       }
       //     ]
       //   },
@@ -244,7 +244,7 @@ export default {
       //         originalPrice: 999,
       //         salePrice: 949,
       //         selected: false,
-      //         isShown: false
+      //         isShowStepper: false
       //       },
       //       {
       //         name: 'Dell XPS 13',
@@ -253,7 +253,7 @@ export default {
       //         originalPrice: 899,
       //         salePrice: null, // No discount
       //         selected: false,
-      //         isShown: false
+      //         isShowStepper: false
       //       }
       //     ]
       //   },
@@ -268,7 +268,7 @@ export default {
       //         originalPrice: 120,
       //         salePrice: 100,
       //         selected: false,
-      //         isShown: false
+      //         isShowStepper: false
       //       },
       //       {
       //         name: 'Adidas Soccer Shoes',
@@ -277,7 +277,7 @@ export default {
       //         originalPrice: 150,
       //         salePrice: 135,
       //         selected: false,
-      //         isShown: false
+      //         isShowStepper: false
       //       }
       //     ]
       //   }
@@ -377,8 +377,8 @@ export default {
       })
       console.log('total:', this.summary.total, 'totalOriginal:', this.summary.totalOriginal, 'cate:', JSON.stringify(this.summary.cate))
     },
-    toggleVisibility (item) {
-      item.isShown = !item.isShown
+    toggleVisibility (item, merchantId) {
+      this.$store.dispatch('mask/toggleStepperShow', { productId: item.productId, merchantId })
     }
   }
 }

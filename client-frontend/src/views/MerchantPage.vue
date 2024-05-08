@@ -2,15 +2,12 @@
   <div class="shop-page-container">
     <div class="merchant-tags">
       <div class="merchant-tags-wrapper">
-        <div class="merchant-tag"><div class="merchant-tag-wrapper"><span class="text">首页</span><i class="icon el-icon-close"></i></div></div>
-        <div class="merchant-tag"><div class="merchant-tag-wrapper"><span class="text">首活动管理</span><i class="icon el-icon-close"></i></div></div>
-        <div class="merchant-tag"><div class="merchant-tag-wrapper"><span class="text">首活动列表</span><i class="icon el-icon-close"></i></div></div>
-        <div class="merchant-tag"><div class="merchant-tag-wrapper"><span class="text">首活动详情</span><i class="icon el-icon-close"></i></div></div>
-
-        <!--        <el-breadcrumb-item><el-tag type="success" closable>首页</el-tag></el-breadcrumb-item>-->
-        <!--        <el-breadcrumb-item><el-tag type="success" closable>活动管理</el-tag></el-breadcrumb-item>-->
-        <!--        <el-breadcrumb-item><el-tag type="success" closable>活动列表</el-tag></el-breadcrumb-item>-->
-        <!--        <el-breadcrumb-item><el-tag type="success" closable>活动详情</el-tag></el-breadcrumb-item>-->
+        <div class="merchant-tag" v-for="(tag, tag_index) in merchantTags" :key="tag_index">
+          <div class="merchant-tag-wrapper">
+            <span class="text" @click="handelChangeMerchant(tag.merchantId)">{{ tag.storeName }}</span>
+            <i class="icon el-icon-close" @click="handelCloseMerchant(tag.merchantId)"></i>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -19,8 +16,41 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
-  name: 'ShopPage'
+  name: 'ShopPage',
+  data () {
+    return {
+    }
+  },
+  methods: {
+
+    async handelChangeMerchant (id) {
+      // 跳转路由
+      await this.$router.push({ name: 'merchantDetails', params: { merchantId: id } })
+      // 更新当前商家商品信息
+      await this.$store.dispatch('merchant/fetchProducts', id)
+      // await this.$store.dispatch('merchant/updateMerchantDetails', id)
+      await this.$store.dispatch('merchant/fetchMerchantDetails', id)
+    },
+    handelCloseMerchant (id) {
+      this.$store.dispatch('merchant/removeMerchantTag', id)
+    }
+  },
+  computed: {
+    ...mapGetters('merchant', ['merchantTags'])
+  },
+  watch: {
+    merchantTags (newVal) {
+      if (this.merchantTags.length === 0) {
+        this.$router.push({ name: 'home' })
+      }
+    }
+  },
+  mounted () {
+    console.log('merchantTags', this.merchantTags)
+  }
 
 }
 </script>
@@ -36,6 +66,8 @@ export default {
     padding: 0.5rem;
 
     .merchant-tags-wrapper {
+      overflow-y: scroll;
+      scrollbar-width: none;
       display: flex;
       gap: 1rem;
 
