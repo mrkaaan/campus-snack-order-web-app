@@ -12,7 +12,7 @@ exports.getMerchants = async (req, res) => {
       priceRange: [merchant.priceRangeLow, merchant.priceRangeHigh],
       mainDish: merchant.mainDish.split(','),
       hasSpecialPrice: !!merchant.hasSpecialPrice,
-      hasdiscountInfo: !!merchant.hasdiscountInfo
+      hasDiscountInfo: !!merchant.hasDiscountInfo
     }));
     res.status(200).json({
       success: true,
@@ -29,9 +29,9 @@ exports.getMerchants = async (req, res) => {
 };
 
 exports.getMerchant = async (req, res) => {
-  // const merchantId = req.params.merchantId;
+  const merchantId = req.params.merchantId;
   try {
-    const merchant = await Merchant.getMerchantInfo(1);
+    const merchant = await Merchant.getMerchantInfo(merchantId);
     if (!merchant) {
       res.status(404).json({
         success: false,
@@ -43,7 +43,13 @@ exports.getMerchant = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Merchant retrieved successfully",
-      data: merchant
+      data: {
+        ...merchant,
+        priceRange: [merchant.priceRangeLow, merchant.priceRangeHigh],
+        mainDish: merchant.mainDish.split(','),
+        hasSpecialPrice: !!merchant.hasSpecialPrice,
+        hasDiscountInfo: !!merchant.hasDiscountInfo
+      }
     });
   } catch (error) {
     res.status(500).json({

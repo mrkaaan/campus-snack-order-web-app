@@ -23,3 +23,10 @@ build/
 tmp/
 
 public/images/
+
+# 忽略环境变量
+.env.*
+
+.env
+
+package-lock.json
