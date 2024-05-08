@@ -6,7 +6,7 @@
          'sidebar-active-drawer': isSidebarDrawer,
          'sidebar-close': isSmallScreen && !$route.meta.hideHeader
        }"
-       style="">
+       style="height: 100%">
     <!--     style="height: 100%">-->
     <nav class="sidebar" v-if="!isMediumScreen">
       <Sidebar
@@ -31,7 +31,7 @@
         ></Sidebar>
       </nav>
     </el-drawer>
-    <main class="home-page content-shift">
+    <main class="home-page content-shift" style="height: 100%">
       <page-header v-if="isWideScreen || !$route.meta.hideHeader"></page-header>
       <router-view></router-view>
       <div class="masking-box" v-if="isMaskVisible" @click="hideOverlay"></div>

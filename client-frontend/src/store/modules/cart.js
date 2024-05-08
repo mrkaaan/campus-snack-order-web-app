@@ -16,10 +16,12 @@ export default {
         // 如果当前商家没有购物车，则创建一个新的购物车条目
         merchantCart = {
           merchantId: merchantId,
-          merchantName: merchant.merchantName,
+          storeName: merchant.storeName,
           items: [],
           totalSalePrice: 0,
-          totalOriginalPrice: 0
+          totalOriginalPrice: 0,
+          selectedSalePrice: 0,
+          selectedOriginalPrice: 0
         }
         state.cartItems.push(merchantCart)
       }
@@ -78,7 +80,6 @@ export default {
         state.totalOriginalPrice = parseFloat((state.totalOriginalPrice + merchantCart.totalOriginalPrice).toFixed(2))
       })
     },
-
     REMOVE_FROM_CART (state, { item, merchant }) {
       const merchantCart = state.cartItems.find(m => m.merchantId === merchant.merchantId)
       if (merchantCart) {
@@ -102,6 +103,7 @@ export default {
         }
       }
     },
+    // 切换购物车中指定商品的显示数量步进器
     TOGGLE_STEPPER_SHOW (state, { productId, merchantId }) {
       const merchantCart = state.cartItems.find(m => m.merchantId === merchantId)
       if (merchantCart) {
@@ -111,6 +113,7 @@ export default {
         }
       }
     },
+    // 更新购物车中指定商品的数量
     CLEAR_CART (state, merchantId) {
       const index = state.cartItems.findIndex(m => m.merchantId === merchantId)
       if (index !== -1) {
@@ -134,6 +137,29 @@ export default {
           }
         })
       }
+    },
+    // 更新被选中的商品的在商家中的总价格
+    UPDATE_MERCHANT_SELECTED_PRICE (state, { merchantId, selectedPriceId }) {
+      // 找到对应商家的购物车条目
+      const merchantCart = state.cartItems.find(m => m.merchantId === merchantId)
+      if (!merchantCart) {
+        console.error('购物车中不存在该商家')
+        return
+      }
+
+      // 初始化被选中商品的总价格
+      merchantCart.selectedSalePrice = 0
+      merchantCart.selectedOriginalPrice = 0
+
+      // 遍历当前商家购物车中的每个商品
+      merchantCart.items.forEach(item => {
+        // 检查商品是否被选中
+        if (item.productId === selectedPriceId) {
+          // 累计当前商家购物车中被选中商品的总折扣价和原价
+          merchantCart.selectedSalePrice += item.totalSalePrice
+          merchantCart.selectedOriginalPrice += item.totalOriginalPrice
+        }
+      })
     }
   },
   actions: {
@@ -156,6 +182,9 @@ export default {
     },
     updateIsExpanded ({ commit }, isExpanded) {
       commit('setIsExpanded', isExpanded)
+    },
+    updateMerchantSelectedPrice ({ commit }, { merchantId, selectedPriceId }) {
+      commit('UPDATE_MERCHANT_SELECTED_PRICE', { merchantId, selectedPriceId })
     }
   },
   getters: {
@@ -165,6 +194,18 @@ export default {
     },
     getAllCartItems: (state) => {
       return state.cartItems
+    },
+    // 返回购物车中所有商家所有的数量
+    cartTotalQuantity (state) {
+      // 累加每个商家购物车中商品的数量
+      return state.cartItems.reduce((total, merchantCart) => {
+        return total + merchantCart.items.reduce((sum, item) => sum + item.quantity, 0)
+      }, 0)
+    },
+    // 获取购物车中所有商家的数量
+    cartTotalMerchants (state) {
+      // 由于每个商家购物车条目是唯一的，所以直接返回商家购物车条目的数量
+      return state.cartItems.length
     },
     isExpanded: state => state.isExpanded,
     getTotalSalePrice: state => state.totalSalePrice,
@@ -177,6 +218,7 @@ export default {
     getTotalOriginalPriceByMerchant: (state) => (merchantId) => {
       const merchantCart = state.cartItems.find(m => m.merchantId === merchantId)
       return merchantCart ? merchantCart.totalOriginalPrice : 0
-    }
+    },
+    cartItems: state => state.cartItems
   }
 }

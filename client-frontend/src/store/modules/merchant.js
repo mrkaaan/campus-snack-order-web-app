@@ -26,11 +26,9 @@ export default {
       }
     },
     SET_MERCHANT_PRODUCTS (state, products) {
-      console.log('SET_MERCHANT_PRODUCTS', products)
       state.merchantProducts = products
     },
     SET_MERCHANT_DETAILS (state, merchantDetails) {
-      console.log('SET_MERCHANT_DETAILS', merchantDetails)
       state.merchantDetails = merchantDetails
     },
     UPDATE_PRODUCT_QUANTITY (state, {
@@ -108,6 +106,8 @@ export default {
   getters: {
     merchantTags: state => state.merchantTags,
     merchantProducts: state => state.merchantProducts,
-    merchantDetails: state => state.merchantDetails
+    merchantDetails: state => state.merchantDetails,
+    // 返回merchantTags长度
+    merchantTagsCount: state => state.merchantTags.length
   }
 }

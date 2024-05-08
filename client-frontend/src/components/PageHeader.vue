@@ -5,7 +5,7 @@
         <i class="el-icon-menu icon-button-1 big-icon-size icon-sidebar" @click="toggleSidebar" :style="sidebarIconStyle"></i>
       </el-col>
       <el-col :span="16" class="header-title normal-title"><h2>Delicious.</h2></el-col>
-      <el-col :span="4" class="header-chat">
+      <el-col :span="4" class="header-chat" style="opacity: 0; cursor: default">
         <i class="el-icon-chat-line-round icon-button-1 big-icon-size"></i>
       </el-col>
     </el-row>

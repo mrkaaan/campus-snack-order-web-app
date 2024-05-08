@@ -16,19 +16,19 @@
     <ul class="menu">
       <li class="menu-wrapper" v-for="item in menuItems" :key="item.route" @click="handleSelect(item) "
           :class="{'cannot-click' :item.id === 'merchant' && merchantTags.length === 0,'is-active': activeRoute === item.route, 'is-collapsed': isSidebarCollapsed && !isSmallScreen}"
-          :style="{'cursor' :(item.id === 'merchant' && merchantTags !== 0) ? 'default' : 'pointer'}"
+          :style="{'cursor' :(item.id === 'merchant' && merchantTagsCount === 0) ? 'default' : 'pointer'}"
       >
         <div class="item-selected">
         </div>
-        <div class="menu-item" :style="{'cursor' :(item.id === 'merchant' && merchantTags !== 0) ? 'default' : 'pointer'}">
+        <div class="menu-item" :style="{'cursor' :(item.id === 'merchant' && merchantTagsCount === 0) ? 'default' : 'pointer'}">
           <el-badge v-if="item.badge" :value="item.badge" class="item-icon">
             <i :class="[item.icon, 'big-icon-size']"></i>
           </el-badge>
           <template v-else>
-            <i :class="[item.icon, 'big-icon-size', 'item-icon']" :style="{'cursor' :(item.id === 'merchant' && merchantTags !== 0) ? 'default' : 'pointer'}"></i>
+            <i :class="[item.icon, 'big-icon-size', 'item-icon']" :style="{'cursor' :(item.id === 'merchant' && merchantTagsCount === 0) ? 'default' : 'pointer'}"></i>
           </template>
           <transition name="slide">
-            <span v-show="!isSidebarCollapsed || isSidebarDrawer">{{ item.name }}</span>
+            <span v-show="!isSidebarCollapsed || isSidebarDrawer" :style="{'cursor' :(item.id === 'merchant' && merchantTagsCount === 0) ? 'default' : 'pointer'}">{{ item.name }}</span>
           </transition>
         </div>
       </li>
@@ -37,19 +37,12 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 
 export default {
   name: 'Sidebar',
   data () {
     return {
-      menuItems: [
-        { id: 'home', icon: 'el-icon-house', name: '主页', route: '/home', badge: 0 },
-        { id: 'merchant', icon: 'el-icon-shopping-bag-2', name: '商店', route: '/merchant', badge: 0 },
-        { id: 'cart', icon: 'el-icon-shopping-cart-full', name: '购物车', route: '/cart', badge: 5 },
-        { id: 'message', icon: 'el-icon-message', name: '消息', route: '/message', badge: 3 },
-        { id: 'profile', icon: 'el-icon-user', name: '我的', route: '/profile', badge: 0 }
-      ],
       currenBottomNavTag: 'home' // 当前选中的标签页
     }
   },
@@ -74,6 +67,8 @@ export default {
   },
   computed: {
     ...mapState('merchant', ['merchantTags']),
+    ...mapGetters('cart', ['cartTotalMerchants', 'cartTotalQuantity']),
+    ...mapGetters('merchant', ['merchantTagsCount']),
     headerTitle () {
       return this.isSidebarCollapsed ? 'Del.' : 'Delicious.'
     },
@@ -82,6 +77,14 @@ export default {
         return '/merchant' // 强制返回主页路由以高亮主页菜单项
       }
       return this.$route.path === '/' ? '/home' : this.$route.path
+    },
+    menuItems () {
+      return [
+        { id: 'home', icon: 'el-icon-house', name: '主页', route: '/home', badge: 0 },
+        { id: 'merchant', icon: 'el-icon-shopping-bag-2', name: '商店', route: '/merchant', badge: this.merchantTagsCount },
+        { id: 'cart', icon: 'el-icon-shopping-cart-full', name: '购物车', route: '/cart', badge: this.cartTotalQuantity },
+        { id: 'profile', icon: 'el-icon-user', name: '我的', route: '/profile', badge: 0 }
+      ]
     }
   }
 }

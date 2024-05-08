@@ -1,7 +1,7 @@
 
 <template>
-  <div class="profile-page" :style="isSmallScreen ? {paddingBottom: '6rem'} : {paddingBottom: '0'}">
-    <div class="profile-page-wrapper">
+  <div class="profile-page" style="height: 100%" :style="isSmallScreen ? {paddingBottom: '6rem'} : {paddingBottom: '0'}">
+    <div class="profile-page-wrapper" style="height: 100%">
       <div class="details">
         <div class="details-wrapper">
           <div class="details-image">
@@ -27,7 +27,7 @@
           </div>
         </div>
       </div>
-      <div class="profile-page-contents" v-if="currMode === 'guest'">
+      <div class="profile-page-contents">
         <div class="profile-page-content" style="height: 10rem">
           <template>
             <custom-skeleton :rows="1" :cols="3"/>
