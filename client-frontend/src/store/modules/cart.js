@@ -11,14 +11,12 @@ export default {
     ADD_TO_CART (state, { item, merchant }) {
       // 将商品添加到购物车
       const merchantId = merchant.merchantId
-      const merchantName = merchant.storeName
-      // 查找当前商家的购物车
       let merchantCart = state.cartItems.find(m => m.merchantId === merchantId)
       if (!merchantCart) {
         // 如果当前商家没有购物车，则创建一个新的购物车条目
         merchantCart = {
-          merchantId,
-          merchantName,
+          merchantId: merchantId,
+          merchantName: merchant.merchantName,
           items: [],
           totalSalePrice: 0,
           totalOriginalPrice: 0
@@ -30,18 +28,6 @@ export default {
       const existingItem = merchantCart.items.find(i => i.productId === item.productId)
       if (existingItem) {
         existingItem.quantity += 1 // 如果商品已存在，增加数量
-        // 更新商品的总价和折扣总价
-        existingItem.totalSalePrice = parseFloat(((existingItem.salePrice || existingItem.originalPrice) * item.quantity).toFixed(2)) // 更新商品的总价
-        // 更新商品的折扣总价
-        if (!existingItem.salePrice) {
-          existingItem.totalOriginalPrice = parseFloat((existingItem.totalOriginalPrice).toFixed(2))
-        } else {
-          existingItem.totalOriginalPrice = parseFloat((item.originalPrice * item.quantity).toFixed(2))
-        }
-
-        // 更新商家购物车的总价和折扣总价
-        merchantCart.totalSalePrice = parseFloat((merchantCart.totalSalePrice + existingItem.salePrice).toFixed(2))
-        merchantCart.totalOriginalPrice = parseFloat((merchantCart.totalOriginalPrice + existingItem.originalPrice).toFixed(2))
       } else {
         // 添加新商品到该商家的购物车
         merchantCart.items.push({
@@ -53,27 +39,46 @@ export default {
           originalPrice: item.originalPrice,
           salePrice: item.salePrice,
           selected: false,
-          isShowStepper: false,
-          totalSalePrice: item.salePrice || item.originalPrice, // 初始化商品总价
-          totalOriginalPrice: item.salePrice ? item.originalPrice : 0 // 初始化商品折扣价
+          isShowStepper: false
         })
-        // 更新商家购物车的总价和折扣总价
-        merchantCart.totalSalePrice = parseFloat((merchantCart.totalSalePrice + (item.salePrice || item.originalPrice)).toFixed(2))
-        if (!item.originalPrice) {
-          merchantCart.totalOriginalPrice = parseFloat((merchantCart.totalOriginalPrice).toFixed(2))
-        } else {
-          merchantCart.totalOriginalPrice = parseFloat((merchantCart.totalOriginalPrice * item.quantity).toFixed(2))
-        }
-        // 更新全部商家的全部商品总价
-        state.totalSalePrice = parseFloat((state.totalSalePrice + (item.salePrice || item.originalPrice)).toFixed(2))
-        if (!item.originalPrice) {
-          state.totalOriginalPrice = parseFloat((state.totalOriginalPrice).toFixed(2))
-        } else {
-          state.totalOriginalPrice = parseFloat((state.totalOriginalPrice + item.originalPrice).toFixed(2))
-        }
       }
+      this.commit('cart/UPDATE_TOTAL')
       console.log('cart state.cartItems', state.cartItems)
     },
+    UPDATE_TOTAL (state) {
+      // 初始化整个购物车的总价
+      state.totalSalePrice = 0
+      state.totalOriginalPrice = 0
+
+      // 遍历每个商家的购物车
+      state.cartItems.forEach(merchantCart => {
+        // 初始化当前商家购物车的总价
+        merchantCart.totalSalePrice = 0
+        merchantCart.totalOriginalPrice = 0
+
+        // 遍历当前商家购物车中的每个商品
+        merchantCart.items.forEach(item => {
+          // 计算单个商品的总价
+          // 如果有 salePrice，使用 salePrice，否则使用 originalPrice
+          const itemSalePrice = item.salePrice || item.originalPrice
+          // 确保 originalPrice 有效，否则默认为 0
+          const itemOriginalPrice = item.salePrice ? item.originalPrice : 0
+
+          // 计算单个商品的总折扣价和原价
+          item.totalSalePrice = parseFloat((itemSalePrice * item.quantity).toFixed(2))
+          item.totalOriginalPrice = parseFloat((itemOriginalPrice * item.quantity).toFixed(2))
+
+          // 累计当前商家购物车的总折扣价和原价
+          merchantCart.totalSalePrice = parseFloat((merchantCart.totalSalePrice + item.totalSalePrice).toFixed(2))
+          merchantCart.totalOriginalPrice = parseFloat((merchantCart.totalOriginalPrice + item.totalOriginalPrice).toFixed(2))
+        })
+
+        // 累计整个购物车的总折扣价和原价
+        state.totalSalePrice = parseFloat((state.totalSalePrice + merchantCart.totalSalePrice).toFixed(2))
+        state.totalOriginalPrice = parseFloat((state.totalOriginalPrice + merchantCart.totalOriginalPrice).toFixed(2))
+      })
+    },
+
     REMOVE_FROM_CART (state, { item, merchant }) {
       const merchantCart = state.cartItems.find(m => m.merchantId === merchant.merchantId)
       if (merchantCart) {
@@ -81,20 +86,12 @@ export default {
         if (index !== -1) {
           const product = merchantCart.items[index]
           product.quantity -= 1
-          // 更新商品的总价和折扣总价
-          product.totalSalePrice = parseFloat((product.totalSalePrice - item.salePrice).toFixed(2))
-          product.totalOriginalPrice = parseFloat((product.totalOriginalPrice - item.originalPrice).toFixed(2))
           if (product.quantity === 0) {
             merchantCart.items.splice(index, 1)
           }
-          // 更新商家购物车的总价和折扣总价
-          merchantCart.totalSalePrice = parseFloat((merchantCart.totalSalePrice - item.salePrice).toFixed(2))
-          merchantCart.totalOriginalPrice = parseFloat((merchantCart.totalOriginalPrice - item.originalPrice).toFixed(2))
-          // 更新全部商家的全部商品总价
-          state.totalSalePrice = parseFloat((state.totalSalePrice - item.salePrice).toFixed(2))
-          state.totalOriginalPrice = parseFloat((state.totalOriginalPrice - item.originalPrice).toFixed(2))
         }
       }
+      this.commit('cart/UPDATE_TOTAL')
     },
     TOGGLE_ITEM_SELECTION (state, { itemId, merchantId }) {
       const merchantCart = state.cartItems.find(m => m.merchantId === merchantId)
