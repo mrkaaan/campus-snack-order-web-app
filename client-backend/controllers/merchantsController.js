@@ -84,6 +84,7 @@ exports.getDemoChant = async (req, res) => {
 
 };
 
+// 获取商家所有分类商品内容
 exports.getMerchantProducts = async (req, res) => {
   const merchantId = req.params.merchantId;
   try {
