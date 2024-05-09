@@ -41,7 +41,7 @@
 import { mapActions, mapGetters, mapState } from 'vuex'
 import MerchantItem from '@/components/MerchantItem.vue'
 import MerchantSkeletonItem from '@/components/MerchantSkeletonItem.vue'
-import { getMerchants } from '@/api/merchant'
+import { getMerchants, getMerchantsPaging } from '@/api/merchant'
 
 export default {
   name: 'HomePage',
@@ -51,6 +51,7 @@ export default {
       categories: ['快餐', '甜点', '饮料', '传统美食', '海鲜', '烧烤', '火锅', '素食', '小吃', '早餐'],
       merchants: [],
       isLoading: true, // 初始时数据正在加载
+      allDataLoaded: false, // 避免重复加载
       skeletonCount: 5, // 假设初始加载显示5个骨架屏
       stickyActive: false
     }
@@ -68,6 +69,27 @@ export default {
       } finally {
         // this.isLoading = false // 完成加载
         // this.isLoading = true // 开始加载数据
+      }
+    },
+    async fetchMerchantsPaging () {
+      if (this.isLoading || this.allDataLoaded) return // 避免重复加载
+
+      this.isLoading = true // 开始加载数据
+      try {
+        const page = this.currentPage + 1 // 计算下一个页码
+        const limit = 10 // 设置每页条数
+        const response = await getMerchantsPaging({ page, limit })
+
+        if (response.data.merchants.length < limit) {
+          this.allDataLoaded = true // 如果返回的数据少于请求的条数，认为所有数据已加载
+        }
+
+        this.merchants = [...this.merchants, ...response.data.merchants] // 追加新数据
+        this.currentPage = page // 更新当前页码
+      } catch (error) {
+        console.error('Failed to fetch products:', error)
+      } finally {
+        this.isLoading = false // 完成加载
       }
     },
     goToMerchantDetails (merchantDetails) {

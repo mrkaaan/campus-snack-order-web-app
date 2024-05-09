@@ -31,10 +31,11 @@
         ></Sidebar>
       </nav>
     </el-drawer>
-    <main class="home-page content-shift" style="height: 100%">
+    <main class="home-page content-shift" style="height: 100%; position: relative">
       <page-header v-if="isWideScreen || !$route.meta.hideHeader"></page-header>
       <router-view></router-view>
-      <div class="masking-box" v-if="isMaskVisible" @click="hideOverlay"></div>
+      <div class="masking-box" v-if="isMaskVisible" @click="hideOverlay" style="position: fixed"></div>
+      <div style="height: 10rem; width: 15rem; background-color: #fff; border-radius: 2rem; top:50%; left: 50%; position: fixed;" v-if="isDialogVisable"></div>
     </main>
     <CustomBottomNav v-if="isWideScreen || !$route.meta.hideFooter"></CustomBottomNav>
   </div>
@@ -66,7 +67,7 @@ export default {
       'isSmallScreen'
     ]),
     ...mapState('header', ['headerHeight']),
-    ...mapGetters('mask', ['isMaskVisible'])
+    ...mapGetters('mask', ['isMaskVisible', 'isDialogVisable'])
   },
   mounted () {
     // 组件挂载时设置初始侧边栏状态

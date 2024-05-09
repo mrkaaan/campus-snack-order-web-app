@@ -5,6 +5,7 @@ export default {
   state () {
     return {
       visible: false, // 遮罩层是否可见
+      dialog: false, // 弹窗层是否可见
       callback: null // 存储回调函数
     }
   },
@@ -35,6 +36,9 @@ export default {
   getters: {
     isMaskVisible (state) {
       return state.visible
+    },
+    isDialogVisible (state) {
+      return state.dialog
     }
   }
 }

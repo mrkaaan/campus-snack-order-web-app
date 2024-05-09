@@ -7,6 +7,13 @@ export function getMerchants () {
   })
 }
 
+export function getMerchantsPaging (query) {
+  return request({
+    url: `/merchants?page=${query.page}&limit=${query.limit}`,
+    method: 'GET'
+  })
+}
+
 export function getMerchantDetails (id) {
   return request({
     url: `/merchants/${id}`,

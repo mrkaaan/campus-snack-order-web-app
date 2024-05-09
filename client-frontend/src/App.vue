@@ -15,6 +15,9 @@ export default {
     ...mapActions('sidebar', [
       'updateWindowWidth'
     ]),
+    ...mapActions('cart', [
+      'readCart'
+    ]),
     updateWindowSize () {
       this.updateWindowWidth(window.innerWidth) // 使用 action
     },
@@ -35,6 +38,9 @@ export default {
     window.removeEventListener('resize', this.updateWindowSize)
   },
   created () {
+    // 初始化购物车
+    this.readCart()
+
     this.checkAuth()
     window.addEventListener('storage', () => {
       // 检测到 localStorage 变更，可以添加逻辑处理用户状态

@@ -27,22 +27,28 @@ export default {
     },
     SET_MERCHANT_PRODUCTS (state, products) {
       state.merchantProducts = products
+      console.log('更新商品列表', state.merchantProducts)
     },
     SET_MERCHANT_DETAILS (state, merchantDetails) {
       state.merchantDetails = merchantDetails
     },
     UPDATE_PRODUCT_QUANTITY (state, {
+      merchantId,
       productId,
       quantity
     }) {
-      const product = state.merchantProducts.map(category => category.items)
-        .flat() // 展平所有 items 数组为一个数组
-        .find(item => item.productId === productId)
-      if (product) {
-        if (Math.sign(quantity)) {
-          product.quantity += quantity
-        } else {
-          product.quantity -= quantity
+      if (state.merchantProducts && state.merchantDetails) {
+        if (state.merchantDetails.merchantId === merchantId) {
+          const product = state.merchantProducts.map(category => category.items)
+            .flat() // 展平所有 items 数组为一个数组
+            .find(item => item.productId === productId)
+          if (product) {
+            if (Math.sign(quantity)) {
+              product.quantity += quantity
+            } else {
+              product.quantity -= quantity
+            }
+          }
         }
       }
     }
@@ -79,10 +85,10 @@ export default {
 
             return {
               ...product,
-              quantity: cartItem.quantity || 0, // 从购物车获取数量
+              quantity: cartItem.quantity ? (cartItem.quantity >= 0 ? cartItem.quantity : 0) : 0, // 从购物车获取数量
               originalPrice: originalPrice,
-              salePrice: salePrice,
-              isSelected: !!cartItem.quantity // 判断购物车中是否有该商品
+              salePrice: salePrice
+              // isSelected: !!cartItem.quantity // 判断购物车中是否有该商品
             }
           })
         }))

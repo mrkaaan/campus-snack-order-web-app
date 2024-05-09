@@ -378,7 +378,7 @@ export default {
     },
     async fetchMerchantDetails () {
       this.isLoadingMerchantDetails = true
-      const merchantId = this.$route.params.merchantId
+      const merchantId = parseInt(this.$route.params.merchantId, 10)
       if (this.merchantDetails && merchantId === this.merchantDetails.merchantId) {
         console.log('Using cached merchant details')
       } else {
@@ -395,8 +395,7 @@ export default {
     async fetchMerchantProducts () {
       this.isLoadingMerchantProducts = true
       try {
-        const currentMerchantId = this.$route.params.merchantId
-        console.log('currentMerchantId', currentMerchantId)
+        const currentMerchantId = parseInt(this.$route.params.merchantId, 10)
         await this.$store.dispatch('merchant/fetchProducts', currentMerchantId)
         this.isLoadingMerchantProducts = false
       } catch (error) {

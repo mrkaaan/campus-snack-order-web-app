@@ -196,12 +196,12 @@
 // import backImg from '@/assets/initial/background.png'
 import { mapGetters, mapActions } from 'vuex'
 import { login as apiLogin, register, loginGuest as loginGuestApi, sendEmailCode } from '@/api/auth' // 导入API方法
-import { encryptData } from '@/utils/encryption'
+// import { encryptData } from '@/utils/encryption'
 export default {
   name: 'initialPage',
   data () {
     return {
-      useEmailByRegister: true,
+      useEmailByRegister: false,
       useEmailByLogin: false,
       flag: true,
       loginForm: {
@@ -226,7 +226,17 @@ export default {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
           { min: 6, max: 20, message: '长度应该为6-20', trigger: 'blur' },
-          { pattern: /^[A-Za-z0-9]+$/, message: '只能包含字母和数字', trigger: 'blur' }
+          { pattern: /^[A-Za-z0-9]+$/, message: '只能包含字母和数字', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) {
+                callback(new Error('用户名必须包含字母和数字'))
+              } else {
+                callback()
+              }
+            },
+            trigger: 'blur'
+          }
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
@@ -249,10 +259,27 @@ export default {
         ]
       },
       loginRules: {
-        username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' },
-          { min: 6, max: 20, message: '长度应该为6-20', trigger: 'blur' },
-          { pattern: /^[A-Za-z0-9]+$/, message: '只能包含字母和数字', trigger: 'blur' }
+        userinfo: [
+          { required: true, message: '请输入用户名/UID/邮箱', trigger: 'blur' },
+          { min: 6, max: 20, message: '长度应该为6-20个字符', trigger: 'blur' },
+          { pattern: /^[A-Za-z0-9]+$/, message: '只能包含字母和数字', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (value.includes('@')) {
+                // 如果包含 '@' 符号，认为是邮箱，进行邮箱格式验证
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                if (!emailPattern.test(value)) {
+                  callback(new Error('请输入有效的邮箱地址'))
+                } else {
+                  callback()
+                }
+              } else {
+                // 不是邮箱，无需额外格式验证
+                callback()
+              }
+            },
+            trigger: 'blur'
+          }
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
@@ -398,26 +425,31 @@ export default {
         await this.$router.push('/').catch(err => {
           console.error(err)
         })
-        this.$message.success('登陆成功')
+        if (response.data.isAdmin) {
+          this.$message.success('测试账户登录成功')
+        } else {
+          this.$message.success('登陆成功')
+        }
       } catch (error) {
         this.$message.error(error.message || '登录失败, 请稍后再试')
       }
     },
     async temporarilyLoggingIn () {
       try {
-        this.$message.info('尝试登录游客账号')
         const response = await loginGuestApi() // 调用API
         this.loginGuest({ token: response.data.token })
         await this.$router.push('/').catch(err => {
           // 处理错误，例如导航到相同的路由或者导航被一个导航守卫阻止等
           console.error(err)
         })
-        this.$message.success('登陆成功')
+        this.$message.info('使用游客账号登录')
+        // this.$message.success('登陆成功')
       } catch (error) {
         this.$message.error('游客登录失败, 请稍后再试')
         console.error('Guest login error', error)
       }
     },
+    // 注册
     async handleRegister (registerType) {
       const registerData = {}
 
@@ -439,11 +471,14 @@ export default {
         this.$message.error('无效的注册方式')
         return
       }
+      console.log(registerData)
       try {
-        const encryptedData = encryptData(registerData)
+        // const encryptedData = encryptData(registerData)
 
-        console.log(encryptedData)
+        // console.log(encryptedData)
+        // console.log(registerData)
         const response = await register({ data: registerData, registerType }) // 调用API
+        console.log(response)
         this.$message.success('注册成功')
 
         setTimeout(() => {

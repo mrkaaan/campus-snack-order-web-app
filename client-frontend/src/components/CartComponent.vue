@@ -19,11 +19,11 @@
                     </div>
                     <div class="cart-item-info-b">
                       <div class="cart-item-price">
-                        <span class="sale-price" v-if="item.salePrice" :class="{ 'item-price': item.salePrice}">
-                          ￥ {{ item.totalOriginalPrice }}
-                        </span>
-                        <span  :class="item.salePrice ? 'original-price' : 'item-price'">
+                        <span class="sale-price" v-if="item.totalSalePrice" :class="{ 'item-price': item.totalSalePrice}">
                           ￥ {{ item.totalSalePrice}}
+                        </span>
+                        <span  :class="item.totalSalePrice ? 'original-price' : 'item-price'">
+                          ￥ {{ item.totalOriginalPrice}}
                         </span>
                       </div>
                       <div class="cart-item-quantity">
