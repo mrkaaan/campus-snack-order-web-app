@@ -10,6 +10,32 @@ const Merchant = {
     });
   },
 
+  getAllMerchantsPaging: (offset, limit) => {
+    console.log(offset, limit)
+    return new Promise((resolve, reject) => {
+      const query = `
+      SELECT * FROM Merchants
+      ORDER BY merchantId ASC
+      LIMIT ? OFFSET ?
+    `;
+      db.query(query, [limit, offset], (error, results) => {
+        if (error) reject(error);
+        else {
+          // 统计总商家数量
+          db.query("SELECT COUNT(*) as total FROM Merchants", (err, countResult) => {
+            if (err) reject(err);
+            else {
+              const totalItems = countResult[0].total;
+              // console.log(results, totalItems)
+              resolve({ merchants: results, totalItems });
+            }
+          });
+        }
+      });
+    });
+  },
+
+
   getMerchantInfo: (merchantId) => {
     return new Promise((resolve, reject) => {
       const query = "SELECT * FROM Merchants WHERE merchantId = ?";

@@ -1,8 +1,6 @@
 // Mock data
 const Merchant = require('../models/Merchant');
 
-
-
 exports.getMerchants = async (req, res) => {
   console.log('getMerchants')
   try {
@@ -27,6 +25,44 @@ exports.getMerchants = async (req, res) => {
     });
   }
 };
+
+exports.getMerchantsPaging = async (req, res) => {
+  const page = parseInt(req.query.page) || 1; // 获取当前页码，默认为第一页
+  const limit = parseInt(req.query.limit) || 10; // 每页条数，默认为10
+  const offset = (page - 1) * limit; // 计算跳过的记录数
+
+  try {
+    const { merchants, totalItems } = await Merchant.getAllMerchantsPaging(offset, limit);
+    console.log(merchants, totalItems)
+    const totalPages = Math.ceil(totalItems / limit); // 计算总页数
+
+    const data = merchants.map(merchant => ({
+      ...merchant,
+      priceRange: [merchant.priceRangeLow, merchant.priceRangeHigh],
+      mainDish: merchant.mainDish.split(','),
+      hasSpecialPrice: !!merchant.hasSpecialPrice,
+      hasDiscountInfo: !!merchant.hasDiscountInfo
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "Data retrieved successfully",
+      data: {
+        merchants: data,
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: totalItems
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving merchant data",
+      data: error
+    });
+  }
+};
+
 
 exports.getMerchant = async (req, res) => {
   const merchantId = req.params.merchantId;

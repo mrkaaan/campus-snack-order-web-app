@@ -189,26 +189,30 @@ exports.registerDemo = async (req, res) => {
 }
 
 // 判断用户身份并查遍检查该用户在数据库中是否存在
-async function queryDatabaseForLogin(userinfo) {
+function queryDatabaseForLogin(userinfo) {
   // 这里需要根据userinfo判断是email、username还是UID
+  let userType = null;
   const queryAccountId = 'SELECT * FROM Users WHERE accountId = ?';
   const queryUsername = 'SELECT * FROM Users WHERE username = ?';
   const queryEmail = 'SELECT * FROM Users WHERE email = ?';
 
   // 简单的正则判断
   if (/^\d{8}$/.test(userinfo)) { // 假设UID是8位数字
-    return db.query(queryAccountId, [userinfo]);
+    userType = 'accountId';
+    return [queryAccountId, userType];
   } else if (userinfo.includes('@')) { // 简单的判断是否包含@，认为是邮箱
-    return db.query(queryEmail, [userinfo]);
+    userType = 'email';
+    return [queryEmail, userType];
   } else { // 其余情况认为是用户名
-    return db.query(queryUsername, [userinfo]);
+    userType = 'username';
+    return[queryUsername, userType];
   }
 }
 
 // 用户登录
 exports.login = async (req, res) => {
   const { userData, loginType } = req.body;
-  console.log(' req.body:',  req.body)
+  console.log('req.body:',  req.body)
   console.log('userData:', userData)
   console.log('loginType:', loginType)
   try {
@@ -225,7 +229,9 @@ exports.login = async (req, res) => {
       }
 
       // 检查用户名是否已存在
-      const [rows] = await queryDatabaseForLogin(userinfo)
+
+      const [query, userType] =  queryDatabaseForLogin(userinfo)
+      const [rows] = await db.query(query, [userinfo])
       const user = rows ? rows[0] : null;
       if (!user) {
         return res.status(404).json({
@@ -242,11 +248,16 @@ exports.login = async (req, res) => {
         });
       }
 
+      let passwordMatch = false
       // 验证密码
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (user.role === 'user') {
+        passwordMatch = await bcrypt.compare(password, user.password);
+      } else {
+        passwordMatch = password === user.password;
+      }
       if (passwordMatch) {
         const expiresIn = userData.remember ? '7d' : '1d';
-        const token = jwt.sign({ id: user.accountId, mode: 'normal' }, process.env.JWT_SECRET, { expiresIn }); // 使用JWT生成token
+        const token = jwt.sign({ userinfo: userinfo, mode: 'normal' }, process.env.JWT_SECRET, { expiresIn }); // 使用JWT生成token
         res.status(200).json({
           success: true,
           message: "登录成功",
@@ -258,7 +269,8 @@ exports.login = async (req, res) => {
               hasPassword: !!user.password
             },
             mode:'normal', // 登录模式 normal 或者 guest
-            token
+            token,
+            isAdmin: user.role === 'admin',
           }
         });
       } else {
@@ -305,7 +317,7 @@ exports.login = async (req, res) => {
         // 验证码验证通过后，删除验证码记录
         await db.query("DELETE FROM EmailVerifications WHERE email = ?", [email]);
         const expiresIn = userData.remember ? '7d' : '1d';
-        const token = jwt.sign({ id: user.accountId, mode:'normal' }, process.env.JWT_SECRET, { expiresIn }); // 使用JWT生成token
+        const token = jwt.sign({ email: user.email, mode:'normal' }, process.env.JWT_SECRET, { expiresIn }); // 使用JWT生成token
         res.status(200).json({
           success: true,
           message: "登录成功",
