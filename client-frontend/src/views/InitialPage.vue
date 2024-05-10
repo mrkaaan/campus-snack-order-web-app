@@ -12,7 +12,7 @@
       <div class="register-form info-box"  :style="[infoBoxStyles, isWideScreen && currentPage === 'login' ? { opacity: 0 } : {}]" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'register' " >
         <div class="info-box-wrapper" :style="infoBoxWrapperStyles">
           <div class="info-title-content" :style="infoTitleStyles">
-            <h1>{{ isUser ? '商家注册' : '用户注册' }}</h1>
+            <h1>{{ isUser ? '用户注册' : '商家注册' }}</h1>
           </div>
           <el-form
             v-if="!useEmailByRegister"
@@ -92,7 +92,7 @@
               <div class="prompt-text" v-if="useEmailByRegister">使用邮箱注册将会自动登录</div>
               <button type="button" @click="triggerRegister">注册</button>
               <div class="tourist-box" >
-                <p @click="temporarilyLoggingIn">暂不注册</p>
+                <p @click="handleLoginAsGuest" :style="{display: isUser ? 'block' : 'none'}">游客访问</p>
                 <p @click="switchToEmail('register')">{{ useEmailByRegister ? "用户密码注册" : "邮箱注册" }}</p>
               </div>
             </div>
@@ -178,7 +178,7 @@
               <div class="prompt-text" v-if="useEmailByLogin">若该邮箱未注册则自动注册</div>
               <button type="button" @click="triggerLogin">登录</button>
               <div class="tourist-box">
-                <p @click="temporarilyLoggingIn">暂不登录</p>
+                <p @click="handleLoginAsGuest" :style="{display: isUser ? 'block' : 'none'}">游客访问</p>
                 <p @click="switchToEmail('login')">{{ useEmailByLogin ?  "用户名密码登录" : "邮箱验证码登录" }}</p>
               </div>
             </div>
@@ -195,8 +195,8 @@
         v-model="isUser"
         active-color="#21B05D"
         inactive-color="#10783b"
-        active-text="用户登录"
-        inactive-text="商家登录">
+        :active-text="flag ? '用户登录' : '用户注册'"
+        :inactive-text="flag ? '商家登录' : '商家注册'">
       </el-switch>
     </div>
   </div>
@@ -214,7 +214,7 @@ export default {
       isUser: true,
       useEmailByRegister: false,
       useEmailByLogin: false,
-      flag: true,
+      flag: true, // 为真则登录 为假则注册
       loginForm: {
         username: 'demo123',
         password: '12345678'
@@ -319,12 +319,13 @@ export default {
     }
   },
   methods: {
+    ...mapActions('auth', ['clearAuth', 'updateAuth']),
+    // 发送验证码
     async sendVerCode () {
       if (this.countdown > 0) {
         return // 如果当前倒计时正在进行，则不执行任何操作
       }
       const email = !this.flag ? this.registerByEmailForm.email : this.loginFormByEmail.email
-      console.log(this.registerByEmailForm)
       if (!email) {
         this.$message.error('请输入邮箱')
         return
@@ -338,14 +339,14 @@ export default {
           this.timer = null
         }
       }, 1000)
-      this.$message.success('验证码已发送')
+      this.$message.success('验证码已发送，请注意查收')
       try {
         await sendEmailCode({ email })
       } catch (error) {
-        this.$message.error(error.message || 'Failed to send verification code.')
+        this.$message.error(error.message || '验证码发送失败')
       }
-      // console.log(email)
     },
+    // 核验注册时的两次密码
     matchPassword (rule, value, callback) {
       if (value === '') {
         callback(new Error('请再次输入密码'))
@@ -355,6 +356,7 @@ export default {
         callback()
       }
     },
+    // 切换为邮箱登录
     switchToEmail (mod) {
       if (mod === 'login') {
         this.useEmailByLogin = !this.useEmailByLogin
@@ -362,6 +364,7 @@ export default {
         this.useEmailByRegister = !this.useEmailByRegister
       }
     },
+    // 切换登录注册
     mySwitch () {
       this.flag = !this.flag
       // 延迟一秒清空数据
@@ -370,13 +373,12 @@ export default {
         this.registerForm = { username: '', password: '', confirmPassword: '' }
       }, 500)
     },
-    ...mapActions('auth', ['login', 'logout', 'loginGuest']),
+    // 调用登录接口前核验表单
     triggerLogin () {
       if (!this.useEmailByLogin) {
         this.$refs.loginFormRef.validate((valid) => {
           if (valid) {
             this.handleLogin('normal')
-            console.log('正常登录')
           } else {
             console.log('表单验证失败')
           }
@@ -385,20 +387,20 @@ export default {
         this.$refs.loginByEmailFormRef.validate((valid) => {
           if (valid) {
             this.handleLogin('email')
-            console.log('邮箱登录')
           } else {
-            console.log('表单验证失败')
+            console.log('验证码登录表单验证失败')
           }
         })
       }
     },
+    // 调用注册接口前核验表单
     triggerRegister () {
       if (!this.useEmailByRegister) {
         this.$refs.registerFormRef.validate((valid) => {
           if (valid) {
             this.handleRegister('normal')
           } else {
-            console.log('表单验证失败')
+            console.log('注册表单验证失败')
           }
         })
       } else {
@@ -406,11 +408,12 @@ export default {
           if (valid) {
             this.handleRegister('email')
           } else {
-            console.log('邮箱注册信息错误')
+            console.log('邮箱注册表单验证失败')
           }
         })
       }
     },
+    // 登录
     async handleLogin (loginType) {
       let dataToSend = {}
 
@@ -425,38 +428,29 @@ export default {
         return
       }
 
-      // {
-      //   ...this.loginForm,
-      //   rememberMe: this.rememberMe,
-      //   mode: 'normal' // 添加模式字段以区分请求类型
-      // }
       try {
-        const response = await apiLogin({ userData: dataToSend, loginType }) // 调用API
-        console.log('login', response.data)
+        const response = await apiLogin({ userData: dataToSend, loginType, isMerchant: !this.isUser }) // 调用API
+        const { user, token, mode } = response.data
         // 登录成功，保存用户信息到Vuex
-        this.login({ user: response.data.user || null, token: response.data.token, mode: response.data.mode })
-        await this.$router.push('/').catch(err => {
+        this.updateAuth({ user: user, token: token, mode: mode, isGuest: false })
+        await this.$router.push(`/${this.isUser ? 'user' : 'merchant'}`).catch(err => {
           console.error(err)
         })
-        if (response.data.isAdmin) {
-          this.$message.success('测试账户登录成功')
-        } else {
-          this.$message.success('登陆成功')
-        }
+        this.$message.success('登陆成功')
       } catch (error) {
         this.$message.error(error.message || '登录失败, 请稍后再试')
       }
     },
-    async temporarilyLoggingIn () {
+    // 游客登录
+    async handleLoginAsGuest () {
       try {
-        const response = await loginGuestApi() // 调用API
-        this.loginGuest({ token: response.data.token })
-        await this.$router.push('/').catch(err => {
-          // 处理错误，例如导航到相同的路由或者导航被一个导航守卫阻止等
+        const response = await loginGuestApi()
+        const { user, token, mode } = response.data
+        this.updateAuth({ user: user, token: token, mode: mode, isGuest: true })
+        await this.$router.push('/user').catch(err => {
           console.error(err)
         })
-        this.$message.info('使用游客账号登录')
-        // this.$message.success('登陆成功')
+        this.$message.info('游客登录成功')
       } catch (error) {
         this.$message.error('游客登录失败, 请稍后再试')
         console.error('Guest login error', error)
@@ -488,29 +482,26 @@ export default {
       try {
         // const encryptedData = encryptData(registerData)
 
-        // console.log(encryptedData)
-        // console.log(registerData)
-        const response = await register({ data: registerData, registerType }) // 调用API
-        console.log(response)
+        const response = await register({ data: registerData, registerType, isMerchant: !this.isUser }) // 调用API
         this.$message.success('注册成功')
-
-        setTimeout(() => {
-          this.flag = !this.flag
-        }, 500)
 
         if (registerType === 'normal') {
           this.registerForm = { username: '', password: '', confirmPassword: '' }
+          setTimeout(() => {
+            this.flag = !this.flag
+          }, 500)
         } else if (registerType === 'email') {
           // 邮箱注册将自动登录
           this.registerByEmailForm = { email: '', verCode: '' }
-          this.login({ user: response.data.user || null, token: response.data.token, mode: response.data.mode })
-          await this.$router.push('/').catch(err => {
+          const { user, token, mode } = response.data
+          this.updateAuth({ user: user, token: token, mode: mode, isGuest: false })
+          await this.$router.push(`/${this.isUser ? 'user' : 'merchant'}`).catch(err => {
             console.error(err)
           })
         }
       } catch (error) {
         this.$message.error(error.message || '注册失败')
-        console.log(error.message)
+        console.log(error)
       }
     }
 

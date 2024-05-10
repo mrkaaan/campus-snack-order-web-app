@@ -1,7 +1,7 @@
 
 <template>
   <div class="profile-page" style="height: 100%" :style="isSmallScreen ? {paddingBottom: '6rem'} : {paddingBottom: '0'}">
-    <div class="profile-page-wrapper" style="height: 100%">
+    <div class="profile-page-wrapper" v-if="false" style="height: 100%">
       <div class="details">
         <div class="details-wrapper">
           <div class="details-image">
@@ -55,31 +55,24 @@
         </div>
       </div>
     </div>
+    <user-card></user-card>
   </div>
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 import CustomSkeleton from '@/components/CustomSkeleton.vue'
+import UserCard from '@/components/UserCard.vue'
 export default {
   name: 'ProfilePage',
   components: {
+    UserCard,
     CustomSkeleton
-  },
-  data () {
-    return {
-
-    }
-  },
-  created () {
-
-  },
-  mounted () {
   },
   methods: {
     async handleLogOut () {
       try {
-        await this.$store.dispatch('auth/logout')
+        await this.$store.dispatch('auth/clearAuth')
         await this.$router.push('/initial')
       } catch (err) {
         this.$message.info(err.message)
@@ -88,19 +81,15 @@ export default {
   },
   computed: {
     ...mapGetters('sidebar', ['isSmallScreen']),
-    ...mapState('auth', ['user', 'mode']),
-    ...mapActions('auth', ['logout']),
-    currMode () {
-      return this.mode || 'guest'
-    },
-    infoUser () {
-      const user = {}
-      if (this.currMode === 'guest') {
-        user.name = 'guest'
-      } else {
-        user.name = this.user.username
+    ...mapGetters('auth', ['user', 'mode', 'isGuest']),
+    userInfo () {
+      return {
+        accountId: this.isGuest ? '游客访问' : (this.user.accountId || '未设置'),
+        username: this.isGuest ? '游客访问' : (this.user.username || '未设置'),
+        email: this.isGuest ? '游客访问' : (this.user.email || '未设置'),
+        hasPassword: this.isGuest ? '游客访问' : (this.user.hasPassword ? '已设置' : '未设置'),
+        mode: this.mode
       }
-      return user
     }
   }
 }
@@ -109,6 +98,9 @@ export default {
 @import '../styles/multi';
 .profile-page {
   background-color: $lighter-gray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   //height: 100%;
 }
 

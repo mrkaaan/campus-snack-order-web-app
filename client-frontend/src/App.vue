@@ -25,7 +25,7 @@ export default {
       try {
         await this.$store.dispatch('auth/initializeAuth')
       } catch (error) {
-        this.$message.error(error.message)
+        // this.$message.error(error.message)
       }
     }
   },
@@ -40,17 +40,16 @@ export default {
   created () {
     // 初始化购物车
     this.readCart()
-
+    // 检查用户认证状态
     this.checkAuth()
     window.addEventListener('storage', () => {
       // 检测到 localStorage 变更，可以添加逻辑处理用户状态
       if (!localStorage.getItem('authUser')) {
         // 如果检测到 authUser 不再存在，可能需要更新应用状态或强制跳转到登录页面
-        // 调用 store 的 initializeAuth
         this.checkAuth()
-        // setTimeout(() => {
-        //   this.$router.push('/initial')
-        // }, 300)
+        setTimeout(() => {
+          this.$router.push('/initial')
+        }, 300)
       }
     })
   }

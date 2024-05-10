@@ -1,34 +1,34 @@
 export default {
   namespaced: true, // 启用命名空间
   state: {
-    isAuthenticated: false,
     user: {},
     token: null,
-    mode: null
+    mode: null, // user 或者 merchant
+    isGuest: null
   },
   mutations: {
-    setAuth (state, payload) {
-      state.isAuthenticated = payload.isAuthenticated
+    SET_AUTH (state, payload) {
       state.user = payload.user
       state.token = payload.token
       state.mode = payload.mode
+      state.isGuest = payload.isGuest
+      console.log('setAuth:', state)
     },
-    clearAuth (state) {
-      state.isAuthenticated = false
+    CLEAT_AUTH (state) {
       state.user = {}
       state.token = null
       state.mode = null
+      state.isGuest = null
     }
   },
   actions: {
+    // 初始化用户数据 从本地存储中获取
     initializeAuth ({ commit }) {
       return new Promise((resolve, reject) => {
         const authUser = localStorage.getItem('authUser')
-        console.log('authUser:', authUser)
         if (authUser) {
-          const { user, token, mode } = JSON.parse(authUser)
-          console.log('authUser:', user, token, mode)
-          commit('setAuth', { isAuthenticated: true, user, token, mode })
+          const { user, token, mode, isGuest } = JSON.parse(authUser)
+          commit('SET_AUTH', { user, token, mode, isGuest })
           resolve()
         } else {
           commit('clearAuth')
@@ -36,27 +36,24 @@ export default {
         }
       })
     },
-    login ({ commit }, { user, token, mode }) {
-      console.log('login:', user, token, mode)
-      commit('setAuth', { isAuthenticated: true, user, token, mode })
-      localStorage.setItem('authUser', JSON.stringify({ user, token, mode })) // JWT
-    },
-    loginGuest ({ commit }, { token }) {
-      console.log('loginGuest:', token)
-      commit('setAuth', { isAuthenticated: true, token, mode: 'guest' })
-      localStorage.setItem('authUser', JSON.stringify({ token, mode: 'guest' })) // JWT
-    },
-    logout ({ state, commit }) {
+    // 清楚用户数据
+    clearAuth ({ state, commit }) {
       return new Promise((resolve, reject) => {
-        if (state.mode === 'guest') {
-          reject(new Error('游客模式 无需登出'))
-        } else {
-          commit('clearAuth')
-          localStorage.removeItem('authUser') // 清除存储的用户信息
-          // 导航到登录页
-          resolve()
-        }
+        commit('CLEAT_AUTH')
+        localStorage.removeItem('authUser') // 清除存储的用户信息
+        resolve()
       })
+    },
+    // 更新用户数据 从接口返回结果中
+    updateAuth ({ commit }, { user, token, mode, isGuest }) {
+      commit('SET_AUTH', { user, token, mode, isGuest })
+      localStorage.setItem('authUser', JSON.stringify({ user, token, mode, isGuest }))
     }
+  },
+  getters: {
+    user: state => state.user,
+    token: state => state.token,
+    mode: state => state.mode,
+    isGuest: state => state.isGuest
   }
 }
