@@ -3,6 +3,7 @@ const cors = require('cors');
 const merchantRoutes = require('./routes/merchantRoutes');
 const authRoutes = require('./routes/authRoutes');
 const searchRoutes = require('./routes/searchRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -16,5 +17,6 @@ app.use(express.static('public'));
 app.use('/api/merchants', merchantRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/order', orderRoutes);
 
 module.exports = app;

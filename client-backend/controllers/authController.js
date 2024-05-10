@@ -59,8 +59,8 @@ exports.register = async (req, res) => {
       }
 
       // 注册用户
-      const hashedPassword = await bcrypt.hash(password, 10);
-      let accountId = generateAccountId(username);
+      const hashedPassword = await bcrypt.hash(password, 10); // 验证密码
+      let accountId = generateAccountId(username); // 生成accountId
       let exists = true;
       let attempts = 0;
       while (exists && attempts < 10) { // 限制尝试次数以避免无限循环

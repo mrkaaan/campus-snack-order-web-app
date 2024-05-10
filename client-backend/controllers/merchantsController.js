@@ -1,4 +1,3 @@
-// Mock data
 const Merchant = require('../models/Merchant');
 
 exports.getMerchants = async (req, res) => {
@@ -27,13 +26,12 @@ exports.getMerchants = async (req, res) => {
 };
 
 exports.getMerchantsPaging = async (req, res) => {
-  const page = parseInt(req.query.page) || 1; // 获取当前页码，默认为第一页
-  const limit = parseInt(req.query.limit) || 10; // 每页条数，默认为10
+  const page = parseInt(req.params.page) || 1; // 获取当前页码，默认为第一页
+  const limit = parseInt(req.params.limit) || 10; // 每页条数，默认为10
   const offset = (page - 1) * limit; // 计算跳过的记录数
 
   try {
     const { merchants, totalItems } = await Merchant.getAllMerchantsPaging(offset, limit);
-    console.log(merchants, totalItems)
     const totalPages = Math.ceil(totalItems / limit); // 计算总页数
 
     const data = merchants.map(merchant => ({
