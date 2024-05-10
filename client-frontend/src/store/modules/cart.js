@@ -256,27 +256,45 @@ export default {
     },
 
     // 存储Cart
-    SAVE_CART (state) {
+    SAVE_CART (state, uid) {
+      if (!uid) return // 如果没有UID，则不保存数据
+      const key = `cartItems-${uid}`
+      const cartData = {
+        cartItems: state.cartItems,
+        totalSalePrice: state.totalSalePrice,
+        totalOriginalPrice: state.totalOriginalPrice
+      }
+      localStorage.setItem(key, JSON.stringify(cartData)) // 根据UID区分存储
+
       // 将对象转换为 JSON 字符串并保存到 localStorage
       // 清空每个商品的isShowStepper字段
-      localStorage.setItem('cartItems', JSON.stringify(state.cartItems))
-      localStorage.setItem('totalSalePrice', state.totalSalePrice.toString())
-      localStorage.setItem('totalOriginalPrice', state.totalOriginalPrice.toString())
+      // localStorage.setItem('cartItems', JSON.stringify(state.cartItems))
+      // localStorage.setItem('totalSalePrice', state.totalSalePrice.toString())
+      // localStorage.setItem('totalOriginalPrice', state.totalOriginalPrice.toString())
     },
     // 从 localStorage 读取 cart 状态
-    READ_CART (state) {
-      // 从 localStorage 获取数据并解析
-      state.cartItems = JSON.parse(localStorage.getItem('cartItems')) || []
-      state.totalSalePrice = parseFloat(localStorage.getItem('totalSalePrice')) || 0
-      state.totalOriginalPrice = parseFloat(localStorage.getItem('totalOriginalPrice')) || 0
+    READ_CART (state, uid) {
+      if (!uid) return // 如果没有UID，则不加载数据
+      const key = `cartItems-${uid}`
+      const cartData = JSON.parse(localStorage.getItem(key)) || {}
+      state.cartItems = cartData.cartItems || []
+      state.totalSalePrice = parseFloat(cartData.totalSalePrice) || 0
+      state.totalOriginalPrice = parseFloat(cartData.totalOriginalPrice) || 0
       state.cartItems.forEach(merchantCart => {
         merchantCart.items.forEach(item => {
-          item.isShowStepper = false
+          item.isShowStepper = false // 重置显示数量调节器状态
         })
       })
-      // console.log('读取localStorage的购物车数据', state.cartItems)
-      // console.log(state.totalSalePrice)
-      // console.log(state.totalOriginalPrice)
+
+      // 从 localStorage 获取数据并解析
+      // state.cartItems = JSON.parse(localStorage.getItem('cartItems')) || []
+      // state.totalSalePrice = parseFloat(localStorage.getItem('totalSalePrice')) || 0
+      // state.totalOriginalPrice = parseFloat(localStorage.getItem('totalOriginalPrice')) || 0
+      // state.cartItems.forEach(merchantCart => {
+      //   merchantCart.items.forEach(item => {
+      //     item.isShowStepper = false
+      //   })
+      // })
     }
 
   },
@@ -369,10 +387,9 @@ export default {
     },
 
     // 生成订单
-    async createOrder ({ commit, state }, { mode, merchantId = null, userId }) {
+    createOrder ({ commit, state }, { mode, merchantId = null, userId }) {
       commit('UPDATE_TOTAL_PRICE')
       const orders = []
-      console.log(mode)
       // 生成单个商家的订单
       if (merchantId) {
         const merchantCart = state.cartItems.find(m => m.merchantId === merchantId)
@@ -439,23 +456,14 @@ export default {
       if (orders.length > 0) {
         state.orders = orders
       }
-      if (state.orders.length > 0) {
-        try {
-          console.log(state.orders[0])
-          await insertOrder({ order: state.orders[0] })
-          console.log('提交订单成功', state.orders[0])
-        } catch (error) {
-          console.error('提交订单失败', error)
-        }
-      }
     },
 
     // 提交订单数据
-    async submitOrder ({ commit, state }, { userId, merchantId, items }) {
+    submitOrder ({ commit, state }) {
+      if (state.orders.length === 0) {
+
+      }
       try {
-        const sendData = {
-          userId, merchantId, items
-        }
         await insertOrder(sendData)
         console.log('提交订单成功')
       } catch (error) {

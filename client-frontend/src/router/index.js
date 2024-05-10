@@ -52,6 +52,10 @@ const routes = [
     component: () => import('@/views/MainLayout.vue'), // 布局组件
     children: [
       {
+        path: '',
+        redirect: '/merchant/order' // 当访问 /merchant 时自动重定向到 /merchant/order
+      },
+      {
         path: 'order',
         name: 'order',
         component: () => import('@/views/merchant/OrderManagement.vue'),

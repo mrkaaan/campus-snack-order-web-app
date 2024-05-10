@@ -2,7 +2,7 @@
   <div style="flex:1;">
 
     <div class="shop-details-container" :style="shopDetailsContainerStyles" ref="shopDetailsContainer">
-      <div class="categories-sticky-container" v-if="currentScroll >= categoriesStickTop" :style="stickyWidth">
+      <div class="categories-sticky-container" v-if="(currentScroll >= categoriesStickTop) && currentBottomNavTag === 0" :style="stickyWidth">
         <div class="categories-sticky-wrapper">
           <div class="categories-sticky">
             <ul class="categories" @click="scrollToCategory">
@@ -42,7 +42,7 @@
         <div class="content-wrapper">
           <div class="menu" ref="menu">
             <div class="menu-wrapper">
-              <div class="selected" :style="{ 'transform': backgroundPosition }">
+              <div class="selected" :style="backgroundPosition">
                 <div class="selected-wrapper"/>
               </div>
               <ul>
@@ -55,7 +55,7 @@
           </div>
           <div class="shop-layout">
             <div class="shop-wrapper" :style="{ 'transform': `translateX(-${currentBottomNavTag * 100}%)` }">
-              <div class="category-section" v-for="(item, item_index) in menuItem" :key="item_index">
+              <div class="category-section" v-for="(item, item_index) in menuItem" :key="item_index" :style="categorySectionStyles">
                 <div v-if="item.text === '点餐'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">
                   <div class="categories-menu">
                     <ul class="categories" @click="scrollToCategory" :style="{ opacity: currentScroll >= categoriesStickTop ? '0' : '1' }">
@@ -122,8 +122,12 @@
                     </div>
                   </div>
                 </div>
-                <div v-else-if="item.text === '评价'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">评价</div>
-                <div v-else-if="item.text === '商家'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">商家</div>
+                <div v-else-if="item.text === '评价'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">
+                  <el-empty description="暂无评论"></el-empty>
+                </div>
+                <div v-else-if="item.text === '商家'" class="order-wrapper" :style="{ opacity: currentBottomNavTag === item_index ? '1' : '0' }">
+                  <el-empty></el-empty>
+                </div>
               </div>
             </div>
           </div>
@@ -153,8 +157,8 @@ export default {
       scale: 1,
       menuItem: [
         { icon: 'el-icon-shopping-bag-2', text: '点餐' },
-        { icon: 'el-icon-shopping-cart-full', text: '评价' },
-        { icon: 'el-icon-chat-line-round', text: '商家' }
+        { icon: 'el-icon-shopping-cart-full', text: '评价' }
+        // { icon: 'el-icon-chat-line-round', text: '商家' }
       ],
       isLoadingMerchantDetails: false,
       isLoadingMerchantProducts: false,
@@ -175,6 +179,15 @@ export default {
     ...mapGetters('sidebar', ['isWideScreen']),
     ...mapGetters('cart', ['isExpanded']),
     ...mapState('sidebar', ['isSidebarOpen', 'isSidebarCollapsed']),
+    categorySectionStyles () {
+      const style = {}
+      if (this.currentBottomNavTag !== 0) {
+        style.display = 'flex'
+        style.justifyContent = 'center'
+        style.alignItems = 'center'
+      }
+      return style
+    },
     stickyWidth () {
       if (this.isSidebarOpen) {
         return { width: 'calc(100% - 15.625rem)' }
@@ -206,8 +219,12 @@ export default {
     },
     // 计算背景移动的距离
     backgroundPosition () {
-      const width = 300 / this.menuItem.length // 计算每个nav-item占据的百分比宽度
-      return `translateX(${this.currentBottomNavTag * width}%)`
+      const style = {}
+      const numItemNumber = this.menuItem.length
+      style.width = `calc(100% / ${numItemNumber})`
+      const width = (numItemNumber * 100) / numItemNumber
+      style.transform = `translateX(${this.currentBottomNavTag * width}%)`
+      return style
     },
     // 计算是否允许.items滚动
     allowItemsScroll () {
@@ -586,7 +603,6 @@ export default {
             justify-content: center;
             bottom: -0.2rem; /* 根据需要调整 */
             height: 10%; /* 背景块的高度 */
-            width: calc(100% / 3); /* 假设有4个nav-item */
             transition: transform 0.3s ease; /* 平滑过渡效果 */
             .selected-wrapper{
               background-color: $green-light3;
