@@ -47,8 +47,13 @@ const routes = [
         name: 'profile',
         component: () => import('@/views/ProfilePage.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: 'order',
+        name: 'order',
+        component: () => import('@/views/merchant/OrderManagement.vue'),
+        meta: { requiresAuth: true }
       }
-      // 其他子路由...
     ]
   },
   {

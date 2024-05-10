@@ -33,21 +33,37 @@ export default {
       state.merchantDetails = merchantDetails
     },
     UPDATE_PRODUCT_QUANTITY (state, {
-      merchantId,
-      productId,
+      merchantId = null,
+      productId = null,
       quantity
     }) {
-      if (state.merchantProducts && state.merchantDetails) {
-        if (state.merchantDetails.merchantId === merchantId) {
-          const product = state.merchantProducts.map(category => category.items)
-            .flat() // 展平所有 items 数组为一个数组
-            .find(item => item.productId === productId)
-          if (product) {
-            if (Math.sign(quantity)) {
-              product.quantity += quantity
-            } else {
-              product.quantity -= quantity
+      // 指定更新商品数据
+      if (productId) {
+        if (state.merchantProducts && state.merchantDetails) {
+          if (state.merchantDetails.merchantId === merchantId) {
+            const product = state.merchantProducts.map(category => category.items)
+              .flat() // 展平所有 items 数组为一个数组
+              .find(item => item.productId === productId)
+            if (product) {
+              if (Math.sign(quantity) === 1) {
+                product.quantity += 1
+              } else if (Math.sign(quantity) === -1) {
+                product.quantity -= 1
+              } else {
+                product.quantity = 0
+              }
             }
+          }
+        }
+      } else {
+        // 清空全部商品数量
+        if (state.merchantProducts && state.merchantDetails) {
+          if (state.merchantDetails.merchantId === merchantId) {
+            state.merchantProducts.map(category => category.items)
+              .flat() // 展平所有 items 数组为一个数组
+              .forEach(product => {
+                product.quantity = 0
+              })
           }
         }
       }

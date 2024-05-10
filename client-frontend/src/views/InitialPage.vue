@@ -12,7 +12,7 @@
       <div class="register-form info-box"  :style="[infoBoxStyles, isWideScreen && currentPage === 'login' ? { opacity: 0 } : {}]" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'register' " >
         <div class="info-box-wrapper" :style="infoBoxWrapperStyles">
           <div class="info-title-content" :style="infoTitleStyles">
-            <h1>注册</h1>
+            <h1>{{ isUser ? '商家注册' : '用户注册' }}</h1>
           </div>
           <el-form
             v-if="!useEmailByRegister"
@@ -105,7 +105,7 @@
       <div class="login-form info-box" :style="[infoBoxStyles, isWideScreen && currentPage === 'register' ? { opacity: 0 } : {}]" v-if="this.isWideScreen || this.isSmallScreen || this.currentPage === 'login' ">
         <div class="info-box-wrapper" :style="infoBoxWrapperStyles">
           <div class="info-title-content" :style="infoTitleStyles">
-            <h1>登录</h1>
+            <h1>{{ isUser ? '用户登录' : '商家登录'}}</h1>
           </div>
           <el-form
             v-if="!useEmailByLogin"
@@ -189,6 +189,16 @@
         </div>
       </div>
     </div>
+    <div style="position: fixed; bottom: 1rem; right: 50%; transform: translateX(50%);">
+      <el-switch
+        style="display: block"
+        v-model="isUser"
+        active-color="#21B05D"
+        inactive-color="#10783b"
+        active-text="用户登录"
+        inactive-text="商家登录">
+      </el-switch>
+    </div>
   </div>
 </template>
 
@@ -201,6 +211,7 @@ export default {
   name: 'initialPage',
   data () {
     return {
+      isUser: true,
       useEmailByRegister: false,
       useEmailByLogin: false,
       flag: true,
@@ -266,6 +277,8 @@ export default {
           {
             validator: (rule, value, callback) => {
               if (value.includes('@')) {
+                callback(new Error('请输入有效的邮箱地址'))
+                if (!value.includes('.')) { callback(new Error('请输入有效的邮箱地址')) }
                 // 如果包含 '@' 符号，认为是邮箱，进行邮箱格式验证
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
                 if (!emailPattern.test(value)) {

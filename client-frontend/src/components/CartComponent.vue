@@ -58,7 +58,7 @@
             </div>
           </div>
           <div class="cart-summary-r">
-            <div class="cart-summary-r-wrapper">
+            <div class="cart-summary-r-wrapper" @click="handleCreateOrder('total', merchantId)">
               <div class="cart-sum-btn">去结算</div>
             </div>
           </div>
@@ -79,7 +79,10 @@ export default {
   },
   methods: {
     ...mapActions('mask', ['showOverlay', 'hideOverlay']),
-    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart']),
+    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'createOrder']),
+    handleCreateOrder (mode, merchantId) {
+      this.createOrder({ mode: mode, merchantId: merchantId, userId: 'test123' })
+    },
     toggleCart () {
       if (!this.totalSalePrice) {
         return

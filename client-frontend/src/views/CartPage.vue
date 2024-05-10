@@ -1,178 +1,181 @@
 <template>
   <div class="cart-page" style="height: 100%">
-    <div class="cart-page-wrapper" :style="cartPageWrapperStyles">
-      <div class="cart-category" v-for="(cate, cateIndex) in cartItems" :key="cateIndex">
-        <div class="cart-category-t">
-          <div class="cart-item-select-all">
-            <div :class="['select-box',{ 'is-selected': cate.selected}]" @click="selectAllInCategory(cate.merchantId)">
-              <i :class="['el-icon-check btn']" ></i>
-            </div>
-            <div class="cart-title" @click="goToMerchantDetails(cate.merchantId)">
-              {{ cate.storeName }}
-              <i class="el-icon-arrow-right btn"></i>
-            </div>
-          </div>
-          <div class="cart-item-clear-all">
-            <div class="clear-box">
-              <i class="el-icon-delete btn" @click="centerDialogVisible = true"></i>
-            </div>
-          </div>
-        </div>
-        <div class="cart-category-b">
-          <div class="cart-item" v-for="(item, itemIndex) in cate.items" :key="itemIndex">
-            <div :class="['select-box',{ 'is-selected': item.selected}]" @click="selectItem(cate.merchantId, item.productId)">
-              <i :class="['el-icon-check btn']"></i>
-            </div>
-            <div class="cart-item-desc" style="position: relative">
-              <div class="cart-item-image">
-                <img src="" alt="">
+    <div style="background-color: #f5f5f5;">
+      <div class="cart-page-wrapper" :style="cartPageWrapperStyles" v-if="cartItems.length !== 0">
+        <div class="cart-category" v-for="(cate, cateIndex) in cartItems" :key="cateIndex">
+          <div class="cart-category-t">
+            <div class="cart-item-select-all">
+              <div :class="['select-box',{ 'is-selected': cate.selected}]" @click="selectAllInCategory(cate.merchantId)">
+                <i :class="['el-icon-check btn']" ></i>
               </div>
-              <div class="cart-item-info" @click="toggleVisibilityHide(item, cate.merchantId)">
-                <div class="cart-item-name">
-                  {{ item.name }}
-                </div>
-                <div class="cart-item-info-b" style="position: relative; width: 100%; justify-content: start">
-                  <div class="cart-item-price">
-                    <span class="sale-price" v-if="item.totalSalePrice" :class="{ 'item-price': item.salePrice }">
-                      ￥{{ item.totalSalePrice }}
-                    </span>
-                    <span v-if="item.originalPrice" :class="item.totalSalePrice ? 'original-price' : 'item-price'">
-                      ￥{{ item.totalOriginalPrice }}
-                    </span>
-                  </div>
-                  <div class="cart-item-count" style="position: absolute; right: 0; top: 0">
-                  </div>
-                </div>
+              <div class="cart-title" @click="goToMerchantDetails(cate.merchantId)">
+                {{ cate.storeName }}
+                <i class="el-icon-arrow-right btn"></i>
               </div>
-              <div class="cart-item-info" style="position: absolute; right: 0; bottom: 0">
-                <div class="cart-item-name">
-                </div>
-                <div class="cart-item-info-b">
-                  <div class="cart-item-price">
-                  </div>
-                  <div class="cart-item-count">
-                    <div @click="toggleVisibilityShow(item, cate.merchantId)" v-if="!item.isShowStepper" class="count">
-                      {{ `x ${item.quantity}`}}
-                    </div>
-                    <el-input-number id="ignoreClick" v-else size="mini" v-model="item.quantity" :min="1" :max="99" label="描述文字" @change="handleStepperChange($event, cate.merchantId, item.productId)"></el-input-number>
-                  </div>
-                </div>
+            </div>
+            <div class="cart-item-clear-all">
+              <div class="clear-box">
+                <i class="el-icon-delete btn" @click="handleClearCart(cate.merchantId)"></i>
               </div>
             </div>
           </div>
-        </div>
-        <div class="cart-category-end" v-if="cate.selectedSalePrice" style="display: flex; flex-direction: column; gap:1rem">
-          <div class="cart-item">
-            <div class="select-box" style="opacity: 0; cursor: default">
-              <i :class="['el-icon-check btn']"></i>
-            </div>
-            <div class="cart-item-desc" style="justify-content: space-between">
-              <span>合计原价</span>
-              <span class="original-price">￥ {{ cate.selectedOriginalPrice }}</span>
-            </div>
-          </div>
-          <div class="cart-item">
-            <div class="select-box" style="opacity: 0; cursor: default">
-              <i :class="['el-icon-check btn']"></i>
-            </div>
-            <div class="cart-item-desc" style="justify-content: space-between">
-              <span>合计现价</span>
-              <span class="item-price" style="font-size: 120%">￥ {{ cate.selectedSalePrice }}</span>
-            </div>
-          </div>
-          <div class="cart-item">
-            <div class="select-box" style="opacity: 0; cursor: default">
-              <i :class="['el-icon-check btn']"></i>
-            </div>
-            <div class="cart-item-desc" style="justify-content: space-between">
-              <span>已优惠<span class="item-price">￥ {{ cate.totalDiscount }}</span></span>
-              <div class='btn' style="display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff">
-                <span>去结算</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!--    总价和结账的容器 -->
-      <transition name="slide">
-        <div class="cart-total-container" v-if="isShowCheckOut" :style="totalContainerStyles">
-          <div class="cart-total-container-wrapper" :style="totalContainerWrapperStyles">
-            <div class="cart-total">
-              <div :class="['select-box',{ 'is-selected': allSelected}]" @click="selectAll">
+          <div class="cart-category-b">
+            <div class="cart-item" v-for="(item, itemIndex) in cate.items" :key="itemIndex">
+              <div :class="['select-box',{ 'is-selected': item.selected}]" @click="selectItem(cate.merchantId, item.productId)">
                 <i :class="['el-icon-check btn']"></i>
               </div>
-              <div class="cart-total-price" v-if="selectedSalePrice" @click="handelExpandDetails">
-                <div class="cart-total-title">合计</div>
-                <span class="sale-price" v-if="selectedSalePrice" :class="{ 'item-price': selectedSalePrice }">
-                  ￥{{ selectedSalePrice }}
-                </span>
-                <span  class="original-price" v-if="selectedOriginalPrice">
-                  ￥{{ selectedOriginalPrice }}
-                </span>
-                <span class="cart-total-text" v-if="selectedSalePrice" style="display: none">
-                  明细
-                  <i :class="isCheckOutLaunch ? 'el-icon-arrow-down': 'el-icon-arrow-up'"></i>
-                </span>
-              </div>
-
-            </div>
-            <div class="cart-checkout">
-              <div type="primary" size="mini" class="btn" :style="checkOutStyle">
-                <span>一键结算</span>
-              </div>
-            </div>
-            <transition name="slide">
-              <div class="cart-total-details" v-if="isCheckOutLaunch" :style="totalDetailsStyles">
-                <div class="cart-total-details-wrapper">
-                  <div class="cart-total-details-title">价格明细</div>
-                  <div v-for="(cate, cateIndex) in cartItems" :key="cateIndex" class="cart-total-details-items" >
-                    <div class="cart-total-details-item-name">
-                      {{ `${cate.storeName}` }}
+              <div class="cart-item-desc" style="position: relative">
+                <div class="cart-item-image">
+                  <img src="" alt="">
+                </div>
+                <div class="cart-item-info" @click="toggleVisibilityHide(item, cate.merchantId)">
+                  <div class="cart-item-name">
+                    {{ item.name }}
+                  </div>
+                  <div class="cart-item-info-b" style="position: relative; width: 100%; justify-content: start">
+                    <div class="cart-item-price">
+                      <span class="sale-price" v-if="item.totalSalePrice" :class="{ 'item-price': item.salePrice }">
+                        ￥{{ item.totalSalePrice }}
+                      </span>
+                      <span v-if="item.originalPrice" :class="item.totalSalePrice ? 'original-price' : 'item-price'">
+                        ￥{{ item.totalOriginalPrice }}
+                      </span>
                     </div>
-                    <div class="cart-total-details-item-price">
-                      <span class="sale-price">
-                        ￥{{ cate.selectedSalePrice }}
-                      </span>
-                      <span  class="original-price">
-                        ￥{{ cate.selectedOriginalPrice }}
-                      </span>
+                    <div class="cart-item-count" style="position: absolute; right: 0; top: 0">
                     </div>
                   </div>
-                  <!--              <div class="cart-total-details-items" v-for="(cate, index) in summary.cate" :key="index">-->
-                  <!--                <div class="cart-total-details-item-name">-->
-                  <!--                  {{ cate.name }}-->
-                  <!--                </div>-->
-                  <!--                <div class="cart-total-details-item-price">-->
-                  <!--                  <span class="sale-price" v-if="cate.total" :class="{ 'item-price': cate.total }">-->
-                  <!--                    ￥{{ cate.total }}-->
-                  <!--                  </span>-->
-                  <!--                  <span  class="original-price" v-if="cate.totalOriginal">-->
-                  <!--                    ￥{{ cate.totalOriginal }}-->
-                  <!--                  </span>-->
-                  <!--                </div>-->
-                  <!--              </div>-->
+                </div>
+                <div class="cart-item-info" style="position: absolute; right: 0; bottom: 0">
+                  <div class="cart-item-name">
+                  </div>
+                  <div class="cart-item-info-b">
+                    <div class="cart-item-price">
+                    </div>
+                    <div class="cart-item-count">
+                      <div @click="toggleVisibilityShow(item, cate.merchantId)" v-if="!item.isShowStepper" class="count">
+                        {{ `x ${item.quantity}`}}
+                      </div>
+                      <el-input-number id="ignoreClick" v-else size="mini" v-model="item.quantity" :min="1" :max="99" label="描述文字" @change="handleStepperChange($event, cate.merchantId, item.productId)"></el-input-number>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </transition>
+            </div>
+          </div>
+          <div class="cart-category-end" v-if="cate.selectedSalePrice" style="display: flex; flex-direction: column; gap:1rem">
+            <div class="cart-item">
+              <div class="select-box" style="opacity: 0; cursor: default">
+                <i :class="['el-icon-check btn']"></i>
+              </div>
+              <div class="cart-item-desc" style="justify-content: space-between">
+                <span>合计原价</span>
+                <span class="original-price">￥ {{ cate.selectedOriginalPrice }}</span>
+              </div>
+            </div>
+            <div class="cart-item">
+              <div class="select-box" style="opacity: 0; cursor: default">
+                <i :class="['el-icon-check btn']"></i>
+              </div>
+              <div class="cart-item-desc" style="justify-content: space-between">
+                <span>合计现价</span>
+                <span class="item-price" style="font-size: 120%">￥ {{ cate.selectedSalePrice }}</span>
+              </div>
+            </div>
+            <div class="cart-item">
+              <div class="select-box" style="opacity: 0; cursor: default">
+                <i :class="['el-icon-check btn']"></i>
+              </div>
+              <div class="cart-item-desc" style="justify-content: space-between">
+                <span>已优惠<span class="item-price">￥ {{ cate.selectedDiscount }}</span></span>
+                <div class='btn' style="display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; cursor:pointer;" @click="handleCreateOrder('selected', cate.merchantId)">
+                  <span>去结算</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        <!--    总价和结账的容器 -->
+        <transition name="slide">
+          <div class="cart-total-container" v-if="isShowCheckOut" :style="totalContainerStyles">
+            <div class="cart-total-container-wrapper" :style="totalContainerWrapperStyles">
+              <div class="cart-total">
+                <div :class="['select-box',{ 'is-selected': allSelected}]" @click="selectAll">
+                  <i :class="['el-icon-check btn']"></i>
+                </div>
+                <div class="cart-total-price" v-if="selectedSalePrice" @click="handelExpandDetails">
+                  <div class="cart-total-title">合计</div>
+                  <span class="sale-price" v-if="selectedSalePrice" :class="{ 'item-price': selectedSalePrice }">
+                    ￥{{ selectedSalePrice }}
+                  </span>
+                  <span  class="original-price" v-if="selectedOriginalPrice">
+                    ￥{{ selectedOriginalPrice }}
+                  </span>
+                  <span class="cart-total-text" v-if="selectedSalePrice" style="display: none">
+                    明细
+                    <i :class="isCheckOutLaunch ? 'el-icon-arrow-down': 'el-icon-arrow-up'"></i>
+                  </span>
+                </div>
 
-      </transition>
-      <!--    <div class="masking-box" v-if="isCheckOutLaunch" @click="handelCloseDetails"></div>-->
-      <el-dialog
-        title="提示"
-        :visible.sync="centerDialogVisible"
-        width="50%"
-        center
-        :custom-class="'custom-dialog'"
-        style="transition: width 0.5s;"
-      >
-        <span>确认情况店铺内商品吗</span>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="centerDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
-        </span>
-      </el-dialog>
+              </div>
+              <div class="cart-checkout">
+                <div type="primary" size="mini" class="btn" :style="checkOutStyle" style="transition: opacity 0.3s ease-in-out;" @click="handleCreateOrder('total')">
+                  <span>一键结算</span>
+                </div>
+              </div>
+              <transition name="slide">
+                <div class="cart-total-details" v-if="isCheckOutLaunch" :style="totalDetailsStyles">
+                  <div class="cart-total-details-wrapper">
+                    <div class="cart-total-details-title">价格明细</div>
+                    <div v-for="(cate, cateIndex) in cartItems" :key="cateIndex" class="cart-total-details-items" >
+                      <div class="cart-total-details-item-name">
+                        {{ `${cate.storeName}` }}
+                      </div>
+                      <div class="cart-total-details-item-price">
+                        <span class="sale-price">
+                          ￥{{ cate.selectedSalePrice }}
+                        </span>
+                        <span  class="original-price">
+                          ￥{{ cate.selectedOriginalPrice }}
+                        </span>
+                      </div>
+                    </div>
+                    <!--              <div class="cart-total-details-items" v-for="(cate, index) in summary.cate" :key="index">-->
+                    <!--                <div class="cart-total-details-item-name">-->
+                    <!--                  {{ cate.name }}-->
+                    <!--                </div>-->
+                    <!--                <div class="cart-total-details-item-price">-->
+                    <!--                  <span class="sale-price" v-if="cate.total" :class="{ 'item-price': cate.total }">-->
+                    <!--                    ￥{{ cate.total }}-->
+                    <!--                  </span>-->
+                    <!--                  <span  class="original-price" v-if="cate.totalOriginal">-->
+                    <!--                    ￥{{ cate.totalOriginal }}-->
+                    <!--                  </span>-->
+                    <!--                </div>-->
+                    <!--              </div>-->
+                  </div>
+                </div>
+              </transition>
+            </div>
+          </div>
+
+        </transition>
+        <!--    <div class="masking-box" v-if="isCheckOutLaunch" @click="handelCloseDetails"></div>-->
+        <el-dialog
+          title="提示"
+          :visible.sync="centerDialogVisible"
+          width="50%"
+          center
+          :custom-class="'custom-dialog'"
+          style="transition: width 0.5s;"
+        >
+          <span>确认情况店铺内商品吗</span>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="centerDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
+          </span>
+        </el-dialog>
+      </div>
+      <el-empty v-else description="购物车为空"></el-empty>
     </div>
   </div>
 </template>
@@ -193,6 +196,9 @@ export default {
       if (!this.selectedSalePrice) {
         style.opacity = '0.5'
         style.cursor = 'default'
+      } else {
+        style.opacity = '1'
+        style.cursor = 'pointer'
       }
       return style
     },
@@ -373,7 +379,13 @@ export default {
   },
   methods: {
     ...mapActions('mask', ['showOverlay', 'hideOverlay']),
-    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'toggleItemSelection', 'toggleMerchantSelection', 'toggleAllSelection', 'updateCartProductQuantity']),
+    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'toggleItemSelection', 'toggleMerchantSelection', 'toggleAllSelection', 'updateCartProductQuantity', 'clearMerchantCart', 'createOrder']),
+    handleCreateOrder (mode, merchantId = null) {
+      this.createOrder({ mode: mode, merchantId: merchantId, userId: 'demo123' })
+    },
+    handleClearCart (merchantId) {
+      this.clearMerchantCart(merchantId)
+    },
     handleStepperChange (quantity, merchantId, productId) {
       event.stopPropagation() // 阻止事件冒泡
       this.updateCartProductQuantity({ quantity, merchantId, productId })
@@ -462,7 +474,7 @@ export default {
 @import '../styles/multi';
 .cart-page {
   background-color: $lighter-gray;
-  //height: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   //align-items: center;
@@ -472,6 +484,7 @@ export default {
     //padding-left: 1rem;
     //padding-right: 1rem;
     //padding-bottom: 5.3rem;
+    min-height: 100%;
     display: flex;
     transition: padding 0.3s ease-in-out, padding-bottom 0.3s ease-in-out;
     flex-direction: column;
