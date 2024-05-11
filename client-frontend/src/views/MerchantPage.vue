@@ -25,7 +25,6 @@ export default {
     }
   },
   methods: {
-
     async handelChangeMerchant (id) {
       // 跳转路由
       await this.$router.push({ name: 'merchantDetails', params: { merchantId: id } })

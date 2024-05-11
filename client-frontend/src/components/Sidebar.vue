@@ -84,6 +84,7 @@ export default {
       if (this.mode === 'merchant') {
         return [
           { id: 'order', icon: 'el-icon-s-order', name: '订单', route: '/merchant/order', badge: 0 },
+          { id: 'search', icon: 'el-icon-search', name: '搜索', route: '/merchant/search', badge: 0 },
           { id: 'profile', icon: 'el-icon-user', name: '我的', route: '/merchant/profile', badge: 0 }
         ]
       } else {

@@ -38,8 +38,6 @@ export default {
     window.removeEventListener('resize', this.updateWindowSize)
   },
   created () {
-    // 初始化购物车
-    this.readCart()
     // 检查用户认证状态
     this.checkAuth()
     window.addEventListener('storage', () => {
@@ -52,6 +50,9 @@ export default {
         }, 300)
       }
     })
+
+    // 初始化购物车
+    this.readCart()
   }
 }
 </script>

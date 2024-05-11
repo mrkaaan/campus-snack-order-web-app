@@ -1,5 +1,3 @@
-import { insertOrder } from '@/api/order'
-
 // store/modules/cart.js
 export default {
   namespaced: true,
@@ -276,6 +274,7 @@ export default {
     READ_CART (state, uid) {
       if (!uid) return // 如果没有UID，则不加载数据
       const key = `cartItems-${uid}`
+      console.log('读取指定localstorage', key)
       const cartData = JSON.parse(localStorage.getItem(key)) || {}
       state.cartItems = cartData.cartItems || []
       state.totalSalePrice = parseFloat(cartData.totalSalePrice) || 0
@@ -300,16 +299,20 @@ export default {
   },
   actions: {
     // 添加商品到购物车
-    addToCart ({ commit }, payload) {
+    addToCart ({ commit, rootGetters }, payload) {
       commit('ADD_TO_CART', payload)
       commit('merchant/UPDATE_PRODUCT_QUANTITY', { merchantId: payload.merchant.merchantId, productId: payload.item.productId, quantity: 1 }, { root: true }) // 同步更新商家模块的商品数量
-      commit('SAVE_CART') // 保存购物车
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车
     },
     // 移除购物车商品
-    removeFromCart ({ commit }, payload) {
+    removeFromCart ({ commit, rootGetters }, payload) {
       commit('REMOVE_FROM_CART', payload)
       commit('merchant/UPDATE_PRODUCT_QUANTITY', { merchantId: payload.merchant.merchantId, productId: payload.item.productId, quantity: -1 }, { root: true }) // 同步更新商家模块的商品数量
-      commit('SAVE_CART') // 保存购物车
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车 // 保存购物车
     },
 
     // 切换步进器显示状态
@@ -318,22 +321,28 @@ export default {
     },
 
     // 清空购物车中指定的商品
-    clearItemCart ({ commit }, payload) {
+    clearItemCart ({ commit, rootGetters }, payload) {
       commit('CLEAR_ITEM_CART', payload)
       commit('merchant/UPDATE_PRODUCT_QUANTITY', { merchantId: payload.merchantId, productId: payload.productId, quantity: 0 }, { root: true })
-      commit('SAVE_CART')
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车
     },
     // 清空购物车中指定商家的商品
-    clearMerchantCart ({ commit }, merchantId) {
+    clearMerchantCart ({ commit, rootGetters }, merchantId) {
       commit('CLEAR_MERCHANT_CART', merchantId)
       commit('merchant/UPDATE_PRODUCT_QUANTITY', { quantity: 0 }, { root: true })
-      commit('SAVE_CART')
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车
     },
     // 清空整个购物车
-    clearAllCart ({ commit }) {
+    clearAllCart ({ commit, rootGetters }) {
       commit('CLEAR_ALL_CART')
       commit('merchant/UPDATE_PRODUCT_QUANTITY', { quantity: 0 }, { root: true })
-      commit('SAVE_CART')
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车
     },
 
     // 切换购物车明细展示状态
@@ -342,34 +351,45 @@ export default {
     },
 
     // 更新购物车中指定商品的选中状态
-    updateMerchantSelectedPrice ({ commit }, { merchantId, selectedPriceId }) {
+    updateMerchantSelectedPrice ({ commit, rootGetters }, { merchantId, selectedPriceId }) {
       commit('UPDATE_MERCHANT_SELECTED_PRICE', { merchantId, selectedPriceId })
-      commit('SAVE_CART') // 保存购物车
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车 // 保存购物车
     },
 
     // 从localStorage中读取购物车
-    readCart ({ commit }) {
-      commit('READ_CART')
+    readCart ({ commit, rootGetters }) {
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      console.log('readCart', uid)
+      commit('READ_CART', uid)
     },
 
     // 切换购物车全部商品的选中状态
-    toggleItemSelection ({ commit }, payload) {
+    toggleItemSelection ({ commit, rootGetters }, payload) {
       commit('TOGGLE_ITEM_SELECTION', payload)
-      commit('SAVE_CART') // 保存购物车
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车 // 保存购物车
     },
     // 切换购物车中指定商家的全选状态
-    toggleMerchantSelection ({ commit }, merchantId) {
+    toggleMerchantSelection ({ commit, rootGetters }, merchantId) {
       commit('TOGGLE_MERCHANT_SELECTION', merchantId)
-      commit('SAVE_CART') // 保存购物车
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车 // 保存购物车
     },
     // 切换购物车中指定商品的选中状态
-    toggleAllSelection ({ commit }) {
+    toggleAllSelection ({ commit, rootGetters }) {
       commit('TOGGLE_ALL_SELECTION')
-      commit('SAVE_CART') // 保存购物车
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车 // 保存购物车
     },
 
     // 更新购物车中指定商品的数量 商品一定存在 新的数量不确定是多还是少
-    updateCartProductQuantity ({ commit, state }, { quantity, merchantId, productId }) {
+    updateCartProductQuantity ({ commit, state, rootGetters }, { quantity, merchantId, productId }) {
       console.log('updateCartProductQuantity', quantity, merchantId, productId)
       const merchantCart = state.cartItems.find(m => m.merchantId === merchantId)
       if (merchantCart) {
@@ -383,7 +403,9 @@ export default {
       }
       commit('UPDATE_TOTAL_PRICE')
       commit('UPDATE_SELECTED_PRICE')
-      commit('SAVE_CART') // 保存购物车
+      const user = rootGetters['auth/user']
+      const uid = user.accountId
+      commit('SAVE_CART', uid) // 保存购物车 // 保存购物车
     },
 
     // 生成订单
@@ -456,19 +478,6 @@ export default {
       if (orders.length > 0) {
         state.orders = orders
       }
-    },
-
-    // 提交订单数据
-    submitOrder ({ commit, state }) {
-      if (state.orders.length === 0) {
-
-      }
-      try {
-        await insertOrder(sendData)
-        console.log('提交订单成功')
-      } catch (error) {
-        console.error('提交订单失败', error)
-      }
     }
   },
   getters: {
@@ -508,6 +517,7 @@ export default {
     totalSalePrice: state => state.totalSalePrice,
     selectedOriginalPrice: state => state.selectedOriginalPrice,
     selectedSalePrice: state => state.selectedSalePrice,
-    totalDiscount: state => state.totalDiscount
+    totalDiscount: state => state.totalDiscount,
+    orders: state => state.orders
   }
 }

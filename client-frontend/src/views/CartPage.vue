@@ -118,7 +118,7 @@
 
               </div>
               <div class="cart-checkout">
-                <div type="primary" size="mini" class="btn" :style="checkOutStyle" style="transition: opacity 0.3s ease-in-out;" @click="handleCreateOrder('total')">
+                <div class="btn" :style="checkOutStyle" style="transition: opacity 0.3s ease-in-out;" @click="handleCreateOrder('total')">
                   <span>一键结算</span>
                 </div>
               </div>
@@ -182,12 +182,14 @@
 
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex'
+import { insertOrder } from '@/api/order'
 // import PageHeader from '@/components/PageHeader.vue'
 export default {
   name: 'CartPage',
   // components: { PageHeader },
   computed: {
-    ...mapGetters('cart', ['cartItems', 'totalSalePrice', 'totalOriginalPrice', 'totalDiscount', 'selectedSalePrice', 'selectedOriginalPrice']),
+    ...mapGetters('cart', ['cartItems', 'totalSalePrice', 'totalOriginalPrice', 'totalDiscount', 'selectedSalePrice', 'selectedOriginalPrice', 'orders']),
+    ...mapGetters('auth', ['mode', 'user', 'isGuest']),
     ...mapGetters('sidebar', ['isSmallScreen', 'isWideScreen', 'isMediumScreen']),
     ...mapState('sidebar', ['isSidebarCollapsed']),
     ...mapGetters('cart', ['getAllCartItems']),
@@ -289,80 +291,6 @@ export default {
       isShowCheckOut: true,
       isCheckOutLaunch: false,
       centerDialogVisible: false,
-      // cartItems: [
-      //   {
-      //     selected: false,
-      //     name: 'Mobile Phones',
-      //     items: [
-      //       {
-      //         name: 'Apple iPhone 13',
-      //         image: 'https://example.com/iphone13.jpg',
-      //         quantity: 1,
-      //         originalPrice: 699,
-      //         salePrice: 599,
-      //         selected: false,
-      //         isShowStepper: false
-      //       },
-      //       {
-      //         name: 'Samsung Galaxy S22',
-      //         image: 'https://example.com/galaxys22.jpg',
-      //         quantity: 1,
-      //         originalPrice: 799,
-      //         salePrice: null, // No discount
-      //         selected: false,
-      //         isShowStepper: false
-      //       }
-      //     ]
-      //   },
-      //   {
-      //     selected: false,
-      //     name: 'Electronics',
-      //     items: [
-      //       {
-      //         name: 'Apple MacBook Air',
-      //         image: 'https://example.com/macbookair.jpg',
-      //         quantity: 1,
-      //         originalPrice: 999,
-      //         salePrice: 949,
-      //         selected: false,
-      //         isShowStepper: false
-      //       },
-      //       {
-      //         name: 'Dell XPS 13',
-      //         image: 'https://example.com/dellxps13.jpg',
-      //         quantity: 1,
-      //         originalPrice: 899,
-      //         salePrice: null, // No discount
-      //         selected: false,
-      //         isShowStepper: false
-      //       }
-      //     ]
-      //   },
-      //   {
-      //     selected: false,
-      //     name: 'Clothing',
-      //     items: [
-      //       {
-      //         name: 'Nike Running Shoes',
-      //         image: 'https://example.com/nikerunning.jpg',
-      //         quantity: 2,
-      //         originalPrice: 120,
-      //         salePrice: 100,
-      //         selected: false,
-      //         isShowStepper: false
-      //       },
-      //       {
-      //         name: 'Adidas Soccer Shoes',
-      //         image: 'https://example.com/adidassoccer.jpg',
-      //         quantity: 1,
-      //         originalPrice: 150,
-      //         salePrice: 135,
-      //         selected: false,
-      //         isShowStepper: false
-      //       }
-      //     ]
-      //   }
-      // ],
       total: 0,
       summary: {
         total: 0,
@@ -380,8 +308,25 @@ export default {
   methods: {
     ...mapActions('mask', ['showOverlay', 'hideOverlay']),
     ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'toggleItemSelection', 'toggleMerchantSelection', 'toggleAllSelection', 'updateCartProductQuantity', 'clearMerchantCart', 'createOrder']),
-    handleCreateOrder (mode, merchantId = null) {
-      this.createOrder({ mode: mode, merchantId: merchantId, userId: 'demo123' })
+    async handleCreateOrder (mode, merchantId = null) {
+      if (this.isGuest) {
+        this.$message.info('请登录')
+        return
+      }
+      console.log('orders', this.orders)
+      this.createOrder({ mode: mode, merchantId: merchantId, userId: this.user.accountId })
+      if (this.orders && this.orders.length) {
+        try {
+          await insertOrder({ orders: this.orders })
+          this.$message.success('下单成功')
+        } catch (error) {
+          // 处理错误情况
+          this.$message.error('下单失败')
+          console.log(error)
+        }
+      } else {
+        this.$message.error('购物车为空')
+      }
     },
     handleClearCart (merchantId) {
       this.clearMerchantCart(merchantId)

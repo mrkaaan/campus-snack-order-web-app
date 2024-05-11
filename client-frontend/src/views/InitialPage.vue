@@ -33,6 +33,7 @@
                 placeholder="用户名"
                 suffix-icon="el-icon-user-solid"
                 v-model="registerForm.username"
+                @keydown.enter="triggerRegister"
               />
             </el-form-item>
             <el-form-item class='info-item' prop="password" label=" ">
@@ -42,6 +43,7 @@
                 suffix-icon="el-icon-lock"
                 show-password
                 v-model="registerForm.password"
+                @keydown.enter="triggerRegister"
               />
             </el-form-item>
             <el-form-item class='info-item' prop="confirmPassword" label=" ">
@@ -51,6 +53,7 @@
                 suffix-icon="el-icon-lock"
                 show-password
                 v-model="registerForm.confirmPassword"
+                @keydown.enter="triggerRegister"
               />
             </el-form-item>
           </el-form>
@@ -73,6 +76,7 @@
                 placeholder="邮箱"
                 suffix-icon="el-icon-message"
                 v-model="registerByEmailForm.email"
+                @keydown.enter="triggerRegister"
               />
             </el-form-item>
             <el-form-item class='info-item' prop="verCode" label=" ">
@@ -80,6 +84,7 @@
                 type="text"
                 placeholder="验证码"
                 v-model="registerByEmailForm.verCode"
+                @keydown.enter="triggerRegister"
               >
                 <el-button slot="append" @click="sendVerCode" type="text" size="small" :style="sendVerCodeStyles">
                   {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
@@ -127,6 +132,7 @@
                 placeholder="用户名/UID/邮箱"
                 suffix-icon="el-icon-user-solid"
                 v-model="loginForm.username"
+                @keydown.enter="triggerLogin"
               />
             </el-form-item>
             <el-form-item class='info-item' prop="password" label=" ">
@@ -136,6 +142,7 @@
                 show-password
                 suffix-icon="el-icon-lock"
                 v-model="loginForm.password"
+                @keydown.enter="triggerLogin"
               />
             </el-form-item>
           </el-form>
@@ -159,6 +166,7 @@
                 placeholder="邮箱"
                 suffix-icon="el-icon-message"
                 v-model="loginFormByEmail.email"
+                @keydown.enter="triggerLogin"
               />
             </el-form-item>
             <el-form-item class='info-item' prop="verCode" label=" ">
@@ -166,6 +174,7 @@
                 type="text"
                 placeholder="验证码"
                 v-model="loginFormByEmail.verCode"
+                @keydown.enter="triggerLogin"
               >
                 <el-button slot="append" @click="sendVerCode" type="text" size="small" :style="sendVerCodeStyles">
                   {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
@@ -436,6 +445,7 @@ export default {
         await this.$router.push(`/${this.isUser ? 'user' : 'merchant'}`).catch(err => {
           console.error(err)
         })
+        this.$store.dispatch('cart/readCart')
         this.$message.success('登陆成功')
       } catch (error) {
         this.$message.error(error.message || '登录失败, 请稍后再试')
@@ -498,6 +508,8 @@ export default {
           await this.$router.push(`/${this.isUser ? 'user' : 'merchant'}`).catch(err => {
             console.error(err)
           })
+          this.$message.success('登陆成功')
+          this.$store.dispatch('cart/readCart')
         }
       } catch (error) {
         this.$message.error(error.message || '注册失败')

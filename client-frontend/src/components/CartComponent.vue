@@ -70,6 +70,7 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex'
+import { insertOrder } from '@/api/order'
 
 export default {
   name: 'CartComponent',
@@ -80,8 +81,24 @@ export default {
   methods: {
     ...mapActions('mask', ['showOverlay', 'hideOverlay']),
     ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'createOrder']),
-    handleCreateOrder (mode, merchantId) {
-      this.createOrder({ mode: mode, merchantId: merchantId, userId: 'test123' })
+    async handleCreateOrder (mode, merchantId) {
+      if (this.isGuest) {
+        this.$message.info('请登录')
+        return
+      }
+      this.createOrder({ mode: mode, merchantId: merchantId, userId: this.user.accountId })
+      if (this.orders && this.orders.length) {
+        try {
+          await insertOrder({ orders: this.orders })
+          this.$message.success('下单成功')
+        } catch (error) {
+          // 处理错误情况
+          this.$message.error('下单失败')
+          console.log(error)
+        }
+      } else {
+        this.$message.error('购物车为空')
+      }
     },
     toggleCart () {
       if (!this.totalSalePrice) {
@@ -117,7 +134,8 @@ export default {
   },
   props: ['merchantId', 'storeName'],
   computed: {
-    ...mapGetters('cart', ['isExpanded']),
+    ...mapGetters('cart', ['isExpanded', 'orders']),
+    ...mapGetters('auth', ['mode', 'user', 'isGuest']),
     ...mapGetters('sidebar', ['isSmallScreen', 'isWideScreen', 'isMediumScreen']),
     ...mapGetters('cart', ['cartByMerchant', 'getTotalSalePriceByMerchant', 'getTotalOriginalPriceByMerchant']),
     ...mapState('sidebar', ['isSidebarCollapsed']),

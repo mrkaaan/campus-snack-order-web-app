@@ -9,6 +9,10 @@ const routes = [
     component: () => import('@/views/MainLayout.vue'), // 布局组件
     children: [
       {
+        path: '',
+        redirect: '/user/home'
+      },
+      {
         path: 'home',
         name: 'home',
         component: () => import('@/views/HomePage.vue'), // 或 'Dashboard'
@@ -62,6 +66,12 @@ const routes = [
         meta: { requiresAuth: true, role: 'merchant' }
       },
       {
+        path: 'search',
+        name: 'search',
+        component: () => import('@/views/merchant/Search.vue'),
+        meta: { requiresAuth: true, role: 'merchant' }
+      },
+      {
         path: 'profile',
         name: 'profile',
         component: () => import('@/views/ProfilePage.vue'),
@@ -100,7 +110,7 @@ router.beforeEach((to, from, next) => {
   const authUser = JSON.parse(localStorage.getItem('authUser') || '{}')
   const userRole = authUser.mode
   const token = authUser.token
-
+  console.log('from:', from, 'to:', to)
   // 处理访问根路径的情况
   if (to.path === '/') {
     if (!token) {

@@ -4,12 +4,13 @@
     <div class="page-container" :style="isSmallScreen ? {paddingBottom: '6rem'} : {paddingBottom: '0'}">
       <div class="page-content">
         <div class="content-search-bar fixed-search" :style="{paddingLeft: paddingLeft + 'rem'}">
-          <div class="search-wrapper">
-            <i class="el-icon-search icon-search"></i>
-            <el-input class="custom-input" placeholder="搜索食物"></el-input>
+          <div class="search-wrapper" style="color: black">
+            <i class="el-icon-search icon-search" style="cursor: default"></i>
+            <el-input class="custom-input" placeholder="搜索食物" v-model="searchKey" @keydown.enter="goToSearchPage"></el-input>
           </div>
-          <div class="search-filter">
-            <i class="el-icon-s-operation big-icon-size"></i>
+          <div class="search-filter" style="font-weight: bold; font-size: 1.2rem; cursor: pointer" @click="goToSearchPage">
+            <span>搜索</span>
+            <!--            <i class="el-icon-s-operation big-icon-size"></i>-->
           </div>
         </div>
         <div class="content-categories">
@@ -42,12 +43,14 @@ import { mapActions, mapGetters, mapState } from 'vuex'
 import MerchantItem from '@/components/MerchantItem.vue'
 import MerchantSkeletonItem from '@/components/MerchantSkeletonItem.vue'
 import { getMerchants, getMerchantsPaging } from '@/api/merchant'
+import { searchMerchants } from '@/api/search'
 
 export default {
   name: 'HomePage',
   components: { MerchantSkeletonItem, MerchantItem },
   data () {
     return {
+      searchKey: '',
       categories: ['快餐', '甜点', '饮料', '传统美食', '海鲜', '烧烤', '火锅', '素食', '小吃', '早餐'],
       merchants: [],
       isLoading: true, // 初始时数据正在加载
@@ -58,6 +61,13 @@ export default {
   },
   methods: {
     ...mapActions('merchant', ['updateMerchantDetails']),
+    async goToSearchPage () {
+      try {
+        await searchMerchants({ keyword: this.searchKey })
+      } catch (error) {
+        console.error('Failed to search products:', error)
+      }
+    },
     async fetchMerchants () {
       this.isLoading = true // 开始加载数据
       try {
