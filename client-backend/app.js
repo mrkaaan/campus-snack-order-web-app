@@ -4,6 +4,7 @@ const merchantRoutes = require('./routes/merchantRoutes');
 const authRoutes = require('./routes/authRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const checkProductRouters = require('./routes/checkProductRouters');
 require('dotenv').config();
 
 const app = express();
@@ -18,5 +19,6 @@ app.use('/api/merchants', merchantRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/order', orderRoutes);
+app.use('/api/check', checkProductRouters);
 
 module.exports = app;

@@ -65,8 +65,8 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// 读取指定商家的所有订单
-exports.getMerchantOrders = async (req, res) => {
+// 分页读取指定商家的所有订单
+exports.getMerchantOrdersPaging = async (req, res) => {
   const merchantId = parseInt(req.params.merchantId, 10); // 从请求参数中获取商家ID
   const page = parseInt(req.query.page) || 1; // 获取当前页码
   const limit = parseInt(req.query.limit) || 10; // 每页显示的订单数量
@@ -96,7 +96,6 @@ exports.getMerchantOrders = async (req, res) => {
     // 获取指定订单的所有详细信息
     const orderIds = orders.map(order => order.orderId);
     let orderDetails = [];
-    console.log('商品数据读取失败 orderIds', orderIds)
     if (orderIds.length > 0) {
       const detailsQuery = `
         SELECT orderId, productId, productName, quantity, salePrice, originalPrice, discount, totalSalePrice, totalOriginalPrice, totalDiscount
@@ -105,7 +104,6 @@ exports.getMerchantOrders = async (req, res) => {
       `;
       [orderDetails] = await db.query(detailsQuery, [orderIds]);
     }
-    console.log('商品数据读取失败 orderDetails', orderDetails)
     // 构建分层结构的订单信息
     const orderMap = orders.map(order => ({
       ...order,
@@ -145,6 +143,138 @@ exports.getMerchantOrders = async (req, res) => {
   }
 };
 
+// 读取指定商家的所有订单
+exports.getMerchantOrders = async (req, res) => {
+  const merchantId = parseInt(req.params.merchantId, 10); // 从请求参数中获取商家ID
+
+  try {
+    // 获取指定商家所有订单，按时间排序
+    const ordersQuery = `
+      SELECT orderId, orderTime, userId, payStatus, mealStatus, salePrice, originalPrice, discount, pickupNumber
+      FROM Orders
+      WHERE merchantId = ?
+      ORDER BY orderTime DESC
+    `;
+    const [orders] = await db.query(ordersQuery, [merchantId]);
+    if (orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "找不到指定商家的订单"
+      });
+    }
+
+    const storeName = orders[0].storeName
+
+    // 获取指定订单的所有详细信息
+    const orderIds = orders.map(order => order.orderId);
+    let orderDetails = [];
+    if (orderIds.length > 0) {
+      const detailsQuery = `
+        SELECT orderId, productId, productName, quantity, salePrice, originalPrice, discount, totalSalePrice, totalOriginalPrice, totalDiscount
+        FROM OrderDetails
+        WHERE orderId IN (?)
+      `;
+      [orderDetails] = await db.query(detailsQuery, [orderIds]);
+    }
+    // 构建分层结构的订单信息
+    const orderMap = orders.map(order => ({
+      ...order,
+      details: orderDetails.filter(detail => detail.orderId === order.orderId)
+    }));
+
+    // 获取订单总数以计算总页数
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM Orders
+      WHERE merchantId = ?
+    `;
+
+    const [countResult] = await db.query(countQuery, [merchantId]);
+    const totalItems = countResult[0].total;
+
+    res.status(200).json({
+      success: true,
+      message: "Merchant orders retrieved successfully",
+      data: {
+        merchantId: merchantId,
+        storeName: storeName,
+        orders: orderMap,
+        totalItems: totalItems
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving merchant orders",
+      error: error.message
+    });
+  }
+};
+
+// 读取指定用户的所有订单
+exports.getUserOrders = async (req, res) => {
+  const userId = parseInt(req.params.userId, 10); // 从请求参数中获取商家ID
+
+  try {
+    // 获取指定用户所有订单，按时间排序
+    const ordersQuery = `
+      SELECT orderId, orderTime, userId, payStatus, mealStatus, salePrice, originalPrice, discount, pickupNumber, storeName
+      FROM Orders
+      WHERE userId = ?
+      ORDER BY orderTime DESC
+    `;
+    const [orders] = await db.query(ordersQuery, [userId]);
+    if (orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "找不到指定用户的订单"
+      });
+    }
+
+    // 获取指定订单的所有详细信息
+    const orderIds = orders.map(order => order.orderId);
+    let orderDetails = [];
+    if (orderIds.length > 0) {
+      const detailsQuery = `
+        SELECT orderId, productId, productName, quantity, salePrice, originalPrice, discount, totalSalePrice, totalOriginalPrice, totalDiscount
+        FROM OrderDetails
+        WHERE orderId IN (?)
+      `;
+      [orderDetails] = await db.query(detailsQuery, [orderIds]);
+    }
+    // 构建分层结构的订单信息
+    const orderMap = orders.map(order => ({
+      ...order,
+      details: orderDetails.filter(detail => detail.orderId === order.orderId)
+    }));
+
+    // 获取订单总数以计算总页数
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM Orders
+      WHERE userId = ?
+    `;
+
+    const [countResult] = await db.query(countQuery, [userId]);
+    const totalItems = countResult[0].total;
+
+    res.status(200).json({
+      success: true,
+      message: "Merchant orders retrieved successfully",
+      data: {
+        userId: userId,
+        orders: orderMap,
+        totalItems: totalItems
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving merchant orders",
+      error: error.message
+    });
+  }
+};
 
 // 搜索符合条件的订单
 exports.searchOrders = async (req, res) => {
@@ -286,3 +416,103 @@ exports.searchOrders = async (req, res) => {
   }
 };
 
+// 修改订单
+exports.updateOrder = async (req, res) => {
+  const { orderId } = req.body;
+  const { payStatus, mealStatus, salePrice, originalPrice, discount } = req.body;
+
+  if (!orderId) {
+    return res.status(400).json({ success: false, message: "缺少订单ID" });
+  }
+
+  // 准备动态SQL查询语句
+  let updates = [];
+  let params = [];
+
+  if (payStatus) {
+    updates.push('payStatus = ?');
+    params.push(payStatus);
+  }
+
+  if (mealStatus) {
+    updates.push('mealStatus = ?');
+    params.push(mealStatus);
+  }
+
+  if (salePrice) {
+    updates.push('salePrice = ?');
+    params.push(salePrice);
+  }
+
+  if (originalPrice) {
+    updates.push('originalPrice = ?');
+    params.push(originalPrice);
+  }
+
+  if (discount) {
+    updates.push('discount = ?');
+    params.push(discount);
+  }
+
+  // 确保至少有一个字段需要更新
+  if (updates.length === 0) {
+    return res.status(400).json({ success: false, message: "没有需要更新的字段" });
+  }
+
+  // 追加订单ID到参数
+  params.push(orderId);
+
+  const query = `UPDATE Orders SET ${updates.join(', ')} WHERE orderId = ?`;
+
+  try {
+    const [result] = await db.query(query, params);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "未找到该订单" });
+    }
+
+    res.status(200).json({ success: true, message: "订单更新成功" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "更新订单时发生错误", error: error });
+  }
+};
+
+// 删除订单
+exports.deleteOrder = async (req, res) => {
+  const { orderId } = req.body;
+
+  if (!orderId) {
+    return res.status(400).json({ success: false, message: "缺少订单ID" });
+  }
+
+  const deleteOrderDetailsQuery = `DELETE FROM OrderDetails WHERE orderId = ?`;
+  const deleteOrderQuery = `DELETE FROM Orders WHERE orderId = ?`;
+
+  // 开启事务
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // 删除订单详细信息
+    await connection.query(deleteOrderDetailsQuery, [orderId]);
+
+    // 删除订单
+    const [result] = await connection.query(deleteOrderQuery, [orderId]);
+
+    // 确保订单存在
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, message: "未找到该订单" });
+    }
+
+    // 提交事务
+    await connection.commit();
+
+    res.status(200).json({ success: true, message: "订单删除成功" });
+  } catch (error) {
+    await connection.rollback();
+    res.status(500).json({ success: false, message: "删除订单时发生错误", error: error.message });
+  } finally {
+    connection.release();
+  }
+};

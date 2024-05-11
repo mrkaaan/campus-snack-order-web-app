@@ -20,7 +20,7 @@ function generateAccountId(text) {
   return Math.abs(hash % 100000000); // 返回8位随机数
 }
 
-// 注册新用户
+// 注册新用户 暂不支持注册商家新增店铺
 exports.register = async (req, res) => {
 
   const { data, registerType, isMerchant  } = req.body;
@@ -211,7 +211,8 @@ exports.login = async (req, res) => {
               accountId: user.accountId || null,
               username: user.username || null,
               email: user.email || null,
-              hasPassword: !!user.password
+              hasPassword: !!user.password,
+              merchantId: user.merchantId || null
             },
             mode: mode,
             token,
@@ -272,7 +273,8 @@ exports.login = async (req, res) => {
               accountId: user.accountId || null,
               username: user.username || null,
               email: user.email || null,
-              hasPassword: !!user.password
+              hasPassword: !!user.password,
+              merchantId: user.merchantId || null,
             },
             mode: mode, // 登录模式 normal 或者 guest
             token
