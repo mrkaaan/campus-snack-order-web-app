@@ -1,11 +1,5 @@
-<script>
-export default {
-  name: 'PayComponent'
-}
-</script>
-
 <template>
-  <div class="container">
+  <div ref="container" class="container">
     <div class="left-side">
       <div class="card">
         <div class="card-line"></div>
@@ -24,8 +18,30 @@ export default {
       <div class="new">Checkout</div>
     </div>
   </div>
-
 </template>
+
+<script>
+export default {
+  name: 'PayComponent',
+  methods: {
+    openAndAnimate () {
+      this.$refs.container.classList.add('animate')
+      setTimeout(() => {
+        this.$refs.container.classList.remove('animate')
+        this.closeDialog() // 假设这是关闭弹窗的方法
+      }, 1300) // 1300ms是动画持续时间 + 延迟时间
+    },
+    closeDialog () {
+      this.$emit('close')
+    }
+  },
+  mounted () {
+    setTimeout(() => {
+      this.openAndAnimate() // 打开组件时自动开始动画
+    }, 500)
+  }
+}
+</script>
 
 <style scoped lang="scss">
 .container {
@@ -36,14 +52,6 @@ export default {
   position: relative;
   border-radius: 6px;
   transition: 0.3s ease-in-out;
-}
-
-.container:hover {
-  transform: scale(1.03);
-}
-
-.container:hover .left-side {
-  width: 100%;
 }
 
 .left-side {
@@ -69,10 +77,6 @@ export default {
   justify-content: space-between;
   white-space: nowrap;
   transition: 0.3s;
-}
-
-.right-side:hover {
-  background-color: #f9f7f9;
 }
 
 .arrow {
@@ -115,10 +119,6 @@ export default {
     transform: scale(0.7);
   }
 
-  .container:hover {
-    transform: scale(0.74);
-  }
-
   .new {
     font-size: 18px;
   }
@@ -133,14 +133,6 @@ export default {
   margin-top: 5px;
   transform: rotate(90deg);
   margin: 10px 0 0 -30px;
-}
-
-.container:hover .card {
-  animation: slide-top 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) both;
-}
-
-.container:hover .post {
-  animation: slide-post 1s cubic-bezier(0.165, 0.84, 0.44, 1) both;
 }
 
 @keyframes slide-top {
@@ -253,10 +245,6 @@ export default {
   text-align: center;
 }
 
-.container:hover .dollar {
-  animation: fade-in-fwd 0.3s 1s backwards;
-}
-
 @keyframes fade-in-fwd {
   0% {
     opacity: 0;
@@ -267,6 +255,53 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.container.animate {
+  transform: scale(1.03);
+}
+
+.container.animate .left-side {
+  width: 100%;
+}
+
+.container.animate .card {
+  animation: slide-top 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) both;
+}
+
+.container.animate .post {
+  animation: slide-post 1s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+.container.animate .dollar {
+  animation: fade-in-fwd 0.3s 1s backwards;
+}
+
+.container.animate .buttons {
+  animation: button-blink 1s linear infinite;
+}
+
+.container.animate .numbers {
+  animation: number-slide 1s cubic-bezier(0.645, 0.045, 0.355, 1) both;
+}
+
+.container.animate .numbers-line2 {
+  animation: number-slide2 1s cubic-bezier(0.645, 0.045, 0.355, 1) both;
+}
+
+@keyframes button-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes number-slide {
+  from { transform: translateY(0); }
+  to { transform: translateY(-20px); }
+}
+
+@keyframes number-slide2 {
+  from { transform: translateY(0); }
+  to { transform: translateY(20px); }
 }
 
 </style>

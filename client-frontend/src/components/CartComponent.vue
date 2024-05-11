@@ -80,7 +80,7 @@ export default {
   },
   methods: {
     ...mapActions('mask', ['showOverlay', 'hideOverlay']),
-    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'createOrder']),
+    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'createOrder', 'clearAllCart']),
     async handleCreateOrder (mode, merchantId) {
       if (this.isGuest) {
         this.$message.info('请登录')
@@ -91,6 +91,8 @@ export default {
         try {
           await insertOrder({ orders: this.orders })
           this.$message.success('下单成功')
+          this.$router.push('/user/order')
+          this.clearAllCart()
         } catch (error) {
           // 处理错误情况
           this.$message.error('下单失败')

@@ -1,14 +1,18 @@
 <script>
 import { getUserOrder, updateOrder } from '@/api/order'
 import { mapGetters } from 'vuex'
-
+import PayComponent from '@/components/PayComponent'
 export default {
   name: 'OrderManagement',
   data () {
     return {
+      showPayComponent: false,
       isExpand: true,
       orders: []
     }
+  },
+  components: {
+    PayComponent
   },
   computed: {
     ...mapGetters('auth', ['user', 'mode', 'isGuest']),
@@ -52,10 +56,17 @@ export default {
     }
   },
   methods: {
+    openPayDialog () {
+      this.showPayComponent = true
+      // this.$nextTick(() => {
+      //   this.$refs.payComponent.openAndAnimate()
+      // })
+    },
     async handleConfirmOrderPayStatus (orderId, payStatus) {
       if (payStatus === 'paid' || payStatus === 'cancelled') {
         return
       }
+      this.openPayDialog()
       try {
         if (!orderId) {
           this.$message.error('订单异常')
@@ -259,6 +270,7 @@ export default {
       </div>
       <el-empty v-else description="暂无订单数据"></el-empty>
     </div>
+    <pay-component ref="payComponent" v-if="showPayComponent" @close="showPayComponent = false" />
   </div>
 </template>
 

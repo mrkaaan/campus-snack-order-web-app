@@ -420,9 +420,9 @@ export default {
           const order = {}
           if (mode === 'total') {
             products = merchantCart.items.filter(item => item)
-            order.SalePrice = merchantCart.totalSalePrice
-            order.OriginalPrice = merchantCart.totalOriginalPrice
-            order.Discount = merchantCart.totalDiscount
+            order.salePrice = merchantCart.totalSalePrice
+            order.originalPrice = merchantCart.totalOriginalPrice
+            order.discount = merchantCart.totalDiscount
           } else if (mode === 'selected') {
             products = merchantCart.items.filter(item => item.selected)
             order.salePrice = merchantCart.selectedSalePrice
