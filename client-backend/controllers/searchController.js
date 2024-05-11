@@ -2,6 +2,7 @@ const db = require('../config/index');
 
 // 搜索商品
 exports.searchProducts = async (req, res) => {
+  console.log(req)
   const keyword = req.query.keyword;
   if (!keyword) {
     return res.status(400).json({
@@ -35,10 +36,18 @@ exports.searchProducts = async (req, res) => {
       };
     }));
 
-    res.json(results);
+    res.status(200).json({
+      success: true,
+      data: results,
+      message: '搜索成功'
+    });
   }  catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({
+      success: false,
+      message: '搜索失败',
+      data: null
+    });
   }
 };
 
@@ -49,9 +58,9 @@ exports.searchMerchants = async (req, res) => {
     const merchantSearchQuery = `
             SELECT merchantId, storeName, image, locationDescription, rating, description, mainDish
             FROM Merchants
-            WHERE description LIKE CONCAT('%', ?, '%') OR mainDish LIKE CONCAT('%', ?, '%');
+            WHERE description LIKE CONCAT('%', ?, '%') OR mainDish LIKE CONCAT('%', ?, '%') OR storeName LIKE CONCAT('%', ?, '%');
         `;
-    const [merchants] = await db.query(merchantSearchQuery, [keyword, keyword]);
+    const [merchants] = await db.query(merchantSearchQuery, [keyword, keyword, keyword]);
     let merchantIds = merchants.map(merchant => merchant.merchantId);
 
     // 为每个商家查找最多五个销量最高的商品
@@ -122,10 +131,19 @@ exports.searchMerchants = async (req, res) => {
 
     // 组合所有结果并返回
     const results = merchantResults.concat(Object.values(additionalMerchants));
-    res.json(results);
+
+    res.status(200).json({
+      success: true,
+      data: results,
+      message: '搜索成功'
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({
+      success: false,
+      message: '搜索失败',
+      data: null
+    });
   }
 };
 

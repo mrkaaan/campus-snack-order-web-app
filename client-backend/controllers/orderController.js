@@ -16,40 +16,50 @@ function generateOrderNumber(userId, merchantId, orderTime) {
 
 // 创建订单
 exports.createOrder = async (req, res) => {
-  const { order } = req.body; // 从请求体中获取订单数据
-  if (!order) {
+  const { orders  } = req.body; // 从请求体中获取订单数据
+  console.log(orders)
+  if (!orders || orders.length === 0) {
     return res.status(400).json({
-      success:false,
-      message: "请传入订单数据",
-    })
+      success: false,
+      message: "请传入订单数据"
+    });
   }
-  const { userId,  merchantId,  storeName,  payStatus, salePrice, originalPrice, discount, items } = order
   try {
-    const orderTime = new Date(); // 假设订单时间为当前时间
-    const orderId = generateOrderNumber(38295818, merchantId, orderTime);
 
-    // 获取当天的订单数量，用于确定取餐号
     const today = moment().format('YYYY-MM-DD');
-    console.log(today)
-    const [result] = await db.query('SELECT COUNT(*) AS count FROM Orders WHERE orderDate = ?', [today]);
-    const pickupNumber = result[0].count + 1; // 当天的订单数量加1作为取餐号
-    console.log(pickupNumber)
+    const pickupNumbers = {}; // 存储每个商家的起始取餐号
+    const orderIds = []; // 存储生成的订单号
 
-    await db.query('INSERT INTO Orders (orderId, userId, merchantId, storeName, payStatus, orderTime, salePrice, originalPrice, discount, pickupNumber, orderDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [orderId, 38295818, merchantId, storeName, payStatus, orderTime, salePrice, originalPrice, discount, pickupNumber, today]);
-    // 批量插入订单详细信息
-    const details = items.map(item => [orderId, item.productId, item.name, item.quantity, item.salePrice, item.originalPrice, item.discount, item.totalSalePrice, item.totalOriginalPrice, item.totalDiscount]);
-    await db.query('INSERT INTO OrderDetails (orderId, productId, productName, quantity, salePrice, originalPrice, discount, totalSalePrice, totalOriginalPrice, totalDiscount) VALUES ?', [details]);
+    for (const order of orders) {
+      const orderTime = new Date();
+      const { userId,  merchantId,  storeName,  payStatus, salePrice, originalPrice, discount, items } = order
 
+      // 为每个商家计算取餐号
+      if (!pickupNumbers[merchantId]) {
+        const [countResult] = await db.query('SELECT COUNT(*) AS count FROM Orders WHERE merchantId = ? AND orderDate = ?', [merchantId, today]);
+        pickupNumbers[merchantId] = countResult[0].count + 1; // 当天该商家的订单数量加1作为起始取餐号
+      }
+
+      const orderId = generateOrderNumber(userId, merchantId, orderTime);
+      orderIds.push(orderId);
+      const pickupNumber = pickupNumbers[merchantId]; // 获取当前商家的取餐号
+
+      await db.query('INSERT INTO Orders (orderId, userId, merchantId, storeName, payStatus, orderTime, salePrice, originalPrice, discount, pickupNumber, orderDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [orderId, userId, merchantId, storeName, payStatus, orderTime, salePrice, originalPrice, discount, pickupNumber, today]);
+
+      // 批量插入订单详细信息
+      const details = items.map(item => [orderId, item.productId, item.name, item.quantity, item.salePrice, item.originalPrice, item.discount, item.totalSalePrice, item.totalOriginalPrice, item.totalDiscount]);
+      await db.query('INSERT INTO OrderDetails (orderId, productId, productName, quantity, salePrice, originalPrice, discount, totalSalePrice, totalOriginalPrice, totalDiscount) VALUES ?', [details]);
+    }
     res.status(201).json({
       success: true,
-      message: "已成功创建订单",
-      orderId: orderId
+      message: "成功创建订单",
+      data: { orders:orderIds }
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "创建订单时出错",
+      message: "创建订单出错",
       error: error.message
     });
   }
@@ -141,84 +151,138 @@ exports.searchOrders = async (req, res) => {
   // 从查询参数中获取各种搜索条件
   const {
     merchantId, userId, orderId, productId, productType,
-    minPrice, maxPrice, minOriginalPrice, maxOriginalPrice,
-    startTime, endTime
+    minSalePrice, maxSalePrice, minOriginalPrice, maxOriginalPrice,
+    startTime, endTime, pickupNumber
   } = req.query;
-
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 10;
+  console.log('req.query', req.query)
   // 用于构建动态查询的数组
-  let whereClauses = [`merchantId = ?`]; // 初始化查询条件为商家ID
-  let params = [merchantId]; // 参数数组
+  let conditions  = []; // 初始化查询条件
+  let params = []; // 参数数组
+
+  if (merchantId) {
+    conditions .push("merchantId = ?");
+    params.push(merchantId);
+  }
 
   // 检查各个参数，如果存在则加入查询条件和参数列表中
   if (userId) {
-    whereClauses.push(`userId = ?`); // 用户ID
+    conditions .push(`userId = ?`); // 用户ID
     params.push(userId);
   }
   if (orderId) {
-    whereClauses.push(`orderId = ?`); // 订单ID
-    params.push(orderId);
+    conditions .push("orderId LIKE ?"); // 订单ID
+    params.push(`%${orderId}%`);
   }
   if (productId) {
-    // 使用 EXISTS 子查询来判断订单中是否包含指定商品或套餐
-    whereClauses.push(`EXISTS (SELECT 1 FROM OrderDetails WHERE OrderDetails.orderId = Orders.orderId AND productId = ?)`);
+    conditions .push("orderId IN (SELECT orderId FROM OrderDetails WHERE productId = ?)");
     params.push(productId);
   }
   if (productType) {
-    // 使用 EXISTS 子查询来判断订单中是否包含指定类型的商品或套餐
-    whereClauses.push(`EXISTS (SELECT 1 FROM OrderDetails WHERE OrderDetails.orderId = Orders.orderId AND productType = ?)`);
+    conditions .push("orderId IN (SELECT orderId FROM OrderDetails WHERE productType = ?)");
     params.push(productType);
   }
-  if (minPrice) {
-    whereClauses.push(`salePrice >= ?`); // 最小总售价
-    params.push(minPrice);
+  // if (minSalePrice) {
+  //   conditions .push(`salePrice >= ?`); // 最小总售价
+  //   params.push(minSalePrice);
+  // }
+  // if (maxSalePrice) {
+  //   conditions .push(`salePrice <= ?`); // 最大总售价
+  //   params.push(maxSalePrice);
+  // }
+  // if (minOriginalPrice) {
+  //   conditions .push(`originalPrice >= ?`); // 最小原价
+  //   params.push(minOriginalPrice);
+  // }
+  // if (maxOriginalPrice) {
+  //   conditions .push(`originalPrice <= ?`); // 最大原价
+  //   params.push(maxOriginalPrice);
+  // }
+  if (minSalePrice && maxSalePrice) {
+    conditions .push("salePrice BETWEEN ? AND ?");
+    params.push(minSalePrice, maxSalePrice);
   }
-  if (maxPrice) {
-    whereClauses.push(`salePrice <= ?`); // 最大总售价
-    params.push(maxPrice);
-  }
-  if (minOriginalPrice) {
-    whereClauses.push(`originalPrice >= ?`); // 最小原价
-    params.push(minOriginalPrice);
-  }
-  if (maxOriginalPrice) {
-    whereClauses.push(`originalPrice <= ?`); // 最大原价
-    params.push(maxOriginalPrice);
+  if (minOriginalPrice && maxOriginalPrice) {
+    conditions .push("originalPrice BETWEEN ? AND ?");
+    params.push(minOriginalPrice, maxOriginalPrice);
   }
   if (startTime && endTime) {
     // 使用时间范围筛选订单
-    whereClauses.push(`orderTime BETWEEN ? AND ?`);
+    conditions .push(`orderTime BETWEEN ? AND ?`);
     params.push(new Date(startTime), new Date(endTime));
   }
-
+  if (pickupNumber) {
+    conditions .push("pickupNumber = ?");
+    params.push(pickupNumber);
+  }
   // 动态构建SQL查询
+  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const offset = (page - 1) * limit; // 计算分页偏移
+  console.log('offset', offset)
+  console.log('limit', limit)
+
+  // 查询符合条件的订单，包括分页处理
   const query = `
-    SELECT * FROM Orders
-    WHERE ${whereClauses.join(' AND ')}
+    SELECT orderId, userId, merchantId, orderTime, payStatus, mealStatus, salePrice, originalPrice, discount, pickupNumber
+    FROM Orders
+    ${whereClause}
     ORDER BY orderTime DESC
+    LIMIT ? OFFSET ?
+  `;
+
+  // 查询总数的SQL
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM Orders
+    ${whereClause}
   `;
 
   try {
-    // 执行查询并获取符合条件的订单
-    const [orders] = await db.query(query, params);
+    // 执行分页查询
+    const [orders] = await db.query(query, [...params, limit, offset]);
+    // 判断数量
     if (!orders.length) {
-      // 如果没有找到任何订单，返回 404 错误
-      return res.status(404).json({ success: false, message: "未找到符合条件的订单" });
+      return res.status(200).json({
+        success: true,
+        data: {
+          orders: [],
+          total: 0,
+          page,
+          totalPages: 0
+        },
+        message: "未找到符合条件的订单"
+      });
     }
 
-    // 提取订单ID列表用于获取详细信息
+    // 获取总数
+    const [totalResult] = await db.query(countQuery, params);
+    const total = totalResult[0].total;
+
+    // 获取订单详情
     const orderIds = orders.map(order => order.orderId);
     const [orderDetails] = await db.query(`SELECT * FROM OrderDetails WHERE orderId IN (?)`, [orderIds]);
 
-    // 构建分层结构的订单数据，将订单详细信息合并到每个订单中
+    // 构建订单详细信息
     const detailedOrders = orders.map(order => ({
       ...order,
       details: orderDetails.filter(detail => detail.orderId === order.orderId)
     }));
 
-    // 返回成功响应，包含符合条件的订单数据
-    res.status(200).json({ success: true, data: detailedOrders });
+    // 返回带分页信息的响应
+    res.status(200).json({
+      success: true,
+      data: {
+        orders:detailedOrders,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit)
+      },
+      message: '检索订单成功'
+    });
   } catch (error) {
     // 如果查询过程中发生错误，返回500错误
     res.status(500).json({ success: false, message: "检索订单时发生错误", error: error.message });
   }
 };
+

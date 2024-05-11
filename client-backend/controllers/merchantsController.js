@@ -1,7 +1,6 @@
 const Merchant = require('../models/Merchant');
 
 exports.getMerchants = async (req, res) => {
-  console.log('getMerchants')
   try {
     const merchants = await Merchant.getAllMerchants();
     const data = merchants.map(merchant => ({
