@@ -91,6 +91,7 @@ export default {
         return [
           { id: 'home', icon: 'el-icon-house', name: '主页', route: '/user/home', badge: 0 },
           { id: 'merchant', icon: 'el-icon-shopping-bag-2', name: '商店', route: '/user/merchant', badge: this.merchantTagsCount },
+          { id: 'search', icon: 'el-icon-search', name: '搜索', route: '/user/search', badge: 0 },
           { id: 'cart', icon: 'el-icon-shopping-cart-full', name: '购物车', route: '/user/cart', badge: this.cartTotalQuantity },
           { id: 'profile', icon: 'el-icon-user', name: '我的', route: '/user/profile', badge: 0 }
         ]

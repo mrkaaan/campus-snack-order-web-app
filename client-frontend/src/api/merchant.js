@@ -21,6 +21,13 @@ export function getMerchantDetails (id) {
   })
 }
 
+export function getMerchantProductsByCate (id) {
+  return request({
+    url: `/merchants/${id}/productsByCate`,
+    method: 'GET'
+  })
+}
+
 export function getMerchantProducts (id) {
   return request({
     url: `/merchants/${id}/products`,

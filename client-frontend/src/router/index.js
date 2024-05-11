@@ -19,6 +19,12 @@ const routes = [
         meta: { requiresAuth: true, role: 'user' } // 确保需要认证
       },
       {
+        path: 'search',
+        name: 'ProductSearch',
+        component: () => import('@/views/ProductSearch.vue'), // 或 'Dashboard'
+        meta: { requiresAuth: true, role: 'user' } // 确保需要认证
+      },
+      {
         path: 'merchant',
         component: () => import('@/views/MerchantPage.vue'), // 新商家页面
         children: [
@@ -68,7 +74,7 @@ const routes = [
       {
         path: 'search',
         name: 'search',
-        component: () => import('@/views/merchant/Search.vue'),
+        component: () => import('@/views/merchant/OrderSearch.vue'),
         meta: { requiresAuth: true, role: 'merchant' }
       },
       {

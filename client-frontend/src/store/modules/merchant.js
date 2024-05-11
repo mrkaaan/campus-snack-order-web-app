@@ -1,4 +1,4 @@
-import { getMerchantDetails, getMerchantProducts } from '@/api/merchant'
+import { getMerchantDetails, getMerchantProductsByCate } from '@/api/merchant'
 
 export default {
   namespaced: true,
@@ -81,7 +81,7 @@ export default {
     async fetchProducts ({ commit, rootGetters }, merchantId) {
       try {
         // 发送请求获取商家商品数据
-        const response = await getMerchantProducts(merchantId)
+        const response = await getMerchantProductsByCate(merchantId)
         const originalData = response.data.productCategories
         // 获取购物车数据
         const cartItems = rootGetters['cart/cartByMerchant'](merchantId)

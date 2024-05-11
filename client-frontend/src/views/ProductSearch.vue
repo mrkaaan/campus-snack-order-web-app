@@ -6,53 +6,61 @@
         <div class="content-search-bar fixed-search" :style="{paddingLeft: paddingLeft + 'rem'}">
           <div class="search-wrapper" style="color: black">
             <i class="el-icon-search icon-search" style="cursor: default"></i>
-            <el-input class="custom-input" placeholder="搜索食物" v-model="searchKey" @keydown.enter="goToSearchPage"></el-input>
+            <el-input class="custom-input" placeholder="搜索食物" v-model="searchKey" @keydown.enter="handleSearchProduct"></el-input>
           </div>
-          <div class="search-filter" style="font-weight: bold; font-size: 1.2rem; cursor: pointer" @click="goToSearchPage">
+          <div class="search-filter" style="font-weight: bold; font-size: 1.2rem; cursor: pointer" @click="handleSearchProduct">
             <span>搜索</span>
             <!--            <i class="el-icon-s-operation big-icon-size"></i>-->
           </div>
         </div>
         <div class="content-categories">
           <div class="category-wrapper">
-            <div class="category-item" v-for="(category, index) in categories" :key="`category-${index}`" @click="goToSearchPage(category)">
+            <div class="category-item" v-for="(category, index) in categories" :key="`category-${index}`" style="cursor: pointer;" @click="handleSearchProduct(category)">
               {{ category }}
             </div>
           </div>
         </div>
-        <div class="content-wrapper" v-if="isLoading">
-          <ul class="merchant-list">
-            <merchant-skeleton-item  v-for="n in skeletonCount" :key="`skeleton-${n}`"></merchant-skeleton-item>
-          </ul>
+        <!-- 加载状态 -->
+        <div v-if="isLoading" v-loading="isLoading">
+          <div class="content-wrapper">
+            <ul class="merchant-list">
+              <el-empty description='加载中'></el-empty>
+            </ul>
+          </div>
         </div>
-        <div class="content-wrapper" v-else>
-          <ul class="merchant-list">
-            <li v-for="item in merchants" :key="item.id" @click="goToMerchantDetails(item)">
-              <merchant-item :item="item">
-              </merchant-item>
-            </li>
-          </ul>
+
+        <div v-else>
+          <div v-if="merchants.length > 0" class="content-wrapper">
+            <ul class="merchant-list">
+              <li v-for="item in merchants" :key="item.id" @click="goToMerchantDetails(item)">
+                <merchant-item-expand :item="item"></merchant-item-expand>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 如果 merchants 为空，显示 el-empty -->
+          <el-empty v-else description='请搜索商品'></el-empty>
         </div>
       </div>
     </div>
   </div>
+<!--  </div>-->
 </template>
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex'
-import MerchantItem from '@/components/MerchantItem.vue'
-import MerchantSkeletonItem from '@/components/MerchantSkeletonItem.vue'
-import { getMerchants, getMerchantsPaging } from '@/api/merchant'
+import MerchantItemExpand from '@/components/MerchantItemExpand.vue'
+import { searchMerchants } from '@/api/search'
 
 export default {
-  name: 'HomePage',
-  components: { MerchantSkeletonItem, MerchantItem },
+  name: 'ProductSearch',
+  components: { MerchantItemExpand },
   data () {
     return {
       searchKey: '',
       categories: ['快餐', '甜点', '饮料', '传统美食', '海鲜', '烧烤', '火锅', '素食', '小吃', '早餐'],
       merchants: [],
-      isLoading: true, // 初始时数据正在加载
+      isLoading: false, // 初始时数据正在加载
       allDataLoaded: false, // 避免重复加载
       skeletonCount: 5, // 假设初始加载显示5个骨架屏
       stickyActive: false
@@ -60,47 +68,22 @@ export default {
   },
   methods: {
     ...mapActions('merchant', ['updateMerchantDetails']),
-    async goToSearchPage (text = null) {
+    async handleSearchProduct (text = null) {
+      this.isLoading = true // 开始加载数据
       this.searchKey = text || this.searchKey
-      this.$router.push({ name: 'ProductSearch', query: { keyword: this.searchKey } })
-    },
-    async fetchMerchants () {
-      this.isLoading = true // 开始加载数据
       try {
-        const response = await getMerchants()
-        this.merchants = response.data
-        this.isLoading = false // 请求成功后停止加载
+        const response = await searchMerchants({ keyword: this.searchKey })
+        setTimeout(() => {
+          this.merchants = response.data
+          this.isLoading = false // 请求成功后停止加载
+        }, 500)
       } catch (error) {
-        console.error('Failed to fetch products:', error)
-      } finally {
-        // this.isLoading = false // 完成加载
-        // this.isLoading = true // 开始加载数据
-      }
-    },
-    async fetchMerchantsPaging () {
-      if (this.isLoading || this.allDataLoaded) return // 避免重复加载
-
-      this.isLoading = true // 开始加载数据
-      try {
-        const page = this.currentPage + 1 // 计算下一个页码
-        const limit = 10 // 设置每页条数
-        const response = await getMerchantsPaging({ page, limit })
-
-        if (response.data.merchants.length < limit) {
-          this.allDataLoaded = true // 如果返回的数据少于请求的条数，认为所有数据已加载
-        }
-
-        this.merchants = [...this.merchants, ...response.data.merchants] // 追加新数据
-        this.currentPage = page // 更新当前页码
-      } catch (error) {
-        console.error('Failed to fetch products:', error)
-      } finally {
-        this.isLoading = false // 完成加载
+        console.error('Failed to search products:', error)
       }
     },
     goToMerchantDetails (merchantDetails) {
       this.updateMerchantDetails(merchantDetails)
-      console.log('merchant', merchantDetails.merchantId)
+      // console.log('merchant', merchantDetails.merchantId)
       this.$router.push({ name: 'merchantDetails', params: { merchantId: merchantDetails.merchantId } })
     }
   },
@@ -132,8 +115,9 @@ export default {
       return paddingLeft
     }
   },
-  mounted () {
-    this.fetchMerchants()
+  created () {
+    this.searchKey = this.$route.query.keyword || ''
+    this.handleSearchProduct()
   }
 }
 </script>
@@ -251,5 +235,10 @@ export default {
   .el-rate__icon {
     margin-right: 0;
   }
+}
+.el-loading-spinner {
+  text-align: center;
+  display: flex;
+  justify-content: center;
 }
 </style>
