@@ -8,9 +8,16 @@ export function insertOrder (data) {
   })
 }
 
-export function getOrder (data) {
+export function getMerchantOrder (data) {
   return request({
-    url: `/order/${data.merchantId}/getOrder?page=${data.page}&limit=${data.limit}`,
+    url: `/order/getMerchantOrder/${data.merchantId}`,
+    method: 'GET'
+  })
+}
+
+export function getUserOrder (data) {
+  return request({
+    url: `/order/getUserOrder/${data.userId}`,
     method: 'GET'
   })
 }
@@ -36,5 +43,21 @@ export function searchOrders (data) {
       page: data.page,
       limit: data.limit
     }
+  })
+}
+
+export function updateOrder (data) {
+  return request({
+    url: '/order/updateOrder', // 假设后端接口的路径是 /order/search
+    method: 'POST',
+    data
+  })
+}
+
+export function deleteOrder (data) {
+  return request({
+    url: '/order/deleteOrder', // 假设后端接口的路径是 /order/search
+    method: 'POST',
+    data
   })
 }

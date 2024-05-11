@@ -83,16 +83,18 @@ export default {
     menuItems () {
       if (this.mode === 'merchant') {
         return [
-          { id: 'order', icon: 'el-icon-s-order', name: '订单', route: '/merchant/order', badge: 0 },
-          { id: 'search', icon: 'el-icon-search', name: '搜索', route: '/merchant/search', badge: 0 },
+          { id: 'orderMerchant', icon: 'el-icon-s-order', name: '订单', route: '/merchant/order', badge: 0 },
+          { id: 'check', icon: 'el-icon-edit-outline', name: '编辑商品', route: '/merchant/check', badge: 0 },
+          { id: 'search', icon: 'el-icon-search', name: '搜索订单', route: '/merchant/search', badge: 0 },
           { id: 'profile', icon: 'el-icon-user', name: '我的', route: '/merchant/profile', badge: 0 }
         ]
       } else {
         return [
           { id: 'home', icon: 'el-icon-house', name: '主页', route: '/user/home', badge: 0 },
           { id: 'merchant', icon: 'el-icon-shopping-bag-2', name: '商店', route: '/user/merchant', badge: this.merchantTagsCount },
-          { id: 'search', icon: 'el-icon-search', name: '搜索', route: '/user/search', badge: 0 },
+          { id: 'search', icon: 'el-icon-search', name: '搜索商品', route: '/user/search', badge: 0 },
           { id: 'cart', icon: 'el-icon-shopping-cart-full', name: '购物车', route: '/user/cart', badge: this.cartTotalQuantity },
+          { id: 'orderUser', icon: 'el-icon-s-order', name: '订单', route: '/user/order', badge: 0 },
           { id: 'profile', icon: 'el-icon-user', name: '我的', route: '/user/profile', badge: 0 }
         ]
       }

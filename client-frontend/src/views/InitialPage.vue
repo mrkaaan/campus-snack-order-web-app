@@ -447,6 +447,14 @@ export default {
         })
         this.$store.dispatch('cart/readCart')
         this.$message.success('登陆成功')
+        if (!this.isUser) {
+          setTimeout(() => {
+            this.$notify.info({
+              title: '提示',
+              message: '商家暂不支持创建店铺'
+            })
+          }, 200)
+        }
       } catch (error) {
         this.$message.error(error.message || '登录失败, 请稍后再试')
       }

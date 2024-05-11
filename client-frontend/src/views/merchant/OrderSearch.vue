@@ -1,6 +1,6 @@
 <template>
   <div class="search">
-    <div class="search-wrapper">
+    <div class="search-wrapper" :style="searchWrapper">
       <el-form :model="searchForm" @submit.native.prevent="searchOrders">
         <el-row :gutter="20">
           <el-col :xs="24" :sm="12" :md="8" :lg="6">
@@ -40,7 +40,7 @@
           </el-col>
           <el-col :xs="24" :sm="24" :md="8" :lg="6">
             <el-form-item>
-              <el-button type="primary" @click="handelSearchOrders">搜索</el-button>
+              <el-button class="btn" type="primary" @click="handelSearchOrders">搜索</el-button>
             </el-form-item>
           </el-col>
         </el-row>
@@ -101,6 +101,7 @@
 
 <script>
 import { searchOrders } from '@/api/order'
+import { mapGetters } from 'vuex'
 export default {
   name: 'Search',
   data () {
@@ -149,6 +150,7 @@ export default {
       // 调用 Vuex action 来搜索订单
       const params = {
         ...this.searchForm,
+        merchantId: this.user.merchantId,
         minSalePrice: this.searchForm.priceRange[0],
         maxSalePrice: this.searchForm.priceRange[1],
         page: this.currentPage,
@@ -182,7 +184,18 @@ export default {
     }
   },
   computed: {
-
+    ...mapGetters('auth', ['user']),
+    ...mapGetters('sidebar', ['isSmallScreen', 'isWideScreen', 'isMediumScreen']),
+    searchWrapper () {
+      const style = {}
+      if (this.isSmallScreen) {
+        style.padding = '5rem 0'
+        style.height = 'initial'
+      } else {
+        style.height = '100%'
+      }
+      return style
+    }
   }
 }
 </script>
@@ -191,11 +204,36 @@ export default {
 .search {
   height:100%;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .search-wrapper {
   padding: 0.5rem 1rem;
-  height:100%;
-  width: 100%;
+  height:85%;
+  width: 95%;
+  border-radius: 2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  .btn {
+    background-color: #42b983;
+    border-radius: 0.8rem;
+    font-size: 110%;
+    font-weight: bold;
+    opacity: 1;
+    transition: all 0.5s;
+    &:hover {
+      opacity: 0.8;
+    }
+  }
 }
 
+</style>
+
+<style>
+.el-slider__bar {
+  background-color: #4CAF50;
+}
+.el-tooltip.el-slider__button{
+  border: 2px solid #4CAF50;
+}
 </style>

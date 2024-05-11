@@ -1,4 +1,3 @@
-
 <template>
   <div class="profile-page" style="height: 100%" :style="isSmallScreen ? {paddingBottom: '6rem'} : {paddingBottom: '0'}">
     <div class="profile-page-wrapper" v-if="false" style="height: 100%">

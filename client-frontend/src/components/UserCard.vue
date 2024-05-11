@@ -86,9 +86,9 @@ export default {
         // height: '50%'
       }
       if (this.isSmallScreen) {
-        style.width = '15rem'
+        style.width = '30rem'
       } else if (this.isMediumScreen) {
-        style.width = '20rem'
+        style.width = '30rem'
         // style.height = ''
       } else if (this.isWideScreen) {
         style.width = '35rem'

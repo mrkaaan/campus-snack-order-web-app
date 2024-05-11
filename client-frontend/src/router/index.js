@@ -44,6 +44,12 @@ const routes = [
         meta: { requiresAuth: true, role: 'user' } // 确保需要认证
       },
       {
+        path: 'order',
+        name: 'order',
+        component: () => import('@/views/Orders.vue'),
+        meta: { requiresAuth: true, role: 'user' }
+      },
+      {
         path: 'message',
         name: 'message',
         component: () => import('@/views/MessagesPage.vue'),
@@ -72,8 +78,14 @@ const routes = [
         meta: { requiresAuth: true, role: 'merchant' }
       },
       {
+        path: 'check',
+        name: 'check',
+        component: () => import('@/views/merchant/CheckOrder.vue'),
+        meta: { requiresAuth: true, role: 'merchant' }
+      },
+      {
         path: 'search',
-        name: 'search',
+        name: 'OrderSearch',
         component: () => import('@/views/merchant/OrderSearch.vue'),
         meta: { requiresAuth: true, role: 'merchant' }
       },

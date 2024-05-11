@@ -307,7 +307,7 @@ export default {
   },
   methods: {
     ...mapActions('mask', ['showOverlay', 'hideOverlay']),
-    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'toggleItemSelection', 'toggleMerchantSelection', 'toggleAllSelection', 'updateCartProductQuantity', 'clearMerchantCart', 'createOrder']),
+    ...mapActions('cart', ['updateIsExpanded', 'addToCart', 'removeFromCart', 'toggleItemSelection', 'toggleMerchantSelection', 'toggleAllSelection', 'updateCartProductQuantity', 'clearMerchantCart', 'createOrder', 'clearAllCart']),
     async handleCreateOrder (mode, merchantId = null) {
       if (this.isGuest) {
         this.$message.info('请登录')
@@ -319,6 +319,7 @@ export default {
         try {
           await insertOrder({ orders: this.orders })
           this.$message.success('下单成功')
+          this.clearAllCart()
         } catch (error) {
           // 处理错误情况
           this.$message.error('下单失败')

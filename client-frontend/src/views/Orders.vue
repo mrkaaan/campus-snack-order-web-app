@@ -1,5 +1,5 @@
 <script>
-import { getMerchantOrder, updateOrder } from '@/api/order'
+import { getUserOrder, updateOrder } from '@/api/order'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -50,18 +50,31 @@ export default {
         return '刚刚'
       }
     }
-
   },
   methods: {
-    async handleConfirmOrderMealStatus (orderId, mealStatus, orderStatus) {
-      if (mealStatus === 'readyForPickup' || mealStatus === 'pickedUp' || orderStatus === 'pending' || orderStatus === 'cancelled') {
+    async handleConfirmOrderPayStatus (orderId, payStatus) {
+      if (payStatus === 'paid' || payStatus === 'cancelled') {
         return
       }
       try {
         if (!orderId) {
           this.$message.error('订单异常')
         }
-        await updateOrder({ orderId: orderId, mealStatus: 'readyForPickup' }) // 更新备餐状态
+        await updateOrder({ orderId: orderId, payStatus: 'paid' }) // 更新支付状态
+        await this.handelOrderDetail()
+      } catch (error) {
+        console.error('更新订单失败', error)
+      }
+    },
+    async handleConfirmOrderMealStatus (orderId, payStatus, mealStatus) {
+      if (payStatus !== 'paid' || mealStatus !== 'readyForPickup') {
+        return
+      }
+      try {
+        if (!orderId) {
+          this.$message.error('订单异常')
+        }
+        await updateOrder({ orderId: orderId, mealStatus: 'pickedUp' }) // 更新餐品状态
         await this.handelOrderDetail()
       } catch (error) {
         console.error('更新订单失败', error)
@@ -82,13 +95,13 @@ export default {
       //   this.isExpand = !this.isExpand
     },
     async handelOrderDetail () {
-      const merchantId = this.user.merchantId
-      if (!merchantId) {
-        this.$message.error('未获取到商家ID')
+      const userId = this.user.accountId
+      if (!userId) {
+        this.$message.error('请先登录')
         return
       }
       try {
-        const response = await getMerchantOrder({ merchantId: merchantId })
+        const response = await getUserOrder({ userId: userId })
         console.log('订单获取成功', response)
         this.orders = response.data.orders
       } catch (error) {
@@ -164,7 +177,7 @@ export default {
       <div class="order-page-wrapper" v-if="orders.length !== 0">
         <div class="order-content" v-for="(order, order_index) in orders" :key="order_index">
           <div class="order-co-t">
-            <div class="order-title">当日流水编号 {{ order.pickupNumber.toString().padStart(3, '0') }}</div>
+            <div class="order-title">{{ order.storeName }} 取餐号 {{ order.pickupNumber.toString().padStart(3, '0') }}</div>
             <div class="desc">
               <div class="order-time-from">{{ formatOrderTime(order.orderTime) }}</div>
               <div class="order-number">{{ order.orderDdate }}</div>
@@ -217,14 +230,25 @@ export default {
                 <span class="detail-item-title">餐品状态</span>
                 <span class="detail-item-des">{{ mapOrderMealStatus(order.mealStatus) }}</span>
               </div>
-              <div class="detail-item">
-                <span class="detail-item-title"></span>
-                <div class="detail-item-des btn" @click="handleConfirmOrderMealStatus(order.orderId, order.mealStatus, order.payStatus)"
+              <div class="detail-item" style="justify-content: end; gap:2rem">
+                <div class="detail-item-des btn"
+                     @click="handleConfirmOrderPayStatus(order.orderId, order.payStatus)"
                      :style="{
-                       'background-color': order.mealStatus === 'readyForPickup' || order.mealStatus === 'pickedUp'|| order.payStatus === 'pending' ? '#999' : '#42b983',
-                       'cursor': order.mealStatus === 'readyForPickup' || order.mealStatus === 'pickedUp' || order.payStatus === 'pending' ? 'default' : 'point'
+                       'background-color': order.payStatus === 'paid' || order.payStatus === 'cancelled' ? '#999' : '#42b983',
+                       'cursor': order.payStatus === 'paid' || order.payStatus === 'cancelled' ? 'default' : 'point'
                      }"
-                >{{ mapOrderMealStatus(order.mealStatus) === '备餐中' ? '完成备餐' : mapOrderMealStatus(order.mealStatus) }}</div>
+                >{{ mapOrderPayStatus(order.payStatus) === '待支付' ? '确认支付' : mapOrderPayStatus(order.payStatus) }}
+                </div>
+
+                <div class="detail-item-des btn"
+                     v-if="order.payStatus === 'pid' ||  order.mealStatus === 'pickedUp' || order.mealStatus === 'readyForPickup'"
+                     @click="handleConfirmOrderMealStatus(order.orderId, order.payStatus, order.mealStatus)"
+                     :style="{
+                       'background-color': order.mealStatus === 'pickedUp' ?  '#999' : '#42b983',
+                       'cursor': order.mealStatus === 'pickedUp' ? 'default' : 'point'
+                     }"
+                > {{ mapOrderMealStatus(order.mealStatus) === '待取餐' ? '确认取餐' : mapOrderMealStatus(order.mealStatus)  }}
+                </div>
               </div>
             </div>
           </div>
@@ -239,7 +263,7 @@ export default {
 </template>
 
 <style scoped lang="scss">
-@import '../../styles/multi';
+@import '../styles/multi';
 
   .order-page {
     height: 100%;
@@ -352,10 +376,6 @@ export default {
     }
   }
   .order-item-details {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-
     .btn {
       background-color: #42b983;
       border-radius: 1rem;
@@ -374,6 +394,9 @@ export default {
         opacity: 0.8;
       }
     }
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 
     .detail-item {
       flex: 1;

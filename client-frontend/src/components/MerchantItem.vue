@@ -5,7 +5,7 @@
         <el-image class="image" :src="`${baseUrl}/${merchant.image}`" fit="cover" @load="() => merchant.imageLoaded = true"></el-image>
         <!--        <img :src="" alt="image" class="image">-->
       </div>
-      <div class="item-detail">
+      <div class="item-detail" :style="itemDetailStyle">
         <p class="detail-title"><strong>{{ merchant.storeName }}</strong></p>
         <div class="item-wrapper">
           <div class="detail-column column-left">
@@ -51,6 +51,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'MerchantItem',
   data () {
@@ -63,6 +65,19 @@ export default {
   created () {
     console.log('process.env.VUE_APP_BASE_URL', process.env.VUE_APP_BASE_URL)
     this.merchant = JSON.parse(JSON.stringify(this.item))
+  },
+  computed: {
+    ...mapGetters('sidebar', ['isSmallScreen', 'isWideScreen', 'isMediumScreen']),
+    itemDetailStyle () {
+      const style = {}
+      if (this.isSmallScreen) {
+        ;
+      } else {
+        style.flex = 1
+      }
+
+      return style
+    }
   }
 }
 </script>
@@ -101,7 +116,7 @@ export default {
     }
 
     .item-detail {
-      flex: 1;
+      //flex: 1;
       height: 100%;
       width: 100%;
       padding: 0.5rem 1rem; // 给详情文本添加一些左边距

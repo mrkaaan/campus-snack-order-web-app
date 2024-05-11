@@ -35,6 +35,7 @@
         </div>
       </div>
     </div>
+    <el-backtop target=".page-component__scroll .el-scrollbar__wrap"></el-backtop>
   </div>
 </template>
 
@@ -60,8 +61,7 @@ export default {
   },
   methods: {
     ...mapActions('merchant', ['updateMerchantDetails']),
-    async goToSearchPage (text = null) {
-      this.searchKey = text || this.searchKey
+    async goToSearchPage () {
       this.$router.push({ name: 'ProductSearch', query: { keyword: this.searchKey } })
     },
     async fetchMerchants () {
