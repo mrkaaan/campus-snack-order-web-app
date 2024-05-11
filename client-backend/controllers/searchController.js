@@ -56,7 +56,7 @@ exports.searchMerchants = async (req, res) => {
   try {
     // 第一步：搜索商家
     const merchantSearchQuery = `
-            SELECT merchantId, storeName, image, locationDescription, rating, description, mainDish
+            SELECT merchantId, storeName, image, locationDescription, rating, description, mainDish, priceRangeLow, priceRangeHigh, operatingHours
             FROM Merchants
             WHERE description LIKE CONCAT('%', ?, '%') OR mainDish LIKE CONCAT('%', ?, '%') OR storeName LIKE CONCAT('%', ?, '%');
         `;
@@ -75,6 +75,10 @@ exports.searchMerchants = async (req, res) => {
       const [products] = await db.query(productsQuery, [merchant.merchantId]);
       return {
         ...merchant,
+        priceRange: [merchant.priceRangeLow, merchant.priceRangeHigh],
+        mainDish: merchant.mainDish.split(','),
+        hasSpecialPrice: !!merchant.hasSpecialPrice, // 假设hasSpecialPrice字段存在于数据库，此处处理为布尔值
+        hasDiscountInfo: !!merchant.hasDiscountInfo, // 假设hasDiscountInfo字段存在于数据库，此处处理为布尔值
         products
       };
     }));
@@ -121,12 +125,19 @@ exports.searchMerchants = async (req, res) => {
       }
       // 查询商家信息
       const merchantInfoQuery = `
-                SELECT merchantId, storeName, image, locationDescription, rating, description, mainDish
+                SELECT merchantId, storeName, image, locationDescription, rating, description, mainDish, priceRangeLow, priceRangeHigh, operatingHours
                 FROM Merchants
                 WHERE merchantId = ?;
             `;
       const [merchantInfo] = await db.query(merchantInfoQuery, [merchantId]);
-      additionalMerchants[merchantId] = {...merchantInfo[0], products: additionalMerchants[merchantId].products}; // 整理“新增商品商家”
+      additionalMerchants[merchantId] = {
+        ...merchantInfo[0],
+        priceRange: [ merchantInfo[0].priceRangeLow,  merchantInfo[0].priceRangeHigh],
+        mainDish: merchantInfo[0].mainDish.split(','),
+        hasSpecialPrice: !!merchantInfo[0].hasSpecialPrice,
+        hasDiscountInfo: !!merchantInfo[0].hasDiscountInfo,
+        products: additionalMerchants[merchantId].products
+      }; // 整理“新增商品商家”
     }));
 
     // 组合所有结果并返回

@@ -1,4 +1,5 @@
 const Merchant = require('../models/Merchant');
+const db = require('../config/index');
 
 exports.getMerchants = async (req, res) => {
   try {
@@ -60,7 +61,6 @@ exports.getMerchantsPaging = async (req, res) => {
   }
 };
 
-
 exports.getMerchant = async (req, res) => {
   const merchantId = req.params.merchantId;
   try {
@@ -93,32 +93,8 @@ exports.getMerchant = async (req, res) => {
   }
 };
 
-
-exports.getDemoChant = async (req, res) => {
-  const merchantId = req.params.merchantId;
-  try {
-    const merchant = await Merchant.getMerchantInfo(merchantId);
-    if (!merchant) {
-      res.status(404).json({
-        success: false,
-        message: "Merchant not found",
-        data: null
-      });
-      return;
-    }
-    res.status(200).json({
-      success: true,
-      message: "Merchant retrieved successfully",
-      data: merchant
-    });
-  } catch (error) {
-
-  }
-
-};
-
 // 获取商家所有分类商品内容
-exports.getMerchantProducts = async (req, res) => {
+exports.getMerchantProductsByCate = async (req, res) => {
   const merchantId = req.params.merchantId;
   try {
     const merchantInfo = await Merchant.getMerchantInfo(merchantId); // 商品信息
@@ -206,3 +182,81 @@ exports.getMerchantProducts = async (req, res) => {
     });
   }
 };
+
+// 获取商家的所有商品
+exports.getMerchantProducts = async (req, res) => {
+  const merchantId = req.params.merchantId;
+
+  try {
+    const query = `
+      SELECT p.*, pc.name as categoryName
+      FROM Products p
+      JOIN ProductCategories pc ON p.merchantId = pc.merchantId AND p.productId = pc.categoryId
+      WHERE p.merchantId = ?
+      ORDER BY pc.categoryId, p.type
+    `;
+    const [products] = await db.query(query, [merchantId]);
+
+    res.status(200).json({
+      success: true,
+      data: products
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving merchant products",
+      error: error.message
+    });
+  }
+};
+
+// 更新商品信息
+exports.updateProduct = async (req, res) => {
+  const { productId, type, name, description, salePrice, originalPrice, imagePath, stock } = req.body;
+
+  try {
+    const query = `
+      UPDATE Products
+      SET type = ?, name = ?, description = ?, salePrice = ?, originalPrice = ?, imagePath = ?, stock = ?
+      WHERE productId = ?
+    `;
+    await db.query(query, [type, name, description, salePrice, originalPrice, imagePath, stock, productId]);
+
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update product",
+      error: error.message
+    });
+  }
+};
+
+// 添加新商品
+exports.addProduct = async (req, res) => {
+  const { merchantId, type, name, description, salePrice, originalPrice, imagePath, stock } = req.body;
+
+  try {
+    const query = `
+      INSERT INTO Products (merchantId, type, name, description, salePrice, originalPrice, imagePath, stock)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const [result] = await db.query(query, [merchantId, type, name, description, salePrice, originalPrice, imagePath, stock]);
+
+    res.status(201).json({
+      success: true,
+      message: "Product added successfully",
+      productId: result.insertId
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to add product",
+      error: error.message
+    });
+  }
+};
+
