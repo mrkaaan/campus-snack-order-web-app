@@ -51,7 +51,7 @@
           </div>
           <div class="item-product-box" style="height: 100%; overflow-y: scroll; scrollbar-width: none; width: 50rem">
             <div class="item-products" v-if="merchant.products"  style="display: flex; flex-direction: row; overflow: scroll; justify-content: start; gap: 1rem;scrollbar-width: none;">
-              <div class="item-product" style="display: flex; flex-direction: column; min-width: 8rem;" v-for="(p, p_index) in merchant.products" :key="p_index">
+              <div class="item-product" style="display: flex; flex-direction: column; min-width: 8rem;" v-for="(p, p_index) in merchant.products" :key="`${p_index}-${p.name}-${p.productId}`">
                 <div class="p-image" style="width: 8rem; height: 5rem; background-color: #999; border-radius: 1rem;">
                   <img src="" alt="">
                 </div>

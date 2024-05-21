@@ -43,7 +43,7 @@ exports.createOrder = async (req, res) => {
       const orderId = generateOrderNumber(userId, merchantId, orderTime);
       orderIds.push(orderId);
       const pickupNumber = pickupNumbers[merchantId]; // 获取当前商家的取餐号
-
+      console.log('pickupNumber', pickupNumber)
       await db.query('INSERT INTO Orders (orderId, userId, merchantId, storeName, payStatus, orderTime, salePrice, originalPrice, discount, pickupNumber, orderDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [orderId, userId, merchantId, storeName, payStatus, orderTime, salePrice, originalPrice, discount, pickupNumber, today]);
 

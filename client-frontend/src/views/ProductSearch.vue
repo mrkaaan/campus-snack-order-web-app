@@ -15,7 +15,7 @@
         </div>
         <div class="content-categories">
           <div class="category-wrapper">
-            <div class="category-item" v-for="(category, index) in categories" :key="`category-${index}`" style="cursor: pointer;" @click="handleSearchProduct(category)">
+            <div class="category-item" v-for="(category, index) in categories" :key="`category-${index}`" style="cursor: pointer;" @click="handleSearchProduct">
               {{ category }}
             </div>
           </div>
@@ -32,7 +32,7 @@
         <div v-else>
           <div v-if="merchants.length > 0" class="content-wrapper">
             <ul class="merchant-list">
-              <li v-for="item in merchants" :key="item.id" @click="goToMerchantDetails(item)">
+              <li v-for="item in merchants" :key="`${item.merchantId}-${item.products.length ? item.products[0].productId : 0}`" @click="goToMerchantDetails(item)">
                 <merchant-item-expand :item="item"></merchant-item-expand>
               </li>
             </ul>
@@ -68,9 +68,7 @@ export default {
   },
   methods: {
     ...mapActions('merchant', ['updateMerchantDetails']),
-    async handleSearchProduct (text = null) {
-      this.isLoading = true // 开始加载数据
-      this.searchKey = text || this.searchKey
+    async handleSearchProduct () {
       try {
         const response = await searchMerchants({ keyword: this.searchKey })
         setTimeout(() => {

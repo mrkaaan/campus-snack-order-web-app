@@ -99,7 +99,8 @@ exports.getMerchantProductsByCate = async (req, res) => {
   try {
     const merchantInfo = await Merchant.getMerchantInfo(merchantId); // 商品信息
     const categories = await Merchant.getMerchantCategories(merchantId); // 分类
-
+    console.log(merchantInfo)
+    console.log(categories)
     for (const category of categories) { // 遍历每一个分类
       if (category.isCondimentCategory) { // 配料分类
         category.items = await Merchant.getCondimentsForCategory(merchantId, category.categoryId); // 所有可以单买的配料
@@ -112,6 +113,7 @@ exports.getMerchantProductsByCate = async (req, res) => {
         }
       } else { // 普通分类
         category.items = await Merchant.getProductsForCategory(merchantId, category.categoryId); // 按分类查询商品数据
+        console.log(category.items)
         for (const item of category.items) { // 遍历每一个商品
           if (item.type === 'bundle') { // 套餐类型商品
             item.products = await Merchant.getBundleComponents(item.productId, merchantId);

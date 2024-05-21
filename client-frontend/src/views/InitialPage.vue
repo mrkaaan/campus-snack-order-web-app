@@ -225,8 +225,8 @@ export default {
       useEmailByLogin: false,
       flag: true, // 为真则登录 为假则注册
       loginForm: {
-        username: 'demo123',
-        password: '12345678'
+        username: '',
+        password: ''
       },
       loginFormByEmail: {
         email: '',
