@@ -1,7 +1,10 @@
 /client-backend/node_modules/
-/client-backend/.env
+# /client-backend/.env
 /client-backend/package-lock.json
 
 /client-frontend/node_modules/
-/client-frontend/.env
 /client-frontend/package-lock.json
+
+/deploy
+#/client-frontend/.env.development
+/client-frontend/.env.production

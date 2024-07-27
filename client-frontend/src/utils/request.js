@@ -1,5 +1,8 @@
 import axios from 'axios'
 import { Message } from 'element-ui' // 确保你的项目已经安装了Element UI
+// import Vue from 'vue'
+
+// Vue.prototype.$axios = axios
 
 console.log('Base URL:', process.env.VUE_APP_BASE_API)
 

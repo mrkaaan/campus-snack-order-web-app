@@ -7,6 +7,13 @@ const dbConfig = {
   database: 'CampusSnackDB'
 };
 
+const localConfig = {
+  host: '139.224.204.161',
+  user: 'mrkaan',
+  password: 'mrkaan',
+  database: 'CampusSnackDB'
+};
+
 const connection = mysql.createConnection(dbConfig).promise();  // 添加 .promise()
 connection.connect(error => {
   if (error) {

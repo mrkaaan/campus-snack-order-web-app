@@ -16,14 +16,14 @@
 
 
 -- 导出 campussnackdb 的数据库结构
-CREATE DATABASE IF NOT EXISTS `campussnackdb` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE IF NOT EXISTS `campussnackdb` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `campussnackdb`;
 
 -- 导出  表 campussnackdb.bundleproductsmap 结构
 CREATE TABLE IF NOT EXISTS `bundleproductsmap` (
   `merchantId` int NOT NULL,
   `bundleId` int NOT NULL,
-  `category` varchar(255) DEFAULT NULL,
+  `category` varchar(191) DEFAULT NULL,
   `productId` int NOT NULL,
   `quantity` int DEFAULT '1',
   PRIMARY KEY (`merchantId`,`bundleId`,`productId`),
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `bundleproductsmap` (
   CONSTRAINT `bundleproductsmap_ibfk_1` FOREIGN KEY (`bundleId`) REFERENCES `products` (`productId`),
   CONSTRAINT `bundleproductsmap_ibfk_2` FOREIGN KEY (`productId`) REFERENCES `products` (`productId`),
   CONSTRAINT `bundleproductsmap_ibfk_3` FOREIGN KEY (`merchantId`) REFERENCES `merchants` (`merchantId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.bundleproductsmap 的数据：~10 rows (大约)
 DELETE FROM `bundleproductsmap`;
@@ -51,12 +51,12 @@ INSERT INTO `bundleproductsmap` (`merchantId`, `bundleId`, `category`, `productI
 -- 导出  表 campussnackdb.emailverifications 结构
 CREATE TABLE IF NOT EXISTS `emailverifications` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
+  `email` varchar(191) NOT NULL,
   `verification_code` varchar(6) NOT NULL,
   `expiry_time` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.emailverifications 的数据：~2 rows (大约)
 DELETE FROM `emailverifications`;
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `merchantproductmap` (
   CONSTRAINT `merchantproductmap_ibfk_1` FOREIGN KEY (`merchantId`) REFERENCES `merchants` (`merchantId`),
   CONSTRAINT `merchantproductmap_ibfk_2` FOREIGN KEY (`categoryId`) REFERENCES `productcategories` (`categoryId`),
   CONSTRAINT `merchantproductmap_ibfk_3` FOREIGN KEY (`productId`) REFERENCES `products` (`productId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.merchantproductmap 的数据：~14 rows (大约)
 DELETE FROM `merchantproductmap`;
@@ -95,20 +95,20 @@ INSERT INTO `merchantproductmap` (`merchantId`, `categoryId`, `productId`) VALUE
 -- 导出  表 campussnackdb.merchants 结构
 CREATE TABLE IF NOT EXISTS `merchants` (
   `merchantId` int NOT NULL AUTO_INCREMENT,
-  `storeName` varchar(255) NOT NULL,
-  `image` varchar(255) DEFAULT NULL,
+  `storeName` varchar(191) NOT NULL,
+  `image` varchar(191) DEFAULT NULL,
   `priceRangeLow` decimal(10,2) DEFAULT NULL,
   `priceRangeHigh` decimal(10,2) DEFAULT NULL,
-  `mainDish` varchar(255) DEFAULT NULL,
+  `mainDish` varchar(191) DEFAULT NULL,
   `operatingHours` varchar(50) DEFAULT NULL,
-  `locationDescription` varchar(255) DEFAULT NULL,
+  `locationDescription` varchar(191) DEFAULT NULL,
   `rating` decimal(3,1) DEFAULT NULL,
   `monthlySales` int DEFAULT NULL,
   `description` text,
   `hasSpecialPrice` tinyint(1) DEFAULT NULL,
   `hasDiscount` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`merchantId`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.merchants 的数据：~10 rows (大约)
 DELETE FROM `merchants`;
@@ -129,9 +129,9 @@ INSERT INTO `merchants` (`merchantId`, `storeName`, `image`, `priceRangeLow`, `p
 -- 导出  表 campussnackdb.merchantusers 结构
 CREATE TABLE IF NOT EXISTS `merchantusers` (
   `accountId` int NOT NULL,
-  `username` varchar(255) NOT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
+  `username` varchar(191) NOT NULL,
+  `password` varchar(191) DEFAULT NULL,
+  `email` varchar(191) DEFAULT NULL,
   `phoneNumber` varchar(20) DEFAULT NULL,
   `merchantId` int DEFAULT NULL,
   PRIMARY KEY (`accountId`),
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS `merchantusers` (
   UNIQUE KEY `email` (`email`),
   KEY `merchantId` (`merchantId`),
   CONSTRAINT `merchantusers_ibfk_1` FOREIGN KEY (`merchantId`) REFERENCES `merchants` (`merchantId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.merchantusers 的数据：~10 rows (大约)
 DELETE FROM `merchantusers`;
@@ -160,18 +160,18 @@ INSERT INTO `merchantusers` (`accountId`, `username`, `password`, `email`, `phon
 CREATE TABLE IF NOT EXISTS `options` (
   `merchantId` int NOT NULL,
   `optionId` int NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(191) NOT NULL,
   `description` text,
   `price` decimal(10,2) DEFAULT NULL,
   `originalPrice` decimal(10,2) DEFAULT NULL,
-  `image` varchar(255) DEFAULT '',
+  `image` varchar(191) DEFAULT '',
   `monthlySales` int DEFAULT '0',
   `stock` int DEFAULT '100',
   `isAloneAvailableSale` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`merchantId`,`optionId`),
   KEY `idx_optionId` (`optionId`),
   CONSTRAINT `options_ibfk_1` FOREIGN KEY (`merchantId`) REFERENCES `merchants` (`merchantId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.options 的数据：~7 rows (大约)
 DELETE FROM `options`;
@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS `optiontypes` (
   PRIMARY KEY (`optionTypeId`,`optionId`),
   KEY `optionId` (`optionId`),
   CONSTRAINT `optiontypes_ibfk_1` FOREIGN KEY (`optionId`) REFERENCES `options` (`optionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.optiontypes 的数据：~7 rows (大约)
 DELETE FROM `optiontypes`;
@@ -208,9 +208,9 @@ INSERT INTO `optiontypes` (`optionTypeId`, `optionId`, `price`, `isFixed`) VALUE
 
 -- 导出  表 campussnackdb.orderdetails 结构
 CREATE TABLE IF NOT EXISTS `orderdetails` (
-  `orderId` varchar(255) NOT NULL DEFAULT '',
+  `orderId` varchar(191) NOT NULL DEFAULT '',
   `productId` int NOT NULL,
-  `productName` varchar(255) DEFAULT NULL,
+  `productName` varchar(191) DEFAULT NULL,
   `quantity` int DEFAULT NULL,
   `salePrice` decimal(10,2) DEFAULT NULL,
   `originalPrice` decimal(10,2) DEFAULT NULL,
@@ -222,7 +222,7 @@ CREATE TABLE IF NOT EXISTS `orderdetails` (
   KEY `productId` (`productId`),
   CONSTRAINT `orderdetails_ibfk_1` FOREIGN KEY (`orderId`) REFERENCES `orders` (`orderId`),
   CONSTRAINT `orderdetails_ibfk_2` FOREIGN KEY (`productId`) REFERENCES `products` (`productId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.orderdetails 的数据：~61 rows (大约)
 DELETE FROM `orderdetails`;
@@ -299,13 +299,13 @@ INSERT INTO `orderdetails` (`orderId`, `productId`, `productName`, `quantity`, `
 
 -- 导出  表 campussnackdb.orders 结构
 CREATE TABLE IF NOT EXISTS `orders` (
-  `orderId` varchar(255) NOT NULL DEFAULT '0',
+  `orderId` varchar(191) NOT NULL DEFAULT '0',
   `userId` int DEFAULT NULL,
   `merchantId` int DEFAULT NULL,
-  `storeName` varchar(255) DEFAULT NULL,
-  `payStatus` enum('pending','paid','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
+  `storeName` varchar(191) DEFAULT NULL,
+  `payStatus` enum('pending','paid','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'pending',
   `mealStatus` enum('preparing','readyForPickup','pickedUp') DEFAULT 'preparing',
-  `orderTime` datetime DEFAULT CURRENT_TIMESTAMP,
+  `orderTime` datetime DEFAULT NULL,
   `orderDate` date DEFAULT NULL,
   `pickupNumber` int DEFAULT NULL,
   `salePrice` decimal(10,2) DEFAULT NULL,
@@ -317,7 +317,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   KEY `merchantId` (`merchantId`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users` (`accountId`),
   CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`merchantId`) REFERENCES `merchants` (`merchantId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.orders 的数据：~41 rows (大约)
 DELETE FROM `orders`;
@@ -374,13 +374,13 @@ INSERT INTO `orders` (`orderId`, `userId`, `merchantId`, `storeName`, `payStatus
 CREATE TABLE IF NOT EXISTS `productcategories` (
   `merchantId` int NOT NULL,
   `categoryId` int NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(191) NOT NULL,
   `description` text,
   `isCondimentCategory` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`merchantId`,`categoryId`),
   KEY `categoryId` (`categoryId`),
   CONSTRAINT `productcategories_ibfk_1` FOREIGN KEY (`merchantId`) REFERENCES `merchants` (`merchantId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.productcategories 的数据：~5 rows (大约)
 DELETE FROM `productcategories`;
@@ -395,14 +395,14 @@ INSERT INTO `productcategories` (`merchantId`, `categoryId`, `name`, `descriptio
 CREATE TABLE IF NOT EXISTS `productoptionsmap` (
   `productId` int NOT NULL,
   `optionTypeId` int NOT NULL,
-  `optionTypeName` varchar(255) DEFAULT NULL,
+  `optionTypeName` varchar(191) DEFAULT NULL,
   `price` decimal(10,2) DEFAULT NULL,
   `isMultipleChoice` int DEFAULT '1',
   PRIMARY KEY (`productId`,`optionTypeId`),
   KEY `productoptionsmap_ibfk_2` (`optionTypeId`),
   CONSTRAINT `productoptionsmap_ibfk_1` FOREIGN KEY (`productId`) REFERENCES `products` (`productId`),
   CONSTRAINT `productoptionsmap_ibfk_2` FOREIGN KEY (`optionTypeId`) REFERENCES `optiontypes` (`optionTypeId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.productoptionsmap 的数据：~14 rows (大约)
 DELETE FROM `productoptionsmap`;
@@ -428,20 +428,20 @@ CREATE TABLE IF NOT EXISTS `products` (
   `merchantId` int DEFAULT NULL,
   `type` enum('product','bundle') NOT NULL DEFAULT 'product',
   `baseProductId` int DEFAULT NULL,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(191) NOT NULL,
   `portions` int DEFAULT '1',
   `description` text,
   `monthlySales` int DEFAULT '0',
   `salePrice` decimal(10,2) DEFAULT NULL,
   `originalPrice` decimal(10,2) DEFAULT NULL,
-  `imagePath` varchar(255) DEFAULT NULL,
+  `imagePath` varchar(191) DEFAULT NULL,
   `stock` int DEFAULT '100',
   PRIMARY KEY (`productId`),
   KEY `merchantId` (`merchantId`),
   KEY `baseProductId` (`baseProductId`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`merchantId`) REFERENCES `merchants` (`merchantId`),
   CONSTRAINT `products_ibfk_2` FOREIGN KEY (`baseProductId`) REFERENCES `products` (`productId`)
-) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.products 的数据：~15 rows (大约)
 DELETE FROM `products`;
@@ -465,15 +465,15 @@ INSERT INTO `products` (`productId`, `merchantId`, `type`, `baseProductId`, `nam
 -- 导出  表 campussnackdb.users 结构
 CREATE TABLE IF NOT EXISTS `users` (
   `accountId` int NOT NULL,
-  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `nickname` varchar(255) DEFAULT NULL,
-  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
+  `username` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nickname` varchar(191) DEFAULT NULL,
+  `password` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(191) DEFAULT NULL,
   `phoneNumber` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`accountId`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 正在导出表  campussnackdb.users 的数据：~16 rows (大约)
 DELETE FROM `users`;
